@@ -1,9 +1,11 @@
 -- V1__schema.sql
 -- Gym Management System Schema
 
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 -- Users table
 CREATE TABLE users (
-    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
@@ -36,7 +38,7 @@ INSERT INTO roles (id, name, description) VALUES
 
 -- Refresh tokens table
 CREATE TABLE refresh_tokens (
-    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users(id),
     token_hash VARCHAR(255) NOT NULL,
     expires_at TIMESTAMP NOT NULL,
@@ -54,7 +56,7 @@ CREATE INDEX idx_refresh_tokens_deleted_at ON refresh_tokens(deleted_at);
 
 -- Plans table
 CREATE TABLE plans (
-    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
@@ -72,7 +74,7 @@ CREATE INDEX idx_plans_deleted_at ON plans(deleted_at);
 
 -- Memberships table
 CREATE TABLE memberships (
-    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users(id),
     plan_id UUID NOT NULL REFERENCES plans(id),
     start_date DATE NOT NULL,
@@ -91,7 +93,7 @@ CREATE INDEX idx_memberships_deleted_at ON memberships(deleted_at);
 
 -- Trainers table
 CREATE TABLE trainers (
-    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users(id),
     bio TEXT,
     specialties TEXT[],
@@ -109,7 +111,7 @@ CREATE INDEX idx_trainers_deleted_at ON trainers(deleted_at);
 
 -- Classes table
 CREATE TABLE classes (
-    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     trainer_id UUID NOT NULL REFERENCES trainers(id),
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -131,7 +133,7 @@ CREATE INDEX idx_classes_deleted_at ON classes(deleted_at);
 
 -- Class enrollments table
 CREATE TABLE class_enrollments (
-    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     class_id UUID NOT NULL REFERENCES classes(id),
     user_id UUID NOT NULL REFERENCES users(id),
     enrolled_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -148,7 +150,7 @@ CREATE INDEX idx_class_enrollments_deleted_at ON class_enrollments(deleted_at);
 
 -- Schedule requests table
 CREATE TABLE schedule_requests (
-    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users(id),
     trainer_id UUID NOT NULL REFERENCES trainers(id),
     preferred_at TIMESTAMP,
@@ -167,7 +169,7 @@ CREATE INDEX idx_schedule_requests_deleted_at ON schedule_requests(deleted_at);
 
 -- Payments table
 CREATE TABLE payments (
-    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users(id),
     membership_id UUID REFERENCES memberships(id),
     amount DECIMAL(10,2) NOT NULL,
@@ -189,7 +191,7 @@ CREATE INDEX idx_payments_deleted_at ON payments(deleted_at);
 
 -- Notifications table
 CREATE TABLE notifications (
-    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users(id),
     title VARCHAR(255) NOT NULL,
     body TEXT NOT NULL,
@@ -207,7 +209,7 @@ CREATE INDEX idx_notifications_deleted_at ON notifications(deleted_at);
 
 -- Contacts table
 CREATE TABLE contacts (
-    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     phone VARCHAR(20),
@@ -225,7 +227,7 @@ CREATE INDEX idx_contacts_deleted_at ON contacts(deleted_at);
 
 -- Audit logs table
 CREATE TABLE audit_logs (
-    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     actor_id UUID REFERENCES users(id),
     action VARCHAR(20) NOT NULL,
     entity_type VARCHAR(100) NOT NULL,
@@ -243,7 +245,7 @@ CREATE INDEX idx_audit_logs_created_at ON audit_logs(created_at);
 
 -- Rate limit buckets table
 CREATE TABLE rate_limit_buckets (
-    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     key VARCHAR(255) NOT NULL UNIQUE,
     tokens INTEGER NOT NULL DEFAULT 300,
     last_refill TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

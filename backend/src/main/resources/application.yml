@@ -1,0 +1,54 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;NON_KEYWORDS=VALUE
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        # Dialect auto-detected by Hibernate - no explicit config needed
+    open-in-view: false
+  flyway:
+    enabled: false
+  profiles:
+    active: default
+
+jwt:
+  expiration-ms: 900000
+  refresh-expiration-ms: 604800000
+
+rate-limit:
+  login:
+    capacity: 10
+    refill-tokens: 5
+    refill-duration: 1
+  refresh:
+    capacity: 20
+    refill-tokens: 10
+    refill-duration: 1
+
+cors:
+  allowed-origins: http://localhost:3000,http://localhost:5173,http://localhost:5174,http://localhost:8080,http://localhost:8081,http://localhost:8082
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY:}
+  publishable-key: ${STRIPE_PUBLISHABLE_KEY:}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+  frontend-success-url: ${STRIPE_FRONTEND_SUCCESS_URL:http://localhost:5173/membership/success}
+  frontend-cancel-url: ${STRIPE_FRONTEND_CANCEL_URL:http://localhost:5173/plans}
+
+app:
+  frontend-url: ${APP_FRONTEND_URL:http://localhost:5173}

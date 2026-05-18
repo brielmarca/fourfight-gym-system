@@ -1,0 +1,40 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/gymdb
+    username: ${DB_USERNAME:gymadmin}
+    password: ${DB_PASSWORD:gymsecretpassword}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        # Dialect auto-detected by Hibernate
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+jwt:
+  private-key: ${JWT_PRIVATE_KEY:}
+  public-key: ${JWT_PUBLIC_KEY:}
+  expiration-ms: ${JWT_EXPIRATION_MS:900000}
+  refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
+
+cors:
+  allowed-origins: http://localhost:3000,http://localhost:5173,http://localhost:5174,http://localhost:8080,http://localhost:8081,http://localhost:8082
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,beans,env
+  endpoint:
+    health:
+      show-details: always

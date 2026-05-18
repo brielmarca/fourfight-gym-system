@@ -1,0 +1,14 @@
+{
+  "name": "gym-management-system",
+  "version": "1.0.0",
+  "description": "Gym Management System - Full Stack Development",
+  "scripts": {
+    "dev:full": "concurrently \"cd backend && ./run-dev.sh\" \"cd frontend && npm run dev\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && ./run-dev.sh",
+    "install:all": "cd frontend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

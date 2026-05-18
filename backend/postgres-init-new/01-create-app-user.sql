@@ -1,0 +1,20 @@
+-- Create dedicated application database user with least privilege
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'gymapp') THEN
+        CREATE USER gymapp WITH PASSWORD 'placeholder';
+        RAISE NOTICE 'User gymapp created';
+    END IF;
+END
+$$;
+
+GRANT CONNECT ON DATABASE gymdb TO gymapp;
+GRANT USAGE ON SCHEMA public TO gymapp;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO gymapp;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO gymapp;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO gymapp;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO gymapp;
+
+REVOKE CREATE ON SCHEMA public FROM gymapp;
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM PUBLIC;

@@ -1,0 +1,93 @@
+package com.gym.service;
+
+import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.gym.dto.request.UpdateUserRequest;
+import com.gym.dto.response.UserResponse;
+import com.gym.entity.User.Role;
+import com.gym.entity.User;
+import com.gym.exception.DuplicateResourceException;
+import com.gym.exception.ResourceNotFoundException;
+import com.gym.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class UserService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public Page<UserResponse> getAll(Pageable pageable) {
+        return userRepository.findAll(pageable).map(UserResponse::from);
+    }
+
+    public User getUserById(UUID id) {
+        return userRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User", id));
+    }
+
+    public UserResponse getById(UUID id) {
+        return UserResponse.from(getUserById(id));
+    }
+
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+            .orElseThrow(() -> new ResourceNotFoundException("User by email", email));
+    }
+
+    public void updateUser(User user) {
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public UserResponse update(UUID id, UpdateUserRequest request) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User", id));
+
+        if (request.name() != null) user.setName(request.name());
+        if (request.phone() != null) user.setPhone(request.phone());
+        if (request.avatarUrl() != null) user.setAvatarUrl(request.avatarUrl());
+        if (request.isActive() != null) user.setIsActive(request.isActive());
+
+        if (request.email() != null && !request.email().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(request.email())) {
+                throw new DuplicateResourceException("User", "email", request.email());
+            }
+            user.setEmail(request.email());
+        }
+
+        user = userRepository.save(user);
+        log.info("User updated: {}", user.getEmail());
+        return UserResponse.from(user);
+    }
+
+    @Transactional
+    public void delete(UUID id) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User", id));
+        user.softDelete();
+        userRepository.save(user);
+        log.info("User soft deleted: {}", user.getEmail());
+    }
+
+    @Transactional
+    public UserResponse updateRole(UUID id, User.Role role) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User", id));
+        user.setRole(role);
+        user = userRepository.save(user);
+        log.info("User role updated: {} -> {}", user.getEmail(), role);
+        return UserResponse.from(user);
+    }
+
+    public long countActiveClients() {
+        return userRepository.countActiveClients();
+    }
+}

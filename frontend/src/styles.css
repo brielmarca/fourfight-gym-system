@@ -1,0 +1,210 @@
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap");
+@import "leaflet/dist/leaflet.css";
+
+@import "tailwindcss" source(none);
+@import "tw-animate-css";
+@source "../src";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Custom semantic surfaces */
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-accent: var(--border-accent);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  --font-display: "Bebas Neue", sans-serif;
+  --font-sans: "DM Sans", system-ui, sans-serif;
+}
+
+:root {
+  --radius: 0.25rem;
+
+  /* 4Four luxury combat palette — exact hex from spec */
+  --background: #0b0b0b;
+  --foreground: #f5f5f5;
+
+  --surface: #111111;
+  --surface-2: #161616;
+  --border-subtle: #1e1e1e;
+  --border-accent: #2a2a2a;
+  --text-secondary: #888888;
+  --text-muted: #444444;
+
+  --card: #111111;
+  --card-foreground: #f5f5f5;
+  --popover: #111111;
+  --popover-foreground: #f5f5f5;
+
+  --primary: #c1121f;
+  --primary-foreground: #ffffff;
+
+  --secondary: #161616;
+  --secondary-foreground: #f5f5f5;
+
+  --muted: #161616;
+  --muted-foreground: #888888;
+
+  --accent: #c1121f;
+  --accent-foreground: #ffffff;
+
+  --destructive: #c1121f;
+  --destructive-foreground: #ffffff;
+
+  --border: #1e1e1e;
+  --input: #1e1e1e;
+  --ring: #c1121f;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: 0.02em;
+  }
+}
+
+/* Custom red scrollbar — sharp & thin */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #0b0b0b;
+}
+::-webkit-scrollbar-thumb {
+  background: #c1121f;
+  border-radius: 2px;
+}
+html {
+  scrollbar-color: #c1121f #0b0b0b;
+  scrollbar-width: thin;
+}
+
+/* ===== Animations ===== */
+@keyframes wordReveal {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-word {
+  display: inline-block;
+  opacity: 0;
+  animation: wordReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Red button glow */
+.btn-red {
+  box-shadow: 0 0 0 0 rgba(193, 18, 31, 0);
+  transition:
+    background-color 0.25s ease,
+    box-shadow 0.3s ease,
+    color 0.25s ease;
+}
+.btn-red:hover {
+  background-color: #a10e18;
+  box-shadow: 0 0 28px rgba(193, 18, 31, 0.4);
+}
+
+/* Ghost button */
+.btn-ghost {
+  transition:
+    border-color 0.25s ease,
+    color 0.25s ease,
+    background-color 0.25s ease;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Section spacing */
+.section-pad {
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+@media (min-width: 768px) {
+  .section-pad {
+    padding-top: 120px;
+    padding-bottom: 120px;
+  }
+}
+
+/* Leaflet dark map overrides */
+.leaflet-dark-map .leaflet-control-attribution {
+  background: rgba(11, 11, 11, 0.8) !important;
+  color: #444 !important;
+  font-size: 10px !important;
+}
+.leaflet-dark-map .leaflet-control-attribution a {
+  color: #888 !important;
+}
+.leaflet-dark-map .leaflet-control-zoom a {
+  background: #111111 !important;
+  color: #f5f5f5 !important;
+  border-color: #1e1e1e !important;
+}
+.leaflet-dark-map .leaflet-control-zoom a:hover {
+  background: #161616 !important;
+}

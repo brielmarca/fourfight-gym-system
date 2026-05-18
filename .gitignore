@@ -1,0 +1,61 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+.output/
+.tanstack/
+.vinxi/
+.nitro/
+target/
+
+# Dependencies
+node_modules/
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Secrets
+*.pem
+keys/
+certs/
+*.key
+*.crt
+*.p12
+*.jks
+*.pfx
+
+# Wrangler / Cloudflare
+.wrangler/
+.dev.vars
+
+# AI agent tools (local only)
+.agents/
+.claude/
+skills/
+skills-lock.json
+
+# Local overrides
+*.local
+
+# Archive (old code, not needed in repo)
+archive/
+
+# Media (raw photos/videos — 500MB, not used by app)
+media/
+
+# Nested git repos (monorepo — only root is the real repo)
+frontend/.git/

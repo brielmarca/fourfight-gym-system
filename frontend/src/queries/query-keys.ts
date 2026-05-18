@@ -1,0 +1,51 @@
+const queryKeys = {
+  auth: {
+    all: ["auth"] as const,
+    me: () => [...queryKeys.auth.all, "me"] as const,
+  },
+  plans: {
+    all: ["plans"] as const,
+    list: () => [...queryKeys.plans.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.plans.all, "detail", id] as const,
+  },
+  memberships: {
+    all: ["memberships"] as const,
+    my: () => [...queryKeys.memberships.all, "my"] as const,
+    list: (page: number, size: number) =>
+      [...queryKeys.memberships.all, "list", page, size] as const,
+    status: (id: string) => [...queryKeys.memberships.all, "status", id] as const,
+  },
+  classes: {
+    all: ["classes"] as const,
+    list: (page: number, size: number) => [...queryKeys.classes.all, "list", page, size] as const,
+    detail: (id: string) => [...queryKeys.classes.all, "detail", id] as const,
+    roster: (id: string, page: number, size: number) =>
+      [...queryKeys.classes.all, "roster", id, page, size] as const,
+  },
+  enrollments: {
+    all: ["enrollments"] as const,
+    my: () => [...queryKeys.enrollments.all, "my"] as const,
+  },
+  studentProfile: {
+    all: ["studentProfile"] as const,
+    me: () => [...queryKeys.studentProfile.all, "me"] as const,
+  },
+  attendance: {
+    all: ["attendance"] as const,
+    myMonthly: () => [...queryKeys.attendance.all, "myMonthly"] as const,
+    my: (startDate: string, endDate: string) =>
+      [...queryKeys.attendance.all, "my", startDate, endDate] as const,
+  },
+  belts: {
+    all: ["belts"] as const,
+    list: () => [...queryKeys.belts.all, "list"] as const,
+    active: () => [...queryKeys.belts.all, "active"] as const,
+    detail: (id: string) => [...queryKeys.belts.all, "detail", id] as const,
+  },
+  stripe: {
+    all: ["stripe"] as const,
+    subscription: () => [...queryKeys.stripe.all, "subscription"] as const,
+  },
+};
+
+export default queryKeys;

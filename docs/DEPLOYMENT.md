@@ -1,0 +1,302 @@
+# Deployment Guide — Four Fight Gym System
+
+## Architecture Overview
+
+```
+┌─────────────────────┐     HTTPS      ┌─────────────────────┐
+│  Cloudflare Pages   │ ──────────────▶ │  Render (Backend)   │
+│  (React SSR)        │   /api/*       │  Spring Boot 3.3    │
+│  your-domain.com    │                 │  api.domain.com     │
+└─────────────────────┘                 └─────────┬───────────┘
+                                                   │
+                                          SSL      │
+                                                   ▼
+                                          ┌─────────────────────┐
+                                          │  Supabase           │
+                                          │  PostgreSQL         │
+                                          │  (private)          │
+                                          └─────────────────────┘
+```
+
+---
+
+## 1. Supabase (PostgreSQL Database)
+
+### Setup
+
+1. Create a Supabase project at [supabase.com](https://supabase.com)
+2. Go to **Project Settings → Database**
+3. Note the connection details:
+   - **Host**: `db.<project-ref>.supabase.co`
+   - **Port**: `5432`
+   - **Database**: `postgres`
+   - **User**: `postgres.<project-ref>`
+   - **Password**: (set during project creation)
+
+### Run Migrations
+
+The project uses Flyway. Migrations run automatically on backend startup with the `prod` profile.
+
+To run manually:
+```bash
+cd backend
+export DATABASE_URL="jdbc:postgresql://db.<ref>.supabase.co:5432/postgres?sslmode=require"
+export DB_USERNAME="postgres.<ref>"
+export DB_PASSWORD="your_password"
+mvn flyway:migrate -Dspring.profiles.active=prod
+```
+
+### Security
+
+- Database is **not exposed publicly** — only accessible via connection string
+- SSL is enforced (`sslmode=require` in datasource URL)
+- Use Supabase's IP allowlist if needed (Project Settings → Database → IP Allow List)
+
+---
+
+## 2. Render (Backend)
+
+### Option A: Deploy via render.yaml (Recommended)
+
+```bash
+# From project root
+git push to your repository
+# Then in Render dashboard: New → Blueprint → Connect repo
+```
+
+### Option B: Manual Deploy
+
+1. In Render dashboard: **New → Web Service**
+2. Connect your Git repository
+3. Configure:
+   - **Build Command**: `cd backend && mvn package -DskipTests`
+   - **Start Command**: `java -jar backend/target/gym-management-backend-1.0.0.jar`
+   - **Environment**: Java 21
+   - **Region**: Frankfurt (closest to Supabase EU)
+   - **Plan**: Free or Starter
+
+### Environment Variables (Render Dashboard)
+
+| Variable | Value | Notes |
+|----------|-------|-------|
+| `SPRING_PROFILES_ACTIVE` | `prod` | Activates production profile |
+| `DATABASE_URL` | `jdbc:postgresql://db.<ref>.supabase.co:5432/postgres?sslmode=require` | From Supabase |
+| `DB_USERNAME` | `postgres.<ref>` | From Supabase |
+| `DB_PASSWORD` | `your_supabase_password` | From Supabase |
+| `JWT_PRIVATE_KEY` | `-----BEGIN RSA PRIVATE KEY-----...` | Single-line, `\n` for newlines |
+| `JWT_PUBLIC_KEY` | `-----BEGIN PUBLIC KEY-----...` | Single-line, `\n` for newlines |
+| `CORS_ALLOWED_ORIGINS` | `https://your-domain.com` | Your Cloudflare Pages domain |
+| `STRIPE_SECRET_KEY` | `sk_live_...` or `sk_test_...` | From Stripe Dashboard |
+| `STRIPE_PUBLISHABLE_KEY` | `pk_live_...` or `pk_test_...` | From Stripe Dashboard |
+| `STRIPE_WEBHOOK_SECRET` | `whsec_...` | From Stripe webhook endpoint |
+| `STRIPE_FRONTEND_SUCCESS_URL` | `https://your-domain.com/membership/success` | Frontend URL |
+| `STRIPE_FRONTEND_CANCEL_URL` | `https://your-domain.com/plans` | Frontend URL |
+| `APP_FRONTEND_URL` | `https://your-domain.com` | Frontend URL |
+
+### Generate JWT Keys
+
+```bash
+openssl genrsa -out private_key.pem 2048
+openssl rsa -in private_key.pem -pubout -out public_key.pem
+
+# Convert to single-line for env vars:
+awk -v ORS='\\n' '1' private_key.pem
+awk -v ORS='\\n' '1' public_key.pem
+```
+
+---
+
+## 3. Cloudflare Pages (Frontend)
+
+### Setup
+
+1. In Cloudflare Dashboard: **Workers & Pages → Create → Pages**
+2. Connect your Git repository
+3. Build settings:
+   - **Framework preset**: None (custom)
+   - **Build command**: `cd frontend && npm ci && npm run build`
+   - **Build output directory**: `frontend/dist/client`
+   - **Root directory**: `/` (project root)
+
+### Environment Variables (Cloudflare Pages Dashboard)
+
+| Variable | Value | Notes |
+|----------|-------|-------|
+| `VITE_API_URL` | `https://your-backend.onrender.com/api` | Full backend URL |
+| `VITE_STRIPE_PUBLISHABLE_KEY` | `pk_live_...` or `pk_test_...` | From Stripe Dashboard |
+
+### Custom Domain + TLS
+
+1. In Cloudflare Pages: **Custom domains → Set up a custom domain**
+2. Add your domain (e.g., `your-domain.com`)
+3. Cloudflare automatically provisions TLS certificates
+4. DNS records are managed by Cloudflare
+
+### SPA Fallback
+
+Cloudflare Pages automatically handles SPA routing. The `_routes.json` file is generated by TanStack Start build.
+
+---
+
+## 4. Stripe Webhook Configuration
+
+### Production Webhook
+
+1. Go to [Stripe Dashboard → Developers → Webhooks](https://dashboard.stripe.com/webhooks)
+2. **Add endpoint**: `https://your-backend.onrender.com/api/stripe/webhook`
+3. Select events:
+   - `checkout.session.completed`
+   - `invoice.paid`
+   - `invoice.payment_failed`
+   - `customer.subscription.deleted`
+   - `customer.subscription.updated`
+4. Copy the **Signing secret** (`whsec_...`)
+5. Set `STRIPE_WEBHOOK_SECRET` in Render environment variables
+
+---
+
+## 5. CORS Configuration
+
+In production, set `CORS_ALLOWED_ORIGINS` to your exact frontend domain:
+
+```
+CORS_ALLOWED_ORIGINS=https://your-domain.com
+```
+
+The backend SecurityConfig reads this from `application-prod.yml` via `${CORS_ALLOWED_ORIGINS}`.
+
+---
+
+## 6. Build Commands
+
+### Backend
+```bash
+cd backend
+mvn clean package -DskipTests
+```
+
+### Frontend
+```bash
+cd frontend
+npm ci
+npm run build
+```
+
+---
+
+## 7. Deployment Steps
+
+### Step 1: Supabase
+- [ ] Create Supabase project
+- [ ] Note connection string, username, password
+- [ ] (Optional) Configure IP allowlist to Render IPs only
+
+### Step 2: Generate JWT Keys
+- [ ] Generate RSA 2048 key pair
+- [ ] Store securely (password manager / secret manager)
+
+### Step 3: Render (Backend)
+- [ ] Create web service from Git repo
+- [ ] Set all environment variables
+- [ ] Deploy — Flyway migrations run automatically
+- [ ] Verify health: `https://your-backend.onrender.com/actuator/health`
+
+### Step 4: Stripe Webhook
+- [ ] Create webhook endpoint pointing to Render backend URL
+- [ ] Copy signing secret to Render env vars
+
+### Step 5: Cloudflare Pages (Frontend)
+- [ ] Create Pages project from Git repo
+- [ ] Set build command and output directory
+- [ ] Set environment variables
+- [ ] Deploy
+- [ ] Configure custom domain
+- [ ] Verify TLS is active
+
+### Step 6: Verify
+- [ ] Frontend loads at `https://your-domain.com`
+- [ ] API responds at `https://your-backend.onrender.com/api/plans`
+- [ ] Login flow works
+- [ ] Stripe checkout redirects correctly
+- [ ] Webhook events are received
+
+---
+
+## 8. Production Verification Checklist
+
+### Infrastructure
+- [ ] Supabase database is accessible from Render
+- [ ] Flyway migrations applied successfully (check logs)
+- [ ] Backend health endpoint returns `{"status":"UP"}`
+- [ ] Frontend serves correctly on custom domain
+- [ ] TLS certificate is valid (HTTPS padlock)
+
+### Authentication
+- [ ] User registration works
+- [ ] User login works
+- [ ] JWT tokens are issued correctly
+- [ ] Token refresh works
+- [ ] Protected routes reject unauthenticated requests
+- [ ] Role-based access (ADMIN/MANAGER/CLIENT) works
+
+### Payments
+- [ ] Stripe Checkout session creation works
+- [ ] Redirect to Stripe succeeds
+- [ ] Test card `4242 4242 4242 4242` completes payment
+- [ ] Webhook `checkout.session.completed` is received and processed
+- [ ] Membership is activated after payment
+- [ ] Webhook signature verification passes
+
+### Security
+- [ ] No `.env` files committed to Git
+- [ ] JWT keys are not in code
+- [ ] Stripe secret key is not in frontend code
+- [ ] Database is not publicly accessible
+- [ ] CORS only allows your frontend domain
+- [ ] Rate limiting is active on auth endpoints
+- [ ] Security headers are present (CSP, HSTS, X-Frame-Options)
+
+---
+
+## 9. Security Verification Checklist
+
+| Check | Status |
+|-------|--------|
+| HTTPS enforced (frontend + backend) | ✅ Cloudflare + Render TLS |
+| JWT RS256 (asymmetric keys) | ✅ Configured |
+| Refresh tokens stored as HttpOnly cookies | ✅ Existing |
+| Password hashing (BCrypt strength 12) | ✅ Existing |
+| Rate limiting on auth endpoints | ✅ Existing |
+| CORS restricted to frontend domain | ✅ Via env var |
+| Webhook signature verification | ✅ Stripe SDK |
+| No card data stored | ✅ Stripe-hosted checkout |
+| Database SSL required | ✅ `sslmode=require` |
+| Security headers (CSP, HSTS, Frame DENY) | ✅ SecurityConfig |
+| Session stateless | ✅ SecurityConfig |
+| Soft delete on sensitive entities | ✅ Existing |
+| IDOR checks on membership/payment endpoints | ✅ Existing |
+| Account lockout after failed attempts | ✅ Existing |
+| MFA support (TOTP) | ✅ Existing |
+
+---
+
+## 10. Troubleshooting
+
+### Backend won't start on Render
+- Check logs for Flyway migration errors
+- Verify `DATABASE_URL` format includes `?sslmode=require`
+- Ensure JWT keys are single-line with `\n` for newlines
+
+### CORS errors
+- Verify `CORS_ALLOWED_ORIGINS` matches your exact frontend URL (no trailing slash)
+- Check that the backend URL in `VITE_API_URL` is correct
+
+### Webhook not received
+- Verify webhook endpoint URL in Stripe Dashboard
+- Check `STRIPE_WEBHOOK_SECRET` matches
+- Check Render logs for signature verification errors
+
+### Frontend can't reach API
+- Verify `VITE_API_URL` is the full backend URL (not relative `/api`)
+- Check Render service is running
+- Verify CORS allows the frontend domain

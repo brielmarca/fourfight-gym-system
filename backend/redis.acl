@@ -1,0 +1,2 @@
+user default off
+user appuser on >%REDIS_APP_PASSWORD% ~* +@read +@write +@transaction -@dangerous -flushall -flushdb -config -debug -keys -save -bgsave -bgrewriteaof -shutdown -cluster -replicaof -slaveof

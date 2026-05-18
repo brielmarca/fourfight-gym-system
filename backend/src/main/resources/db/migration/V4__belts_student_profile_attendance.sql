@@ -13,8 +13,8 @@ CREATE TABLE belts (
     deleted_at TIMESTAMP
 );
 
-CREATE INDEX idx_belts_rank_order ON belts(rank_order);
-CREATE INDEX idx_belts_is_active ON belts(is_active);
+CREATE INDEX IF NOT EXISTS idx_belts_rank_order ON belts(rank_order);
+CREATE INDEX IF NOT EXISTS idx_belts_is_active ON belts(is_active);
 
 -- Default belts (Karate/Grappling ranking)
 INSERT INTO belts (name, color_hex, rank_order) VALUES
@@ -26,7 +26,8 @@ INSERT INTO belts (name, color_hex, rank_order) VALUES
 ('Azul', '#0000FF', 6),
 ('Roxa', '#800080', 7),
 ('Marrom', '#8B4513', 8),
-('Preta', '#000000', 9);
+('Preta', '#000000', 9)
+ON CONFLICT DO NOTHING;
 
 -- Student profiles table
 CREATE TABLE student_profiles (
@@ -46,8 +47,8 @@ CREATE TABLE student_profiles (
     deleted_at TIMESTAMP
 );
 
-CREATE INDEX idx_student_profiles_user_id ON student_profiles(user_id);
-CREATE INDEX idx_student_profiles_belt_id ON student_profiles(belt_id);
+CREATE INDEX IF NOT EXISTS idx_student_profiles_user_id ON student_profiles(user_id);
+CREATE INDEX IF NOT EXISTS idx_student_profiles_belt_id ON student_profiles(belt_id);
 
 -- Training attendance table
 CREATE TABLE training_attendance (
@@ -63,5 +64,5 @@ CREATE TABLE training_attendance (
     UNIQUE(student_id, date)
 );
 
-CREATE INDEX idx_training_attendance_student_id ON training_attendance(student_id);
-CREATE INDEX idx_training_attendance_date ON training_attendance(date);
+CREATE INDEX IF NOT EXISTS idx_training_attendance_student_id ON training_attendance(student_id);
+CREATE INDEX IF NOT EXISTS idx_training_attendance_date ON training_attendance(date);

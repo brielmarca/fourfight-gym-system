@@ -13,34 +13,34 @@ VALUES
     (
         gen_random_uuid(),
         'Basic',
-        'Ideal para iniciantes que desejam começar sua jornada fitness com uma base sólida. Este plano oferece acesso essencial à academia com equipamentos de musculação, permitindo que você estabeleça uma rotina de exercícios consistente. Perfeito para quem busca qualidade com custo acessível.',
+        'Ideal para iniciantes que desejam comecar sua jornada fitness com uma base solida. Este plano oferece acesso essencial a academia com equipamentos de musculacao, permitindo que voce estabeleca uma rotina de exercicios consistente. Perfeito para quem busca qualidade com custo acessivel.',
         29.90,
         'EUR',
         30,
         8,
-        '["Acesso à academia", "Musculação livre", "Vestiários completos", "App de treinos básico", "Suporte inicial de orientação"]'::jsonb,
+        '["Acesso a academia", "Musculacao livre", "Vestuarios completos", "App de treinos basico", "Suporte inicial de orientacao"]'::jsonb,
         true
     ),
     (
         gen_random_uuid(),
         'Standard',
-        'Perfeito para praticantes regulares que desejam variedade em seus treinos. Além do acesso completo à academia, você conta com aulas coletivas (limitadas a 20 por mês), avaliação física mensal para acompanhar seu progresso, e uma sessão mensal com personal trainer para otimizar seus resultados.',
+        'Perfeito para praticantes regulares que desejam variedade em seus treinos. Alem do acesso completo a academia, voce conta com aulas coletivas (limitadas a 20 por mes), avaliacao fisica mensal para acompanhar seu progresso, e uma sessao mensal com personal trainer para otimizar seus resultados.',
         49.90,
         'EUR',
         30,
         20,
-        '["Acesso à academia", "Musculação livre", "Aulas coletivas (até 20/mês)", "Avaliação física mensal", "Vestiários completos", "App de treinos premium", "1 sessão mensal com personal", "Acesso à área de descanso"]'::jsonb,
+        '["Acesso a academia", "Musculacao livre", "Aulas coletivas (ate 20/mes)", "Avaliacao fisica mensal", "Vestuarios completos", "App de treinos premium", "1 sessao mensal com personal", "Acesso a area de descanso"]'::jsonb,
         true
     ),
     (
         gen_random_uuid(),
         'Premium',
-        'A experiência definitiva para atletas dedicados. Desfrute de acesso 24 horas, aulas coletivas ilimitadas, avaliação física semanal personalizada, e benefícios exclusivos como nutricionista incluso, vestiários premium com sauna, e convites para eventos especiais. O plano mais completo para quem não abre mão de excelência.',
+        'A experiencia definitiva para atletas dedicados. Desfrute de acesso 24 horas, aulas coletivas ilimitadas, avaliacao fisica semanal personalizada, e beneficios exclusivos como nutricionista incluso, vestuarios premium com sauna, e convites para eventos especiais. O plano mais completo para quem nao abre mao de excelencia.',
         79.90,
         'EUR',
         30,
         100,
-        '["Acesso à academia 24h", "Musculação livre", "Aulas coletivas ilimitadas", "Avaliação física semanal", "Sala de espera para crianças", "Área de café e lounge", "2 sessões mensais com personal", "Nutricionista incluso", "Vestiários premium com sauna", "App de treinos elite", "Convites para eventos exclusivos", "Estacionamento parceiro", "Toalhas premium inclusas"]'::jsonb,
+        '["Acesso a academia 24h", "Musculacao livre", "Aulas coletivas ilimitadas", "Avaliacao fisica semanal", "Sala de espera para criancas", "Area de cafe e lounge", "2 sessoes mensais com personal", "Nutricionista incluso", "Vestuarios premium com sauna", "App de treinos elite", "Convites para eventos exclusivos", "Estacionamento parceiro", "Toalhas premium inclusas"]'::jsonb,
         true
     )
 ON CONFLICT DO NOTHING;

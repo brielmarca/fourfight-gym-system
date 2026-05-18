@@ -61,7 +61,13 @@ public class StripeCheckoutService {
             throw new BusinessRuleException("Plan is not active");
         }
 
-        String customerId = getOrCreateStripeCustomer(user);
+        String customerId;
+        try {
+            customerId = getOrCreateStripeCustomer(user);
+        } catch (StripeException e) {
+            log.error("Failed to get or create Stripe customer for user {}", user.getId(), e);
+            throw new BusinessRuleException("Failed to initialize payment customer: " + e.getMessage());
+        }
 
         SessionCreateParams.LineItem.PriceData priceData = null;
 

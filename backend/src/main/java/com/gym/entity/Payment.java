@@ -58,6 +58,12 @@ public class Payment {
     @Column(name = "gateway_response", columnDefinition = "TEXT")
     private String gatewayResponse;
 
+    @Column(name = "stripe_payment_intent_id", length = 255)
+    private String stripePaymentIntentId;
+
+    @Column(name = "stripe_invoice_id", length = 255)
+    private String stripeInvoiceId;
+
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 

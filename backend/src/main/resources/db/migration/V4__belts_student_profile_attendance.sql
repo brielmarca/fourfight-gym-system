@@ -67,6 +67,20 @@ CREATE TABLE training_attendance (
 CREATE INDEX IF NOT EXISTS idx_training_attendance_student_id ON training_attendance(student_id);
 CREATE INDEX IF NOT EXISTS idx_training_attendance_date ON training_attendance(date);
 
+-- Students table (must exist before attendance and student_martial_arts)
+CREATE TABLE IF NOT EXISTS students (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    plan_id UUID REFERENCES plans(id),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_students_email ON students(email);
+
 -- Attendance table (for student attendance tracking)
 CREATE TABLE attendance (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

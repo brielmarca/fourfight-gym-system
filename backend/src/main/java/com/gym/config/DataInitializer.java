@@ -33,7 +33,7 @@ public class DataInitializer {
 
     @PostConstruct
     public void init() {
-        log.info("[STARTUP] DataInitializer bean created (NOT prod profile)");
+        log.info("[STARTUP] ========== DataInitializer bean created (NOT prod profile) ==========");
     }
 
     private static final String ADMIN_EMAIL = "admin@gym.com";
@@ -42,45 +42,36 @@ public class DataInitializer {
     @Bean
     CommandLineRunner initData() {
         return args -> {
+            log.info("[STARTUP] ========== START CommandLineRunner initData ==========");
             initAdminUser();
             initPlans();
             initMartialArts();
             initGraduations();
+            log.info("[STARTUP] ========== END CommandLineRunner initData ==========");
         };
     }
 
     private void initAdminUser() {
-        List<User> existing = userRepository.findAll().stream()
-                .filter(u -> ADMIN_EMAIL.equals(u.getEmail()))
-                .toList();
-
-        if (existing.isEmpty()) {
-            User admin = User.builder()
-                    .name("System Admin")
-                    .email(ADMIN_EMAIL)
-                    .passwordHash(passwordEncoder.encode(ADMIN_PASSWORD))
-                    .role(User.Role.ADMIN)
-                    .isActive(true)
-                    .build();
-            userRepository.save(admin);
-            log.info("Admin ready: {}", ADMIN_EMAIL);
-        } else if (existing.size() == 1) {
-            User admin = existing.get(0);
-            if (admin.getRole() != User.Role.ADMIN) {
-                admin.setRole(User.Role.ADMIN);
-                userRepository.save(admin);
-                log.info("Admin ready: {}", ADMIN_EMAIL);
-            } else {
-                log.info("Admin ready: {}", ADMIN_EMAIL);
-            }
-        } else {
-            log.warn("⚠️ Multiple admin users found ({}), keeping first one", existing.size());
+        log.info("[STARTUP] START initAdminUser");
+        if (userRepository.existsByEmail(ADMIN_EMAIL)) {
+            log.info("[STARTUP] Admin user already exists: {}", ADMIN_EMAIL);
+            return;
         }
+
+        User admin = User.builder()
+                .name("System Admin")
+                .email(ADMIN_EMAIL)
+                .passwordHash(passwordEncoder.encode(ADMIN_PASSWORD))
+                .role(User.Role.ADMIN)
+                .isActive(true)
+                .build();
+        userRepository.save(admin);
+        log.info("[STARTUP] END initAdminUser - created admin: {}", ADMIN_EMAIL);
     }
 
     private void initPlans() {
         if (planRepository.count() > 0) {
-            log.info("ℹ️ Plans already exist, skipping plan seeding.");
+            log.info("Plans already exist, skipping plan seeding.");
             return;
         }
 
@@ -157,12 +148,12 @@ public class DataInitializer {
                 .build();
 
         planRepository.saveAll(List.of(basic, standard, premium));
-        log.info("✅ Plans seeded successfully: Basic, Standard, Premium");
+        log.info("Plans seeded successfully: Basic, Standard, Premium");
     }
 
     private void initMartialArts() {
         if (martialArtRepository.count() > 0) {
-            log.info("ℹ️ Martial arts already exist, skipping martial art seeding.");
+            log.info("Martial arts already exist, skipping martial art seeding.");
             return;
         }
 
@@ -171,18 +162,18 @@ public class DataInitializer {
         List<MartialArt> martialArts = List.of(
             MartialArt.builder().name("Jiu-Jitsu").build(),
             MartialArt.builder().name("Boxe / Kickboxing").build(),
-            MartialArt.builder().name("Força & Condicionamento").build(),
+            MartialArt.builder().name("Forca & Condicionamento").build(),
             MartialArt.builder().name("Capoeira").build(),
             MartialArt.builder().name("MMA").build()
         );
 
         martialArtRepository.saveAll(martialArts);
-        log.info("✅ Martial arts seeded: Jiu-Jitsu, Boxe / Kickboxing, Força & Condicionamento, Capoeira, MMA");
+        log.info("Martial arts seeded: Jiu-Jitsu, Boxe / Kickboxing, Forca & Condicionamento, Capoeira, MMA");
     }
 
     private void initGraduations() {
         if (graduationRepository.count() > 0) {
-            log.info("ℹ️ Graduations already exist, skipping graduation seeding.");
+            log.info("Graduations already exist, skipping graduation seeding.");
             return;
         }
 
@@ -190,11 +181,10 @@ public class DataInitializer {
 
         MartialArt jiuJitsu = martialArtRepository.findByName("Jiu-Jitsu").orElseThrow();
         MartialArt boxeKickboxing = martialArtRepository.findByName("Boxe / Kickboxing").orElseThrow();
-        MartialArt forcaCondicionamento = martialArtRepository.findByName("Força & Condicionamento").orElseThrow();
+        MartialArt forcaCondicionamento = martialArtRepository.findByName("Forca & Condicionamento").orElseThrow();
         MartialArt capoeira = martialArtRepository.findByName("Capoeira").orElseThrow();
         MartialArt mma = martialArtRepository.findByName("MMA").orElseThrow();
 
-        // Jiu-Jitsu belts
         List<Graduation> jiuJitsuGraduations = List.of(
             Graduation.builder().name("Branca").levelOrder(1).martialArt(jiuJitsu).build(),
             Graduation.builder().name("Cinzenta").levelOrder(2).martialArt(jiuJitsu).build(),
@@ -207,23 +197,20 @@ public class DataInitializer {
             Graduation.builder().name("Preta").levelOrder(9).martialArt(jiuJitsu).build()
         );
 
-        // Boxe / Kickboxing levels
         List<Graduation> boxeKickboxingGraduations = List.of(
             Graduation.builder().name("Iniciante").levelOrder(1).martialArt(boxeKickboxing).build(),
-            Graduation.builder().name("Intermédio").levelOrder(2).martialArt(boxeKickboxing).build(),
-            Graduation.builder().name("Avançado").levelOrder(3).martialArt(boxeKickboxing).build(),
-            Graduation.builder().name("Competição").levelOrder(4).martialArt(boxeKickboxing).build()
+            Graduation.builder().name("Intermedio").levelOrder(2).martialArt(boxeKickboxing).build(),
+            Graduation.builder().name("Avancado").levelOrder(3).martialArt(boxeKickboxing).build(),
+            Graduation.builder().name("Competicao").levelOrder(4).martialArt(boxeKickboxing).build()
         );
 
-        // Força & Condicionamento levels
         List<Graduation> forcaGraduations = List.of(
             Graduation.builder().name("Base").levelOrder(1).martialArt(forcaCondicionamento).build(),
-            Graduation.builder().name("Intermédio").levelOrder(2).martialArt(forcaCondicionamento).build(),
-            Graduation.builder().name("Avançado").levelOrder(3).martialArt(forcaCondicionamento).build(),
+            Graduation.builder().name("Intermedio").levelOrder(2).martialArt(forcaCondicionamento).build(),
+            Graduation.builder().name("Avancado").levelOrder(3).martialArt(forcaCondicionamento).build(),
             Graduation.builder().name("Performance").levelOrder(4).martialArt(forcaCondicionamento).build()
         );
 
-        // Capoeira belts
         List<Graduation> capoeiraGraduations = List.of(
             Graduation.builder().name("Crua").levelOrder(1).martialArt(capoeira).build(),
             Graduation.builder().name("Crua-Amarela").levelOrder(2).martialArt(capoeira).build(),
@@ -242,13 +229,12 @@ public class DataInitializer {
             Graduation.builder().name("Vermelha").levelOrder(15).martialArt(capoeira).build()
         );
 
-        // MMA levels
         List<Graduation> mmaGraduations = List.of(
             Graduation.builder().name("Fundamentos").levelOrder(1).martialArt(mma).build(),
-            Graduation.builder().name("Intermédio").levelOrder(2).martialArt(mma).build(),
-            Graduation.builder().name("Avançado").levelOrder(3).martialArt(mma).build(),
+            Graduation.builder().name("Intermedio").levelOrder(2).martialArt(mma).build(),
+            Graduation.builder().name("Avancado").levelOrder(3).martialArt(mma).build(),
             Graduation.builder().name("Sparring").levelOrder(4).martialArt(mma).build(),
-            Graduation.builder().name("Competição").levelOrder(5).martialArt(mma).build()
+            Graduation.builder().name("Competicao").levelOrder(5).martialArt(mma).build()
         );
 
         graduationRepository.saveAll(jiuJitsuGraduations);
@@ -257,6 +243,6 @@ public class DataInitializer {
         graduationRepository.saveAll(capoeiraGraduations);
         graduationRepository.saveAll(mmaGraduations);
 
-        log.info("✅ Graduations seeded for all martial arts");
+        log.info("Graduations seeded for all martial arts");
     }
 }

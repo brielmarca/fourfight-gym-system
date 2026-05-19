@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
@@ -14,18 +15,16 @@ public class BeanStartupLogger implements BeanPostProcessor {
 
     private final Set<String> loggedBeans = new HashSet<>();
     private final long startTime = System.currentTimeMillis();
+    private final AtomicInteger beanCount = new AtomicInteger(0);
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         String className = bean.getClass().getName();
-        if (!loggedBeans.contains(className) && (className.startsWith("com.gym") || className.contains("Stripe") || className.contains("Jwt"))) {
+        if (!loggedBeans.contains(className) && className.startsWith("com.gym")) {
             loggedBeans.add(className);
-            log.info("[BEAN] Created: {} (elapsed: {} ms)", beanName, elapsed());
+            int count = beanCount.incrementAndGet();
+            log.info("[BEAN #{}] {} ({} ms)", count, beanName, System.currentTimeMillis() - startTime);
         }
         return bean;
-    }
-
-    private long elapsed() {
-        return System.currentTimeMillis() - startTime;
     }
 }

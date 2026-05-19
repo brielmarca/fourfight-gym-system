@@ -40,7 +40,7 @@ public class JwtUtil {
             @Value("${jwt.expiration-ms}") long expirationMs,
             @Value("${jwt.refresh-expiration-ms}") long refreshExpirationMs) {
         
-        log.info("[STARTUP] START JwtUtil constructor");
+        log.info("[STARTUP] ========== START JwtUtil constructor ==========");
         boolean hasKeyStrings = !"DEFAULT".equals(privateKeyPem) && !"DEFAULT".equals(publicKeyPem) 
                 && privateKeyPem != null && !privateKeyPem.isBlank()
                 && publicKeyPem != null && !publicKeyPem.isBlank();
@@ -83,7 +83,7 @@ public class JwtUtil {
                 .build();
         
         this.jwkSet = new JWKSet(rsaKey);
-        log.info("[STARTUP] END JwtUtil constructor");
+        log.info("[STARTUP] ========== END JwtUtil constructor ==========");
     }
 
     public String generateAccessToken(UUID userId, String email, String role) {

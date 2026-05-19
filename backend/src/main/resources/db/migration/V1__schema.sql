@@ -244,11 +244,11 @@ CREATE INDEX idx_audit_logs_created_at ON audit_logs(created_at);
 -- Rate limit buckets table
 CREATE TABLE rate_limit_buckets (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    key VARCHAR(255) NOT NULL UNIQUE,
+    bucket_key VARCHAR(255) NOT NULL UNIQUE,
     tokens INTEGER NOT NULL DEFAULT 300,
     last_refill TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_rate_limit_buckets_key ON rate_limit_buckets(key);
+CREATE INDEX idx_rate_limit_buckets_key ON rate_limit_buckets(bucket_key);

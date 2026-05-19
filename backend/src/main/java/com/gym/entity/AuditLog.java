@@ -6,7 +6,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -38,7 +40,8 @@ public class AuditLog {
     @Column(name = "entity_id", nullable = false)
     private UUID entityId;
 
-    @Column(name = "diff_json", columnDefinition = "TEXT")
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "diff_json", columnDefinition = "jsonb")
     private String diffJson;
 
     @Column(length = 45)

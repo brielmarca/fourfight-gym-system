@@ -2,6 +2,7 @@ package com.gym.config;
 
 import java.math.BigDecimal;
 import java.util.List;
+import jakarta.annotation.PostConstruct;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +30,11 @@ public class DataInitializer {
     private final PasswordEncoder passwordEncoder;
     private final MartialArtRepository martialArtRepository;
     private final GraduationRepository graduationRepository;
+
+    @PostConstruct
+    public void init() {
+        log.info("[STARTUP] DataInitializer bean created (NOT prod profile)");
+    }
 
     private static final String ADMIN_EMAIL = "admin@gym.com";
     private static final String ADMIN_PASSWORD = "Admin123!";

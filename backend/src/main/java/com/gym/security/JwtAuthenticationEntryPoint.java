@@ -15,6 +15,11 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    public JwtAuthenticationEntryPoint() {
+        log.info("[STARTUP] START JwtAuthenticationEntryPoint constructor");
+        log.info("[STARTUP] END JwtAuthenticationEntryPoint constructor");
+    }
+
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws java.io.IOException {

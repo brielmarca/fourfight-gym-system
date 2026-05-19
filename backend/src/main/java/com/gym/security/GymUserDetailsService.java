@@ -2,7 +2,9 @@ package com.gym.security;
 
 import com.gym.entity.User;
 import com.gym.repository.UserRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.*;
@@ -14,12 +16,19 @@ import java.util.UUID;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+@Slf4j
 @Primary
 @Service
 @RequiredArgsConstructor
 public class GymUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
+
+    @PostConstruct
+    public void init() {
+        log.info("[STARTUP] START GymUserDetailsService init");
+        log.info("[STARTUP] END GymUserDetailsService init");
+    }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

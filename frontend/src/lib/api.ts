@@ -1,9 +1,17 @@
 const DEFAULT_API_BASE = "https://fourfight-gym-system.onrender.com/api";
 const RAW_API_URL = import.meta.env.VITE_API_URL?.trim();
-const API_BASE = (RAW_API_URL || DEFAULT_API_BASE).replace(/\/+$/, "");
+
+let resolvedBase = RAW_API_URL || DEFAULT_API_BASE;
+
+if (resolvedBase.startsWith("http") && !resolvedBase.endsWith("/api")) {
+  resolvedBase = resolvedBase.replace(/\/+$/, "") + "/api";
+}
+
+const API_BASE = resolvedBase.replace(/\/+$/, "");
 
 console.log("[API] VITE_API_URL:", RAW_API_URL);
 console.log("[API] DEFAULT_API_BASE:", DEFAULT_API_BASE);
+console.log("[API] RESOLVED BASE:", resolvedBase);
 console.log("[API] FINAL API_BASE:", API_BASE);
 
 const NETWORK_ERROR_MESSAGE =

@@ -1,5 +1,11 @@
 const DEFAULT_API_BASE = "https://fourfight-gym-system.onrender.com/api";
-const API_BASE = (import.meta.env.VITE_API_URL?.trim() || DEFAULT_API_BASE).replace(/\/+$/, "");
+const RAW_API_URL = import.meta.env.VITE_API_URL?.trim();
+const API_BASE = (RAW_API_URL || DEFAULT_API_BASE).replace(/\/+$/, "");
+
+console.log("[API] VITE_API_URL:", RAW_API_URL);
+console.log("[API] DEFAULT_API_BASE:", DEFAULT_API_BASE);
+console.log("[API] FINAL API_BASE:", API_BASE);
+
 const NETWORK_ERROR_MESSAGE =
   "Não foi possível conectar ao servidor. Verifique se o backend está ativo.";
 
@@ -217,16 +223,20 @@ function hasRole(roles: string[]): boolean {
 
 export const api = {
   auth: {
-    login: (email: string, password: string) =>
-      request<TokenResponse>("/auth/login", {
+    login: (email: string, password: string) => {
+      console.log("[AUTH] login called, endpoint: /auth/login");
+      return request<TokenResponse>("/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
-      }),
-    register: (data: RegisterRequest) =>
-      request<UserResponse>("/auth/register", {
+      });
+    },
+    register: (data: RegisterRequest) => {
+      console.log("[AUTH] register called, endpoint: /auth/register");
+      return request<UserResponse>("/auth/register", {
         method: "POST",
         body: JSON.stringify(data),
-      }),
+      });
+    },
     me: () => request<UserResponse>("/auth/me"),
     refresh: () =>
       request<TokenResponse>("/auth/refresh", {

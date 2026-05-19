@@ -54,12 +54,12 @@ export const Route = createRootRoute({
         name: "description",
         content: "Jiu-Jitsu, Boxe, Kickboxing e Condicionamento Físico de Elite em Gondomar.",
       },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { name: "author", content: "4Four Fight Academy" },
+      { property: "og:title", content: "4Four Fight Academy" },
+      { property: "og:description", content: "Sistema oficial da 4Four Fight Academy" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:site", content: "@4FourFightAcademy" },
     ],
     links: [
       {

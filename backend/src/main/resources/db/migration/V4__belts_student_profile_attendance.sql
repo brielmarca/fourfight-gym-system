@@ -66,3 +66,14 @@ CREATE TABLE training_attendance (
 
 CREATE INDEX IF NOT EXISTS idx_training_attendance_student_id ON training_attendance(student_id);
 CREATE INDEX IF NOT EXISTS idx_training_attendance_date ON training_attendance(date);
+
+-- Attendance table (for student attendance tracking)
+CREATE TABLE attendance (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    student_id UUID NOT NULL REFERENCES students(id),
+    attendance_date DATE NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_attendance_student_id ON attendance(student_id);
+CREATE INDEX IF NOT EXISTS idx_attendance_attendance_date ON attendance(attendance_date);

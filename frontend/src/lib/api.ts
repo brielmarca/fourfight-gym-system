@@ -1,4 +1,4 @@
-const DEFAULT_API_BASE = "/api";
+const DEFAULT_API_BASE = "https://fourfight-gym-system.onrender.com/api";
 const API_BASE = (import.meta.env.VITE_API_URL?.trim() || DEFAULT_API_BASE).replace(/\/+$/, "");
 const NETWORK_ERROR_MESSAGE =
   "Não foi possível conectar ao servidor. Verifique se o backend está ativo.";

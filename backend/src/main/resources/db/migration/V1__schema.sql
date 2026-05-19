@@ -23,7 +23,7 @@ CREATE INDEX idx_users_deleted_at ON users(deleted_at);
 
 -- Roles table (reference)
 CREATE TABLE roles (
-    id VARCHAR(20) PRIMARY KEY,
+    id VARCHAR(36) PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE,
     description VARCHAR(255)
 );

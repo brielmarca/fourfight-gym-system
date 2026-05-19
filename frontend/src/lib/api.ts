@@ -73,7 +73,9 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   let response: Response;
 
   try {
-    response = await fetch(`${API_BASE}${endpoint}`, {
+    const finalUrl = `${API_BASE}${endpoint}`;
+    console.log("API REQUEST", { endpoint, API_BASE, finalUrl, method: options.method || "GET" });
+    response = await fetch(finalUrl, {
       ...options,
       credentials: "include",
       headers: {

@@ -1,22 +1,24 @@
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { useState, useEffect } from "react";
 
 const ACADEMY_COORDS: [number, number] = [41.1401, -8.535];
-
-const customIcon = L.divIcon({
-  className: "custom-marker",
-  html: `<div style="background: #C1121F; width: 16px; height: 16px; border-radius: 50%; border: 3px solid #0B0B0B; box-shadow: 0 0 12px rgba(193, 18, 31, 0.6);"></div>`,
-  iconSize: [16, 16],
-  iconAnchor: [8, 8],
-});
 
 interface DarkMapProps {
   height?: string;
   className?: string;
 }
 
-export function DarkMap({ height = "380px", className = "" }: DarkMapProps) {
+function LeafletMap({ height, className }: DarkMapProps) {
+  const { MapContainer, TileLayer, Marker, Popup } = require("react-leaflet");
+  const L = require("leaflet");
+  require("leaflet/dist/leaflet.css");
+
+  const customIcon = L.divIcon({
+    className: "custom-marker",
+    html: `<div style="background: #C1121F; width: 16px; height: 16px; border-radius: 50%; border: 3px solid #0B0B0B; box-shadow: 0 0 12px rgba(193, 18, 31, 0.6);"></div>`,
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+  });
+
   return (
     <div
       className={`rounded-xl overflow-hidden border border-border-subtle ${className}`}
@@ -41,4 +43,25 @@ export function DarkMap({ height = "380px", className = "" }: DarkMapProps) {
       </MapContainer>
     </div>
   );
+}
+
+export function DarkMap({ height = "380px", className = "" }: DarkMapProps) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return (
+      <div
+        className={`rounded-xl overflow-hidden border border-border-subtle bg-muted flex items-center justify-center ${className}`}
+        style={{ height }}
+      >
+        <div className="text-muted-foreground text-sm">Loading map...</div>
+      </div>
+    );
+  }
+
+  return <LeafletMap height={height} className={className} />;
 }

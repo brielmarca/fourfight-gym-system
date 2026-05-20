@@ -157,7 +157,7 @@ function Navbar() {
                 onClick={() => setOpen(false)}
                 className="font-display text-[28px] sm:text-[40px] leading-none tracking-wider text-center"
               >
-                MINHA REA
+                MINHA ÁREA
               </a>
               <button
                 onClick={() => {

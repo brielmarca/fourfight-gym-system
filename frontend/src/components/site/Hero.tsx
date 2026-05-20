@@ -85,16 +85,16 @@ export function Hero() {
             textShadow: "0 2px 16px rgba(0,0,0,0.8)",
           }}
         >
-          Treino de elite com instrutores campees.{" "}
+          Treino de elite com instrutores campeões.{" "}
           <strong style={{ color: "#FFFFFF" }}>Comece hoje, cancela quando quiser.</strong>
         </p>
 
-        <div className="hero-cta-group hero-word" style={{ animationDelay: "1.05s" }}>
+        <div className="hero-cta-group" style={{ animationDelay: "1.05s", opacity: 1 }}>
           <a
             href="/plans"
             className="hero-cta-btn hero-cta-btn-primary"
           >
-            COMEAR AGORA<span className="cta-desktop-suffix">  7 DIAS GRTIS</span>
+            COMEÇAR AGORA<span className="cta-desktop-suffix">  7 DIAS GRÁTIS</span>
           </a>
           <a
             href="/plans"
@@ -120,7 +120,7 @@ export function Hero() {
         >
           {[
             ["500+", "Atletas Treinados"],
-            ["12+", "Anos de Excelncia"],
+            ["12+", "Anos de Excelência"],
             ["3", "Modalidades"],
           ].map(([n, l], i) => (
             <div

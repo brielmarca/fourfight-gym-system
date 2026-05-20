@@ -93,7 +93,7 @@ function StudentAreaPage() {
 
       <main className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
         <div className="mb-6 sm:mb-8">
-          <h1 className="font-display text-2xl sm:text-4xl tracking-wider">REA DO ALUNO</h1>
+          <h1 className="font-display text-2xl sm:text-4xl tracking-wider">ÁREA DO ALUNO</h1>
           <p className="text-text-secondary mt-1 text-sm sm:text-base">
             Bem-vindo de volta, {profile?.userName || "Atleta"}!
           </p>

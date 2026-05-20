@@ -3,6 +3,7 @@ package com.gym.controller;
 import com.gym.dto.response.StripeCheckoutResponse;
 import com.gym.dto.response.StripeSubscriptionResponse;
 import com.gym.entity.Membership;
+import com.gym.exception.BusinessRuleException;
 import com.gym.repository.MembershipRepository;
 import com.gym.security.GymUserDetailsService.JwtUserPrincipal;
 import com.gym.service.StripeCheckoutService;
@@ -13,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -43,7 +45,7 @@ public class StripeController {
     }
 
     @PostMapping("/checkout")
-    public ResponseEntity<StripeCheckoutResponse> createCheckoutSession(
+    public ResponseEntity<?> createCheckoutSession(
             @AuthenticationPrincipal JwtUserPrincipal principal,
             @RequestBody Map<String, String> body) {
 
@@ -66,9 +68,22 @@ public class StripeController {
         try {
             StripeCheckoutResponse response = stripeCheckoutService.createCheckoutSession(principal.id(), planId);
             return ResponseEntity.ok(response);
+        } catch (BusinessRuleException e) {
+            log.warn("Stripe checkout unavailable: {}", e.getMessage());
+            ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                    HttpStatus.BAD_GATEWAY,
+                    "Servico de pagamento indisponivel no momento. Tente novamente em instantes."
+            );
+            problem.setTitle("Payment Provider Error");
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(problem);
         } catch (Exception e) {
             log.error("Failed to create Stripe checkout session", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Falha interna ao iniciar o checkout."
+            );
+            problem.setTitle("Checkout Error");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problem);
         }
     }
 

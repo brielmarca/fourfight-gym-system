@@ -33,17 +33,18 @@ function Navbar() {
       }`}
       style={{ zIndex: 999 }}
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between">
         <a href="/" className="flex items-center shrink-0">
           <img
             src="/logo.png"
             alt="4Four Fight Academy"
             style={{
-              height: "40px",
+              height: "34px",
               width: "auto",
               mixBlendMode: "screen",
               filter: "brightness(1.1)",
             }}
+            className="md:h-[40px]"
           />
         </a>
 
@@ -112,13 +113,13 @@ function Navbar() {
         }`}
         style={{ zIndex: 1000 }}
       >
-        <div className="h-20 px-4 sm:px-6 flex items-center justify-between border-b border-[#1A1A1A]">
+        <div className="h-16 px-4 sm:px-6 flex items-center justify-between border-b border-[#1A1A1A]">
           <a href="/" className="flex items-center shrink-0">
             <img
               src="/logo.png"
               alt="4Four Fight Academy"
               style={{
-                height: "40px",
+                height: "34px",
                 width: "auto",
                 mixBlendMode: "screen",
                 filter: "brightness(1.1)",
@@ -126,7 +127,7 @@ function Navbar() {
             />
           </a>
           <button aria-label="Close menu" className="p-2 -mr-2" onClick={() => setOpen(false)}>
-            <X size={28} />
+            <X size={26} />
           </button>
         </div>
         <nav className="flex-1 flex flex-col items-center justify-center gap-5 overflow-y-auto py-8 px-4">

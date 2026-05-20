@@ -2,7 +2,7 @@ export function Hero() {
   return (
     <section
       id="top"
-      className="relative min-h-screen w-full overflow-hidden flex items-center justify-center"
+      className="relative min-h-[100dvh] w-full overflow-hidden flex items-center justify-center"
     >
       {/* Single BG image */}
       <div className="absolute inset-0">
@@ -31,17 +31,17 @@ export function Hero() {
       />
 
       <div
-        className="relative w-full max-w-[1040px] mx-auto px-4 sm:px-6 text-center pt-20 pb-36 sm:pt-36 sm:pb-44"
+        className="relative w-full max-w-[1040px] mx-auto px-4 sm:px-6 text-center pt-16 pb-32 sm:pt-36 sm:pb-44"
         style={{ zIndex: 10 }}
       >
         {/* Top label with side lines */}
-        <div className="flex items-center justify-center gap-2 sm:gap-5 mb-5 sm:mb-8">
+        <div className="flex items-center justify-center gap-2 sm:gap-5 mb-4 sm:mb-8">
           <span
             className="block w-5 sm:w-12 h-px shrink-0"
             style={{ background: "rgba(193,18,31,0.8)" }}
           ></span>
           <p
-            className="text-[7px] sm:text-[9px] tracking-[0.3em] sm:tracking-[0.48em] uppercase"
+            className="text-[7px] sm:text-[9px] tracking-[0.28em] sm:tracking-[0.48em] uppercase"
             style={{
               color: "#E3E3E3",
               opacity: 0.88,
@@ -57,10 +57,10 @@ export function Hero() {
         </div>
 
         <h1
-          className="font-display leading-[0.85] sm:leading-[0.82] w-full break-words"
+          className="font-display leading-[0.9] sm:leading-[0.82] w-full max-w-[90vw] sm:max-w-none mx-auto break-words"
           style={{
             letterSpacing: "0.02em",
-            fontSize: "clamp(32px, 9vw, 190px)",
+            fontSize: "clamp(38px, 11vw, 190px)",
             opacity: 1,
             textShadow: "0 8px 36px rgba(0,0,0,0.9)",
           }}
@@ -74,12 +74,12 @@ export function Hero() {
         </h1>
 
         <p
-          className="mt-5 sm:mt-10 mx-auto hero-word px-2"
+          className="mt-4 sm:mt-10 mx-auto hero-word px-2"
           style={{
             color: "rgba(255,255,255,0.9)",
             fontSize: "clamp(13px, 3.5vw, 19px)",
-            lineHeight: 1.7,
-            maxWidth: "560px",
+            lineHeight: 1.65,
+            maxWidth: "520px",
             animationDelay: "0.85s",
             opacity: 1,
             textShadow: "0 2px 16px rgba(0,0,0,0.8)",
@@ -90,18 +90,18 @@ export function Hero() {
         </p>
 
         <div
-          className="mt-7 sm:mt-12 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-x-8 sm:gap-y-4 hero-word w-full max-w-md mx-auto px-2"
+          className="mt-6 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-x-8 sm:gap-y-4 hero-word w-full max-w-sm sm:max-w-md mx-auto"
           style={{ animationDelay: "1.05s" }}
         >
           <a
             href="/plans"
-            className="w-full text-center whitespace-normal leading-tight bg-gradient-to-r from-red-600 to-red-500 text-white px-6 sm:px-8 py-3.5 sm:py-4 text-[11px] sm:text-[12px] tracking-[0.2em] sm:tracking-[0.25em] uppercase font-semibold rounded-2xl border border-red-400/40 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,0,0,0.4)] shadow-[0_0_25px_rgba(255,0,0,0.25)]"
+            className="w-full text-center whitespace-nowrap leading-tight bg-gradient-to-r from-red-600 to-red-500 text-white px-5 sm:px-8 py-3.5 sm:py-4 text-[11px] sm:text-[12px] tracking-[0.15em] sm:tracking-[0.25em] uppercase font-semibold rounded-2xl border border-red-400/40 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,0,0,0.4)] shadow-[0_0_25px_rgba(255,0,0,0.25)]"
           >
             COMEAR AGORA  7 DIAS GRTIS
           </a>
           <a
             href="/plans"
-            className="w-full text-center whitespace-normal leading-tight px-6 sm:px-8 py-3.5 sm:py-4 text-[11px] sm:text-[12px] tracking-[0.2em] sm:tracking-[0.25em] uppercase font-semibold rounded-2xl border border-white/40 text-white bg-black/40 transition-all duration-300 hover:scale-105 hover:border-red-400/60 hover:bg-red-600/20 hover:shadow-[0_0_25px_rgba(255,0,0,0.25)]"
+            className="w-full text-center whitespace-nowrap leading-tight px-5 sm:px-8 py-3.5 sm:py-4 text-[11px] sm:text-[12px] tracking-[0.15em] sm:tracking-[0.25em] uppercase font-semibold rounded-2xl border border-white/40 text-white bg-black/40 transition-all duration-300 hover:scale-105 hover:border-red-400/60 hover:bg-red-600/20 hover:shadow-[0_0_25px_rgba(255,0,0,0.25)]"
           >
             VER PLANOS
           </a>

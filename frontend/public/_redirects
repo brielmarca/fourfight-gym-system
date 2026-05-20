@@ -1,2 +1,10 @@
 /assets/* /assets/:splat 200
+/*.webp /:splat 200
+/*.jpeg /:splat 200
+/*.jpg /:splat 200
+/*.png /:splat 200
+/*.svg /:splat 200
+/*.mp4 /:splat 200
+/*.ico /:splat 200
+/*.webmanifest /:splat 200
 /* / 200

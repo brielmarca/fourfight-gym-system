@@ -89,10 +89,6 @@ function MembershipFormPage() {
 
       if (response.paymentStatus === "COMPLETED") {
         setSuccess(true);
-        if (response.accessToken && response.refreshToken) {
-          localStorage.setItem("accessToken", response.accessToken);
-          localStorage.setItem("refreshToken", response.refreshToken);
-        }
         setTimeout(() => {
           navigate({ to: "/membership/success", search: { userId: response.userId } });
         }, 2000);

@@ -11,7 +11,7 @@ const links = [
 ];
 
 function Navbar() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -64,7 +64,7 @@ function Navbar() {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
-          {isAuthenticated && user ? (
+          {isLoading ? null : isAuthenticated && user ? (
             <>
               {user.role === "ADMIN" || user.role === "MANAGER" ? (
                 <a
@@ -141,7 +141,7 @@ function Navbar() {
               {l.label}
             </a>
           ))}
-          {isAuthenticated && user ? (
+          {isLoading ? null : isAuthenticated && user ? (
             <>
               {(user.role === "ADMIN" || user.role === "MANAGER") && (
                 <a

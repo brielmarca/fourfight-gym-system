@@ -34,6 +34,7 @@ let failedQueue: Array<{
   resolve: (value: string) => void;
   reject: (error: Error) => void;
 }> = [];
+let restorePromise: Promise<boolean> | null = null;
 
 const publicAuthEndpoints = new Set([
   "/auth/login",
@@ -175,20 +176,13 @@ let memoryAccessToken: string | null = null;
 function setTokens(accessToken: string, refreshToken?: string | null) {
   if (typeof window !== "undefined") {
     memoryAccessToken = accessToken;
-    // Refresh token should be set as HttpOnly cookie by backend
-    // If provided, store only if backend doesn't use HttpOnly cookies
-    if (refreshToken) {
-      localStorage.setItem("refreshTokenFallback", refreshToken);
-    } else {
-      localStorage.removeItem("refreshTokenFallback");
-    }
+    void refreshToken;
   }
 }
 
 function clearTokens() {
   if (typeof window !== "undefined") {
     memoryAccessToken = null;
-    localStorage.removeItem("refreshTokenFallback");
     // Clear HttpOnly cookie via backend endpoint
     fetch(`${API_BASE}/auth/logout`, {
       method: "POST",
@@ -227,6 +221,45 @@ function isAuthenticated(): boolean {
 function hasRole(roles: string[]): boolean {
   const user = getUser();
   return user ? roles.includes(user.role) : false;
+}
+
+async function restoreAuthSession(): Promise<boolean> {
+  if (memoryAccessToken && isAuthenticated()) {
+    return true;
+  }
+
+  if (!restorePromise) {
+    restorePromise = (async () => {
+      try {
+        const response = await fetch(`${API_BASE}/auth/refresh`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          memoryAccessToken = null;
+          return false;
+        }
+
+        const data = (await response.json()) as TokenResponse;
+        if (!data?.accessToken) {
+          memoryAccessToken = null;
+          return false;
+        }
+
+        setTokens(data.accessToken);
+        return true;
+      } catch {
+        memoryAccessToken = null;
+        return false;
+      } finally {
+        restorePromise = null;
+      }
+    })();
+  }
+
+  return restorePromise;
 }
 
 export const api = {
@@ -445,7 +478,7 @@ export const api = {
   isAuthenticated,
 };
 
-export { setTokens, clearTokens, getAccessToken, getUser, isAuthenticated, hasRole };
+export { setTokens, clearTokens, getAccessToken, getUser, isAuthenticated, hasRole, restoreAuthSession };
 
 export type {
   TokenResponse,

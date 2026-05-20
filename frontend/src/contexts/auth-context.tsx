@@ -4,6 +4,7 @@ import {
   setTokens,
   clearTokens,
   getUser,
+  restoreAuthSession,
   isAuthenticated as checkIsAuthenticated,
 } from "@/lib/api";
 import type { User } from "@/types";
@@ -31,9 +32,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const currentUser = getUser();
-    setUser(currentUser);
-    setIsLoading(false);
+    let mounted = true;
+
+    const restore = async () => {
+      try {
+        await restoreAuthSession();
+      } finally {
+        if (!mounted) return;
+        setUser(getUser());
+        setIsLoading(false);
+      }
+    };
+
+    void restore();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -69,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: checkIsAuthenticated(),
+        isAuthenticated: !!user && checkIsAuthenticated(),
         isLoading,
         login,
         register,

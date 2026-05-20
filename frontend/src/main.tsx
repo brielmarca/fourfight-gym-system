@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
+import { restoreAuthSession } from "@/lib/api";
 import "./styles.css";
 
 const router = createRouter({
@@ -18,10 +19,17 @@ declare module "@tanstack/react-router" {
 }
 
 const rootElement = document.getElementById("root");
-if (rootElement) {
-  createRoot(rootElement).render(
-    <StrictMode>
-      <RouterProvider router={router} />
-    </StrictMode>,
-  );
+
+async function bootstrap() {
+  await restoreAuthSession();
+
+  if (rootElement) {
+    createRoot(rootElement).render(
+      <StrictMode>
+        <RouterProvider router={router} />
+      </StrictMode>,
+    );
+  }
 }
+
+void bootstrap();

@@ -3,8 +3,8 @@ package com.gym.controller;
 import com.gym.dto.response.StripeCheckoutResponse;
 import com.gym.dto.response.StripeSubscriptionResponse;
 import com.gym.entity.Membership;
-import com.gym.entity.User;
 import com.gym.repository.MembershipRepository;
+import com.gym.security.GymUserDetailsService.JwtUserPrincipal;
 import com.gym.service.StripeCheckoutService;
 import com.gym.service.StripeWebhookService;
 import com.stripe.exception.StripeException;
@@ -44,8 +44,12 @@ public class StripeController {
 
     @PostMapping("/checkout")
     public ResponseEntity<StripeCheckoutResponse> createCheckoutSession(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal JwtUserPrincipal principal,
             @RequestBody Map<String, String> body) {
+
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
         String planIdStr = body.get("planId");
         if (planIdStr == null || planIdStr.isBlank()) {
@@ -60,7 +64,7 @@ public class StripeController {
         }
 
         try {
-            StripeCheckoutResponse response = stripeCheckoutService.createCheckoutSession(user.getId(), planId);
+            StripeCheckoutResponse response = stripeCheckoutService.createCheckoutSession(principal.id(), planId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("Failed to create Stripe checkout session", e);
@@ -93,9 +97,12 @@ public class StripeController {
     }
 
     @PostMapping("/subscription/cancel")
-    public ResponseEntity<Void> cancelSubscription(@AuthenticationPrincipal User user) {
+    public ResponseEntity<Void> cancelSubscription(@AuthenticationPrincipal JwtUserPrincipal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         List<Membership> memberships = membershipRepository.findByUserIdAndStatus(
-                user.getId(), Membership.MembershipStatus.ACTIVE);
+                principal.id(), Membership.MembershipStatus.ACTIVE);
         Membership membership = memberships.isEmpty() ? null : memberships.get(0);
 
         if (membership == null || membership.getStripeSubscriptionId() == null) {
@@ -115,9 +122,12 @@ public class StripeController {
     }
 
     @GetMapping("/subscription")
-    public ResponseEntity<StripeSubscriptionResponse> getSubscription(@AuthenticationPrincipal User user) {
+    public ResponseEntity<StripeSubscriptionResponse> getSubscription(@AuthenticationPrincipal JwtUserPrincipal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         List<Membership> memberships = membershipRepository.findByUserIdAndStatus(
-                user.getId(), Membership.MembershipStatus.ACTIVE);
+                principal.id(), Membership.MembershipStatus.ACTIVE);
         Membership membership = memberships.isEmpty() ? null : memberships.get(0);
 
         if (membership == null) {

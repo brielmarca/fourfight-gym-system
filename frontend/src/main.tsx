@@ -20,8 +20,16 @@ declare module "@tanstack/react-router" {
 
 const rootElement = document.getElementById("root");
 
+const protectedPrefixes = ["/admin", "/student-area", "/checkout", "/membership"];
+
+function shouldBlockForAuthRestore(pathname: string): boolean {
+  return protectedPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
+
 async function bootstrap() {
-  await restoreAuthSession();
+  if (typeof window !== "undefined" && shouldBlockForAuthRestore(window.location.pathname)) {
+    await restoreAuthSession();
+  }
 
   if (rootElement) {
     createRoot(rootElement).render(

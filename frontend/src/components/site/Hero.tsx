@@ -7,7 +7,7 @@ export function Hero() {
       {/* Single BG image */}
       <div className="absolute inset-0">
         <img
-          src="/FundoTelaInicial.webp"
+          src="/assets/FundoTelaInicial.webp"
           alt=""
           loading="eager"
           className="absolute inset-0 w-full h-full object-cover grayscale scale-[1.08]"

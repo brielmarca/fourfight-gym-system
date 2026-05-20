@@ -9,9 +9,9 @@ const features = [
 ];
 
 const facilities = [
-  { src: "/DSC06344.webp", label: "Área Principal de Treino", badge: "500m²" },
-  { src: "/DSC06357.webp", label: "Ginásio & Condicionamento", badge: "Equipamento Pro" },
-  { src: "/DSC06369(1).webp", label: "Balneário & Recuperação", badge: "Sauna Incluída" },
+  { src: "/assets/DSC06344.webp", label: "Área Principal de Treino", badge: "500m²" },
+  { src: "/assets/DSC06357.webp", label: "Ginásio & Condicionamento", badge: "Equipamento Pro" },
+  { src: "/assets/DSC06369(1).webp", label: "Balneário & Recuperação", badge: "Sauna Incluída" },
 ];
 
 export function Academy() {

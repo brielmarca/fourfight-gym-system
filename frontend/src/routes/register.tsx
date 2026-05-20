@@ -90,7 +90,7 @@ function RegisterPage() {
         <div className="text-center mb-6 sm:mb-8">
           <Link to="/" className="inline-flex items-center justify-center">
             <img
-              src="/logo.png"
+              src="/assets/logo.png"
               alt="4Four Fight Academy"
               style={{
                 height: "60px",

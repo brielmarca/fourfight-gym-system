@@ -36,7 +36,7 @@ function Navbar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between">
         <a href="/" className="flex items-center shrink-0">
           <img
-            src="/logo.png"
+            src="/assets/logo.png"
             alt="4Four Fight Academy"
             style={{
               height: "34px",
@@ -116,7 +116,7 @@ function Navbar() {
         <div className="h-16 px-4 sm:px-6 flex items-center justify-between border-b border-[#1A1A1A]">
           <a href="/" className="flex items-center shrink-0">
             <img
-              src="/logo.png"
+              src="/assets/logo.png"
               alt="4Four Fight Academy"
               style={{
                 height: "34px",

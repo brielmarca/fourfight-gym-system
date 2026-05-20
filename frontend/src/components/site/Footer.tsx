@@ -35,7 +35,7 @@ export function Footer() {
               className="inline-block mb-5 transition-opacity duration-300 hover:opacity-85"
             >
               <img
-                src="/logo.png"
+                src="/assets/logo.png"
                 alt="4Four Fight Academy"
                 style={{
                   height: "52px",

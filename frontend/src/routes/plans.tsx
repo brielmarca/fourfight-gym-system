@@ -82,14 +82,16 @@ function PlansPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-surface border-b border-border-subtle">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="h-11 w-11" aria-hidden="true" />
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <a href="/" className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground md:hidden">
+            Incio
+          </a>
           <nav className="hidden md:flex items-center gap-6">
             <Link
               href="/"
               className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground"
             >
-              Início
+              Incio
             </Link>
             <Link
               href="/#contact"
@@ -104,18 +106,19 @@ function PlansPage() {
               Login
             </Link>
           </nav>
+          <div className="md:hidden w-12" aria-hidden="true" />
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-16">
-        <div className="text-center mb-16">
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">Escolha Seu Plano</h1>
-          <p className="mt-4 text-text-secondary text-lg max-w-2xl mx-auto">
-            Começe hoje mesmo. Todos os planos incluem acesso à academia, vestiários completos e app
+      <main className="max-w-6xl mx-auto px-4 py-10 sm:py-16">
+        <div className="text-center mb-10 sm:mb-16">
+          <h1 className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">Escolha Seu Plano</h1>
+          <p className="mt-3 sm:mt-4 text-text-secondary text-base sm:text-lg max-w-2xl mx-auto px-2">
+            Comece hoje mesmo. Todos os planos incluem acesso academia, vestirios completos e app
             da comunidade.
           </p>
-          <p className="mt-2 text-sm text-primary font-semibold">
-            Plano Popular: Padrao — melhor custo-beneficio
+          <p className="mt-2 text-sm text-primary font-semibold px-2">
+            Plano Popular: Padrao melhor custo-beneficio
           </p>
         </div>
 
@@ -224,30 +227,30 @@ function PlansPage() {
           </div>
         )}
 
-        <div id="faq" className="mt-20 max-w-2xl mx-auto">
-          <h2 className="font-display text-3xl tracking-wider text-center mb-10">
+        <div id="faq" className="mt-14 sm:mt-20 max-w-2xl mx-auto px-2">
+          <h2 className="font-display text-2xl sm:text-3xl tracking-wider text-center mb-8 sm:mb-10">
             PERGUNTAS FREQUENTES
           </h2>
-          <div className="space-y-6">
-            <div className="bg-surface p-6 rounded-md border border-border-subtle">
-              <h3 className="font-semibold mb-2">Posso experimentar uma aula grátis?</h3>
+          <div className="space-y-4 sm:space-y-6">
+            <div className="bg-surface p-4 sm:p-6 rounded-md border border-border-subtle">
+              <h3 className="font-semibold mb-2 text-sm sm:text-base">Posso experimentar uma aula grtis?</h3>
               <p className="text-text-secondary text-sm">
                 Sim! Oferecemos uma aula experimental gratuita para novos alunos. Contacta-nos para
                 agendares.
               </p>
             </div>
-            <div className="bg-surface p-6 rounded-md border border-border-subtle">
-              <h3 className="font-semibold mb-2">Como funciona o cancelamento?</h3>
+            <div className="bg-surface p-4 sm:p-6 rounded-md border border-border-subtle">
+              <h3 className="font-semibold mb-2 text-sm sm:text-base">Como funciona o cancelamento?</h3>
               <p className="text-text-secondary text-sm">
                 Podes cancelar a qualquer momento. Sem contratos, sem burocracia. O cancelamento
-                entra em vigor no fim do período pago.
+                entra em vigor no fim do perodo pago.
               </p>
             </div>
-            <div className="bg-surface p-6 rounded-md border border-border-subtle">
-              <h3 className="font-semibold mb-2">O que está incluído no plano?</h3>
+            <div className="bg-surface p-4 sm:p-6 rounded-md border border-border-subtle">
+              <h3 className="font-semibold mb-2 text-sm sm:text-base">O que est includo no plano?</h3>
               <p className="text-text-secondary text-sm">
-                Todos os planos incluem acesso às aulas selecionadas, vestiários e app da
-                comunidade. Planos superiores incluem benefícios adicionais.
+                Todos os planos incluem acesso s aulas selecionadas, vestirios e app da
+                comunidade. Planos superiores incluem benefcios adicionais.
               </p>
             </div>
           </div>

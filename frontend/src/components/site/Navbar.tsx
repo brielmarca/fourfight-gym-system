@@ -99,7 +99,7 @@ function Navbar() {
 
         <button
           aria-label="Open menu"
-          className="md:hidden text-foreground shrink-0 p-1"
+          className="md:hidden text-foreground shrink-0 p-2 -mr-2"
           onClick={() => setOpen(true)}
         >
           <Menu size={24} />
@@ -112,28 +112,30 @@ function Navbar() {
         }`}
         style={{ zIndex: 1000 }}
       >
-        <div className="h-20 px-4 flex items-center justify-between border-b border-[#1A1A1A]">
-          <img
-            src="/logo.png"
-            alt="4Four Fight Academy"
-            style={{
-              height: "44px",
-              width: "auto",
-              mixBlendMode: "screen",
-              filter: "brightness(1.1)",
-            }}
-          />
-          <button aria-label="Close menu" onClick={() => setOpen(false)}>
+        <div className="h-20 px-4 sm:px-6 flex items-center justify-between border-b border-[#1A1A1A]">
+          <a href="/" className="flex items-center shrink-0">
+            <img
+              src="/logo.png"
+              alt="4Four Fight Academy"
+              style={{
+                height: "40px",
+                width: "auto",
+                mixBlendMode: "screen",
+                filter: "brightness(1.1)",
+              }}
+            />
+          </a>
+          <button aria-label="Close menu" className="p-2 -mr-2" onClick={() => setOpen(false)}>
             <X size={28} />
           </button>
         </div>
-        <nav className="flex-1 flex flex-col items-center justify-center gap-6 overflow-y-auto py-8">
+        <nav className="flex-1 flex flex-col items-center justify-center gap-5 overflow-y-auto py-8 px-4">
           {links.map((l) => (
             <a
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className="font-display text-[32px] sm:text-[40px] leading-none tracking-wider"
+              className="font-display text-[28px] sm:text-[40px] leading-none tracking-wider text-center"
             >
               {l.label}
             </a>
@@ -144,7 +146,7 @@ function Navbar() {
                 <a
                   href="/admin"
                   onClick={() => setOpen(false)}
-                  className="font-display text-[32px] sm:text-[40px] leading-none tracking-wider text-primary"
+                  className="font-display text-[28px] sm:text-[40px] leading-none tracking-wider text-primary text-center"
                 >
                   ADMIN
                 </a>
@@ -152,16 +154,16 @@ function Navbar() {
               <a
                 href="/student-area"
                 onClick={() => setOpen(false)}
-                className="font-display text-[32px] sm:text-[40px] leading-none tracking-wider"
+                className="font-display text-[28px] sm:text-[40px] leading-none tracking-wider text-center"
               >
-                MINHA ÁREA
+                MINHA REA
               </a>
               <button
                 onClick={() => {
                   handleLogout();
                   setOpen(false);
                 }}
-                className="font-display text-[32px] sm:text-[40px] leading-none tracking-wider text-destructive"
+                className="font-display text-[28px] sm:text-[40px] leading-none tracking-wider text-destructive text-center"
               >
                 SAIR
               </button>
@@ -170,7 +172,7 @@ function Navbar() {
             <a
               href="/login"
               onClick={() => setOpen(false)}
-              className="btn-red mt-4 bg-primary text-primary-foreground px-8 py-3 text-sm tracking-[0.2em] font-bold rounded-[2px]"
+              className="btn-red mt-4 bg-primary text-primary-foreground px-8 py-3 text-sm tracking-[0.2em] font-bold rounded-[2px] text-center"
             >
               LOGIN
             </a>

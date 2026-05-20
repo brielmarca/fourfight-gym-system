@@ -72,13 +72,13 @@ function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <a href="/" className="inline-flex items-center justify-center">
             <img
               src="/logo.png"
               alt="4Four Fight Academy"
               style={{
-                height: "80px",
+                height: "60px",
                 width: "auto",
                 mixBlendMode: "screen",
                 filter: "brightness(1.1)",

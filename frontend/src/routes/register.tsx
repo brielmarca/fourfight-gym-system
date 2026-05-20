@@ -87,13 +87,13 @@ function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-2xl">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <Link to="/" className="inline-flex items-center justify-center">
             <img
               src="/logo.png"
               alt="4Four Fight Academy"
               style={{
-                height: "80px",
+                height: "60px",
                 width: "auto",
                 mixBlendMode: "screen",
                 filter: "brightness(1.1)",

@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -62,6 +63,11 @@ public class StripeCheckoutService {
             throw new BusinessRuleException("Plan is not active");
         }
 
+        String checkoutCurrency = plan.getCurrency() == null ? "" : plan.getCurrency().trim().toLowerCase(Locale.ROOT);
+        if (!"eur".equals(checkoutCurrency)) {
+            throw new BusinessRuleException("Checkout is only available in EUR");
+        }
+
         String customerId;
         try {
             customerId = getOrCreateStripeCustomer(user);
@@ -70,28 +76,10 @@ public class StripeCheckoutService {
             throw new BusinessRuleException("Failed to initialize payment customer: " + e.getMessage());
         }
 
-        SessionCreateParams.LineItem.PriceData priceData = null;
-
-        if (plan.getStripePriceId() != null && !plan.getStripePriceId().isBlank()) {
-            priceData = SessionCreateParams.LineItem.PriceData.builder()
-                    .setProductData(
-                            SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                    .setName(plan.getName())
-                                    .build()
-                    )
-                    .setUnitAmountDecimal(plan.getPrice().multiply(java.math.BigDecimal.valueOf(100)))
-                    .setCurrency(plan.getCurrency().toLowerCase())
-                    .setRecurring(
-                            SessionCreateParams.LineItem.PriceData.Recurring.builder()
-                                    .setInterval(SessionCreateParams.LineItem.PriceData.Recurring.Interval.MONTH)
-                                    .build()
-                    )
-                    .build();
-        }
-
         SessionCreateParams.Builder sessionBuilder = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
                 .setCustomer(customerId)
+                .setCurrency("eur")
                 .setSuccessUrl(frontendSuccessUrl + "?session_id={CHECKOUT_SESSION_ID}")
                 .setCancelUrl(frontendCancelUrl)
                 .addLineItem(
@@ -105,7 +93,7 @@ public class StripeCheckoutService {
                                                                 .build()
                                                 )
                                                 .setUnitAmountDecimal(plan.getPrice().multiply(java.math.BigDecimal.valueOf(100)))
-                                                .setCurrency(plan.getCurrency().toLowerCase())
+                                                .setCurrency("eur")
                                                 .setRecurring(
                                                         SessionCreateParams.LineItem.PriceData.Recurring.builder()
                                                                 .setInterval(SessionCreateParams.LineItem.PriceData.Recurring.Interval.MONTH)
@@ -117,7 +105,8 @@ public class StripeCheckoutService {
                 )
                 .putMetadata("userId", user.getId().toString())
                 .putMetadata("planId", plan.getId().toString())
-                .putMetadata("membershipType", "new");
+                .putMetadata("membershipType", "new")
+                .putExtraParam("adaptive_pricing", java.util.Map.of("enabled", false));
 
         Session session;
         try {

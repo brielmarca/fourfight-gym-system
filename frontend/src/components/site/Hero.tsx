@@ -17,7 +17,7 @@ export function Hero() {
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.86) 0%, rgba(0,0,0,0.58) 34%, rgba(0,0,0,0.46) 58%, rgba(0,0,0,0.88) 100%)",
+              "linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.20) 30%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.55) 100%)",
           }}
         />
       </div>
@@ -26,7 +26,7 @@ export function Hero() {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(circle at 50% 42%, rgba(193,18,31,0.12), transparent 32%), radial-gradient(circle at 50% 48%, rgba(0,0,0,0.1), rgba(0,0,0,0.62) 82%)",
+            "radial-gradient(circle at 50% 42%, rgba(193,18,31,0.15), transparent 40%), radial-gradient(circle at 50% 48%, rgba(0,0,0,0.05), rgba(0,0,0,0.30) 85%)",
         }}
       />
 

@@ -81,13 +81,20 @@ export function Academy() {
                 alt={f.label}
                 loading="lazy"
                 className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-[1.06]"
-                style={{ filter: "brightness(0.5) contrast(1.1)" }}
+                style={{ filter: "brightness(0.7) contrast(1.1)" }}
                 onMouseEnter={(e) =>
-                  (e.currentTarget.style.filter = "brightness(0.35) contrast(1.1)")
-                }
-                onMouseLeave={(e) =>
                   (e.currentTarget.style.filter = "brightness(0.5) contrast(1.1)")
                 }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.filter = "brightness(0.7) contrast(1.1)")
+                }
+              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.5) 100%)",
+                }}
               />
               <div
                 className="absolute inset-x-0 bottom-6 text-center"
@@ -106,37 +113,6 @@ export function Academy() {
                 >
                   {f.label}
                 </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.filter = "brightness(0.5) contrast(1.1)")
-                }
-              />
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.6) 100%)",
-                }}
-              />
-              <div className="absolute inset-x-0 bottom-6 text-center">
-                <span
-                  className="transition-colors duration-500"
-                  style={{
-                    fontSize: "11px",
-                    letterSpacing: "0.3em",
-                    textTransform: "uppercase",
-                    color: "#555",
-                  }}
-                >
-                  <span className="group-hover:text-[#F5F5F5]">{f.label}</span>
-                </span>
               </div>
             </div>
           ))}

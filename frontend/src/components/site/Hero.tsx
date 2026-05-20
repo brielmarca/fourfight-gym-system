@@ -89,19 +89,16 @@ export function Hero() {
           <strong style={{ color: "#FFFFFF" }}>Comece hoje, cancela quando quiser.</strong>
         </p>
 
-        <div
-          className="mt-6 sm:mt-12 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:gap-x-8 sm:gap-y-4 hero-word w-full max-w-xs sm:max-w-md mx-auto"
-          style={{ animationDelay: "1.05s" }}
-        >
+        <div className="hero-cta-group hero-word" style={{ animationDelay: "1.05s" }}>
           <a
             href="/plans"
-            className="w-full text-center whitespace-nowrap leading-tight bg-gradient-to-r from-red-600 to-red-500 text-white px-4 sm:px-8 py-3.5 sm:py-4 text-[11px] sm:text-[12px] tracking-[0.12em] sm:tracking-[0.25em] uppercase font-semibold rounded-2xl border border-red-400/40 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,0,0,0.4)] shadow-[0_0_25px_rgba(255,0,0,0.25)]"
+            className="hero-cta-btn hero-cta-btn-primary"
           >
-            COMEAR AGORA<span className="hidden sm:inline">  7 DIAS GRTIS</span>
+            COMEAR AGORA<span className="cta-desktop-suffix">  7 DIAS GRTIS</span>
           </a>
           <a
             href="/plans"
-            className="w-full text-center whitespace-nowrap leading-tight px-4 sm:px-8 py-3.5 sm:py-4 text-[11px] sm:text-[12px] tracking-[0.12em] sm:tracking-[0.25em] uppercase font-semibold rounded-2xl border border-white/40 text-white bg-black/40 transition-all duration-300 hover:scale-105 hover:border-red-400/60 hover:bg-red-600/20 hover:shadow-[0_0_25px_rgba(255,0,0,0.25)]"
+            className="hero-cta-btn hero-cta-btn-secondary"
           >
             VER PLANOS
           </a>

@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Service
@@ -129,6 +130,8 @@ public class StripeCheckoutService {
         Membership pendingMembership = Membership.builder()
                 .user(user)
                 .plan(plan)
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now().plusDays(plan.getDurationDays()))
                 .stripeCheckoutSessionId(session.getId())
                 .stripePriceId(plan.getStripePriceId())
                 .status(Membership.MembershipStatus.ACTIVE)

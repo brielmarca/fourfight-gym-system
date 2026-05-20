@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
 
 const navigationLinks = [
-  { label: "Academia", to: "#academy" },
+  { label: "Academia", to: "/about" },
   { label: "Programas", to: "/programs" },
   { label: "Horários", to: "/schedule" },
   { label: "Planos", to: "/plans" },
-  { label: "Contacto", to: "/contact" },
+  { label: "Contacto", to: "/", hash: "contact" as const },
 ];
 
 const contactInfo = {
@@ -64,6 +64,7 @@ export function Footer() {
                 <Link
                   key={l.to}
                   to={l.to}
+                  hash={l.hash}
                   className="group relative inline-flex justify-center pb-2 text-[11px] font-medium uppercase tracking-[0.28em] text-zinc-500 transition-colors duration-300 hover:text-red-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-600/70"
                   activeProps={{ className: "text-[#C1121F]" }}
                 >

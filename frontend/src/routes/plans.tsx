@@ -192,7 +192,7 @@ function PlansPage() {
           <div className="text-center py-20 space-y-4">
             <p className="text-text-secondary">Nenhum plano disponível no momento.</p>
             <Button asChild variant="outline" className="mt-4">
-              <Link to="/contact">Contacte-nos para mais informações</Link>
+              <Link to="/" hash="contact">Contacte-nos para mais informações</Link>
             </Button>
           </div>
         )}

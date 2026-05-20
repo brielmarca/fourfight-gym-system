@@ -126,6 +126,7 @@ export interface RegisterRequest {
   email: string;
   password: string;
   phone?: string;
+  dateOfBirth?: string;
 }
 
 export interface UpdateUserRequest {

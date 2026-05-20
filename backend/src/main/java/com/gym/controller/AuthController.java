@@ -93,9 +93,9 @@ public class AuthController {
     private void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         if (refreshToken == null) return;
         boolean secure = isSecureCookie();
-        String sameSite = secure ? "Strict" : "Lax";
+        String sameSite = secure ? "None" : "Lax";
         String cookieValue = "refreshToken=" + refreshToken +
-                "; HttpOnly; SameSite=" + sameSite + "; Path=/api/auth/refresh; Max-Age=604800";
+                "; HttpOnly; SameSite=" + sameSite + "; Path=/; Max-Age=604800";
         if (secure) {
             cookieValue += "; Secure";
         }
@@ -115,8 +115,8 @@ public class AuthController {
 
     private void clearRefreshTokenCookie(HttpServletResponse response) {
         boolean secure = isSecureCookie();
-        String sameSite = secure ? "Strict" : "Lax";
-        String cookieValue = "refreshToken=; HttpOnly; SameSite=" + sameSite + "; Path=/api/auth/refresh; Max-Age=0";
+        String sameSite = secure ? "None" : "Lax";
+        String cookieValue = "refreshToken=; HttpOnly; SameSite=" + sameSite + "; Path=/; Max-Age=0";
         if (secure) {
             cookieValue += "; Secure";
         }

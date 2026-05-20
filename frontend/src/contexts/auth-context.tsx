@@ -18,6 +18,7 @@ interface AuthContextValue {
     email: string;
     password: string;
     phone?: string;
+    dateOfBirth?: string;
   }) => Promise<void>;
   logout: () => void;
   hasRole: (roles: string[]) => boolean;
@@ -45,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(
-    async (data: { name: string; email: string; password: string; phone?: string }) => {
+    async (data: { name: string; email: string; password: string; phone?: string; dateOfBirth?: string }) => {
       await api.auth.register(data);
     },
     [],

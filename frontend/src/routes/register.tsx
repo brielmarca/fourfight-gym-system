@@ -63,14 +63,15 @@ function RegisterPage() {
         email: formData.email,
         password: formData.password,
         phone: formData.phone,
+        dateOfBirth: formData.dateOfBirth,
       });
 
       const response = await api.auth.login(formData.email, formData.password);
-      if (!response.refreshToken) {
-        throw new Error("A conta foi criada, mas o login requer validação adicional.");
+      if (!response.accessToken) {
+        throw new Error("A conta foi criada, mas o login requer validacao adicional.");
       }
 
-      setTokens(response.accessToken, response.refreshToken);
+      setTokens(response.accessToken);
 
       if (redirect) {
         navigate({ to: redirect, replace: true });

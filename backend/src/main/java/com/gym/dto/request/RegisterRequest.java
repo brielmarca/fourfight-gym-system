@@ -2,8 +2,10 @@ package com.gym.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 
 public record RegisterRequest(
     @NotBlank(message = "Name is required")
@@ -23,5 +25,8 @@ public record RegisterRequest(
     String password,
 
     @Size(max = 20, message = "Phone must not exceed 20 characters")
-    String phone
+    String phone,
+
+    @Past(message = "Date of birth must be in the past")
+    LocalDate dateOfBirth
 ) {}

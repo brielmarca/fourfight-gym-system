@@ -102,7 +102,7 @@ public class Payment {
     }
 
     public enum PaymentMethod {
-        CARD, PIX, BOLETO, TRANSFER, MBWAY, STRIPE
+        CARD, PIX, BOLETO, TRANSFER, MBWAY, STRIPE, RECEPTION
     }
 
     public enum PaymentStatus {

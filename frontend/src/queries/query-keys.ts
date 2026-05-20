@@ -45,6 +45,7 @@ const queryKeys = {
   stripe: {
     all: ["stripe"] as const,
     subscription: () => [...queryKeys.stripe.all, "subscription"] as const,
+    receptionPending: () => [...queryKeys.stripe.all, "reception-pending"] as const,
   },
 };
 

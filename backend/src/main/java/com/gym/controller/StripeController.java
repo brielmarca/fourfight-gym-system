@@ -2,10 +2,12 @@ package com.gym.controller;
 
 import com.gym.dto.response.StripeCheckoutResponse;
 import com.gym.dto.response.StripeSubscriptionResponse;
+import com.gym.dto.response.ReceptionRequestResponse;
 import com.gym.entity.Membership;
 import com.gym.exception.BusinessRuleException;
 import com.gym.repository.MembershipRepository;
 import com.gym.security.GymUserDetailsService.JwtUserPrincipal;
+import com.gym.service.ReceptionCheckoutService;
 import com.gym.service.StripeCheckoutService;
 import com.gym.service.StripeWebhookService;
 import com.stripe.exception.StripeException;
@@ -17,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.BufferedReader;
@@ -32,14 +35,17 @@ public class StripeController {
     private static final Logger log = LoggerFactory.getLogger(StripeController.class);
 
     private final StripeCheckoutService stripeCheckoutService;
+    private final ReceptionCheckoutService receptionCheckoutService;
     private final StripeWebhookService stripeWebhookService;
     private final MembershipRepository membershipRepository;
 
     public StripeController(
             StripeCheckoutService stripeCheckoutService,
+            ReceptionCheckoutService receptionCheckoutService,
             StripeWebhookService stripeWebhookService,
             MembershipRepository membershipRepository) {
         this.stripeCheckoutService = stripeCheckoutService;
+        this.receptionCheckoutService = receptionCheckoutService;
         this.stripeWebhookService = stripeWebhookService;
         this.membershipRepository = membershipRepository;
     }
@@ -161,5 +167,67 @@ public class StripeController {
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/reception-request")
+    public ResponseEntity<?> createReceptionRequest(
+            @AuthenticationPrincipal JwtUserPrincipal principal,
+            @RequestBody Map<String, String> body) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String planIdStr = body.get("planId");
+        if (planIdStr == null || planIdStr.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        UUID planId;
+        try {
+            planId = UUID.fromString(planIdStr);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            ReceptionRequestResponse response = receptionCheckoutService.createReceptionRequest(principal.id(), planId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (BusinessRuleException e) {
+            ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+            problem.setTitle("Reception Request Error");
+            return ResponseEntity.badRequest().body(problem);
+        }
+    }
+
+    @GetMapping("/reception-requests/pending")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ReceptionRequestResponse>> listPendingReceptionRequests() {
+        return ResponseEntity.ok(receptionCheckoutService.listPendingRequests());
+    }
+
+    @PostMapping("/reception-requests/{membershipId}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> approveReceptionRequest(@PathVariable UUID membershipId) {
+        try {
+            ReceptionRequestResponse response = receptionCheckoutService.approveRequest(membershipId);
+            return ResponseEntity.ok(response);
+        } catch (BusinessRuleException e) {
+            ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+            problem.setTitle("Reception Approval Error");
+            return ResponseEntity.badRequest().body(problem);
+        }
+    }
+
+    @PostMapping("/reception-requests/{membershipId}/reject")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> rejectReceptionRequest(@PathVariable UUID membershipId) {
+        try {
+            ReceptionRequestResponse response = receptionCheckoutService.rejectRequest(membershipId);
+            return ResponseEntity.ok(response);
+        } catch (BusinessRuleException e) {
+            ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+            problem.setTitle("Reception Rejection Error");
+            return ResponseEntity.badRequest().body(problem);
+        }
     }
 }

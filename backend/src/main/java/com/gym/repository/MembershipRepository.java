@@ -21,6 +21,8 @@ public interface MembershipRepository extends JpaRepository<Membership, UUID> {
 
     List<Membership> findByUserIdAndStatus(UUID userId, Membership.MembershipStatus status);
 
+    List<Membership> findByStatusOrderByCreatedAtDesc(Membership.MembershipStatus status);
+
     @Query("SELECT m FROM Membership m WHERE m.status = 'ACTIVE' AND m.endDate <= :endDate AND m.autoRenew = false")
     List<Membership> findExpiringSoon(@Param("endDate") LocalDate endDate);
 

@@ -398,6 +398,33 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ planId }),
       }),
+    createReceptionRequest: (planId: string) =>
+      request<{
+        membershipId: string;
+        status: string;
+        message: string;
+      }>("/stripe/reception-request", {
+        method: "POST",
+        body: JSON.stringify({ planId }),
+      }),
+    listPendingReceptionRequests: () =>
+      request<Array<{
+        membershipId: string;
+        userName: string;
+        userEmail: string;
+        planName: string;
+        planPrice: number;
+        status: string;
+        requestedAt: string;
+      }>>("/stripe/reception-requests/pending"),
+    approveReceptionRequest: (membershipId: string) =>
+      request<void>(`/stripe/reception-requests/${membershipId}/approve`, {
+        method: "POST",
+      }),
+    rejectReceptionRequest: (membershipId: string) =>
+      request<void>(`/stripe/reception-requests/${membershipId}/reject`, {
+        method: "POST",
+      }),
     getSubscription: () =>
       request<{
         id: string;

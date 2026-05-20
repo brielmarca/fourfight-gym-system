@@ -37,15 +37,6 @@ import {
 
 export const Route = createFileRoute("/schedule")({
   component: SchedulePage,
-  head: () => ({
-    meta: [
-      { title: "Horário — 4Four Fight Academy" },
-      {
-        name: "description",
-        content: "Horário das aulas de Jiu-Jitsu, Boxe, Kickboxing e Força na 4Four Fight Academy.",
-      },
-    ],
-  }),
 });
 
 const dayNames: Record<number, string> = {
@@ -159,7 +150,7 @@ function SchedulePage() {
       <div className="pt-32 pb-20 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h1 className="font-display text-5xl md:text-6xl tracking-wider">HORÁRIO DAS AULAS</h1>
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">HORÁRIO DAS AULAS</h1>
             <p className="mt-4 text-text-secondary text-lg">
               Treina quando te convém. Aparece. Repete.
             </p>

@@ -29,8 +29,8 @@ UPDATE plans SET
     END,
     schedule = CASE
         WHEN name = 'Basic' THEN '["Seg/Qua/Sex: 06h-10h", "Ter/Qui: 18h-22h"]'::jsonb
-        WHEN name = 'Standard' THEN '["Seg-Sex: 06h-22h", "Sáb: 08h-14h"]'::jsonb
-        WHEN name = 'Premium' THEN '["Seg-Dom: 24h", "Aulas especiais aos sábados"]'::jsonb
+        WHEN name = 'Standard' THEN '["Seg-Sex: 06h-22h", "Sab: 08h-14h"]'::jsonb
+        WHEN name = 'Premium' THEN '["Seg-Dom: 24h", "Aulas especiais aos sabados"]'::jsonb
         ELSE schedule
     END
 WHERE is_active = true AND (level IS NULL OR instructor IS NULL OR schedule IS NULL);

@@ -13,6 +13,6 @@ CREATE TABLE trial_bookings (
     deleted_at TIMESTAMP
 );
 
-CREATE INDEX idx_trial_bookings_status ON trial_bookings(status);
-CREATE INDEX idx_trial_bookings_email ON trial_bookings(email);
-CREATE INDEX idx_trial_bookings_program ON trial_bookings(program);
+CREATE INDEX IF NOT EXISTS idx_trial_bookings_status ON trial_bookings(status);
+CREATE INDEX IF NOT EXISTS idx_trial_bookings_email ON trial_bookings(email);
+CREATE INDEX IF NOT EXISTS idx_trial_bookings_program ON trial_bookings(program);

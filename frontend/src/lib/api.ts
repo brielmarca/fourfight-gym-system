@@ -1,5 +1,19 @@
-const DEFAULT_API_BASE = "/api";
-const API_BASE = (import.meta.env.VITE_API_URL?.trim() || DEFAULT_API_BASE).replace(/\/+$/, "");
+const DEFAULT_API_BASE = "https://fourfight-gym-system.onrender.com/api";
+const RAW_API_URL = import.meta.env.VITE_API_URL?.trim();
+
+let resolvedBase = RAW_API_URL || DEFAULT_API_BASE;
+
+if (resolvedBase.startsWith("http") && !resolvedBase.endsWith("/api")) {
+  resolvedBase = resolvedBase.replace(/\/+$/, "") + "/api";
+}
+
+const API_BASE = resolvedBase.replace(/\/+$/, "");
+
+console.log("[API] VITE_API_URL:", RAW_API_URL);
+console.log("[API] DEFAULT_API_BASE:", DEFAULT_API_BASE);
+console.log("[API] RESOLVED BASE:", resolvedBase);
+console.log("[API] FINAL API_BASE:", API_BASE);
+
 const NETWORK_ERROR_MESSAGE =
   "Não foi possível conectar ao servidor. Verifique se o backend está ativo.";
 
@@ -73,7 +87,9 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   let response: Response;
 
   try {
-    response = await fetch(`${API_BASE}${endpoint}`, {
+    const finalUrl = `${API_BASE}${endpoint}`;
+    console.log("API REQUEST", { endpoint, API_BASE, finalUrl, method: options.method || "GET" });
+    response = await fetch(finalUrl, {
       ...options,
       credentials: "include",
       headers: {
@@ -215,16 +231,20 @@ function hasRole(roles: string[]): boolean {
 
 export const api = {
   auth: {
-    login: (email: string, password: string) =>
-      request<TokenResponse>("/auth/login", {
+    login: (email: string, password: string) => {
+      console.log("[AUTH] login called, endpoint: /auth/login");
+      return request<TokenResponse>("/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
-      }),
-    register: (data: RegisterRequest) =>
-      request<UserResponse>("/auth/register", {
+      });
+    },
+    register: (data: RegisterRequest) => {
+      console.log("[AUTH] register called, endpoint: /auth/register");
+      return request<UserResponse>("/auth/register", {
         method: "POST",
         body: JSON.stringify(data),
-      }),
+      });
+    },
     me: () => request<UserResponse>("/auth/me"),
     refresh: () =>
       request<TokenResponse>("/auth/refresh", {

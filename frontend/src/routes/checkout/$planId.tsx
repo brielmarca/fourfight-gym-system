@@ -16,12 +16,6 @@ export const Route = createFileRoute("/checkout/$planId")({
     }
   },
   component: CheckoutPage,
-  head: () => ({
-    meta: [
-      { title: "Checkout — 4Four Fight Academy" },
-      { name: "description", content: "Complete a sua adesao" },
-    ],
-  }),
 });
 
 function CheckoutPage() {
@@ -127,7 +121,7 @@ function CheckoutPage() {
 
       <main className="max-w-2xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h1 className="font-display text-4xl md:text-5xl tracking-wider">Checkout</h1>
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-wider">Checkout</h1>
           <p className="mt-4 text-text-secondary">
             Complete a sua adesao para <span className="text-foreground font-semibold">{displayPlan.name}</span>
           </p>
@@ -135,7 +129,7 @@ function CheckoutPage() {
 
         <div className="grid md:grid-cols-5 gap-8">
           <div className="md:col-span-2">
-            <Card className="bg-surface border-border-subtle sticky top-8">
+            <Card className="bg-surface border-border-subtle md:sticky md:top-8">
               <CardHeader>
                 <CardTitle className="text-lg">Resumo do Pedido</CardTitle>
               </CardHeader>

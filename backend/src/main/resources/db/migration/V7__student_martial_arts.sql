@@ -1,5 +1,5 @@
 -- V7__student_martial_arts.sql
--- Create martial arts, graduations, students, and student_martial_arts tables
+-- Create martial arts, graduations, and student_martial_arts tables
 
 -- Create martial_arts table
 CREATE TABLE IF NOT EXISTS martial_arts (
@@ -23,21 +23,6 @@ CREATE TABLE IF NOT EXISTS graduations (
 
 -- Create index on graduations for martial art lookup
 CREATE INDEX IF NOT EXISTS idx_graduations_martial_art_id ON graduations(martial_art_id);
-
--- Create students table
-CREATE TABLE IF NOT EXISTS students (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    plan_id UUID REFERENCES plans(id),
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP
-);
-
--- Create index on students for email lookup
-CREATE INDEX IF NOT EXISTS idx_students_email ON students(email);
 
 -- Create student_martial_arts table
 CREATE TABLE IF NOT EXISTS student_martial_arts (

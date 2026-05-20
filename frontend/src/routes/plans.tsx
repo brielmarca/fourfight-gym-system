@@ -10,16 +10,6 @@ import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/plans")({
   component: PlansPage,
-  head: () => ({
-    meta: [
-      { title: "Planos e Preços — 4Four Fight Academy" },
-      {
-        name: "description",
-        content:
-          "Escolha seu plano de treino na 4Four Fight Academy. Jiu-Jitsu, Boxing, Kickboxing e Musculação.",
-      },
-    ],
-  }),
 });
 
 function PlansPage() {
@@ -119,7 +109,7 @@ function PlansPage() {
 
       <main className="max-w-6xl mx-auto px-4 py-16">
         <div className="text-center mb-16">
-          <h1 className="font-display text-5xl md:text-6xl tracking-wider">Escolha Seu Plano</h1>
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">Escolha Seu Plano</h1>
           <p className="mt-4 text-text-secondary text-lg max-w-2xl mx-auto">
             Começe hoje mesmo. Todos os planos incluem acesso à academia, vestiários completos e app
             da comunidade.

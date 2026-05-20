@@ -55,6 +55,11 @@ public class RateLimitFilter implements Filter {
     @Value("${rate-limit.general.refill-duration:1}")
     private int generalRefillDurationMinutes;
     
+    public RateLimitFilter() {
+        log.info("[STARTUP] START RateLimitFilter constructor");
+        log.info("[STARTUP] END RateLimitFilter constructor");
+    }
+    
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {

@@ -31,16 +31,6 @@ import jiuJitsuVideo from "@/assets/gymlutas/jiu-jitsu-video.mp4";
 
 export const Route = createFileRoute("/programas/jiu-jitsu")({
   component: JiuJitsuPage,
-  head: () => ({
-    meta: [
-      { title: "Jiu-Jitsu — 4Four Fight Academy" },
-      {
-        name: "description",
-        content:
-          "Domine o jogo no chão. Treino de Jiu-Jitsu para todos os níveis na 4Four Fight Academy.",
-      },
-    ],
-  }),
 });
 
 const trainingContent = [

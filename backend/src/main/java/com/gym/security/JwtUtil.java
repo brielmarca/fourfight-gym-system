@@ -19,9 +19,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.*;
 
@@ -43,6 +40,7 @@ public class JwtUtil {
             @Value("${jwt.expiration-ms}") long expirationMs,
             @Value("${jwt.refresh-expiration-ms}") long refreshExpirationMs) {
         
+        log.info("[STARTUP] ========== START JwtUtil constructor ==========");
         boolean hasKeyStrings = !"DEFAULT".equals(privateKeyPem) && !"DEFAULT".equals(publicKeyPem) 
                 && privateKeyPem != null && !privateKeyPem.isBlank()
                 && publicKeyPem != null && !publicKeyPem.isBlank();
@@ -51,7 +49,7 @@ public class JwtUtil {
                 && publicKeyPath != null && !publicKeyPath.isBlank();
         
         if (hasKeyPaths) {
-            log.info("Loading JWT keys from files: {} and {}", privateKeyPath, publicKeyPath);
+            log.info("[STARTUP] Loading JWT keys from files: {} and {}", privateKeyPath, publicKeyPath);
             try {
                 this.privateKey = loadPrivateKeyFromFile(privateKeyPath);
                 this.publicKey = loadPublicKeyFromFile(publicKeyPath);
@@ -59,11 +57,11 @@ public class JwtUtil {
                 throw new IllegalStateException("Failed to load JWT keys from files", e);
             }
         } else if (hasKeyStrings) {
-            log.info("Loading JWT keys from environment variables");
+            log.info("[STARTUP] Loading JWT keys from environment variables");
             this.privateKey = parsePrivateKey(privateKeyPem);
             this.publicKey = parsePublicKey(publicKeyPem);
         } else {
-            log.info("No JWT keys configured - generating development keys (configure JWT_PRIVATE_KEY/PUBLIC_KEY for production)");
+            log.info("[STARTUP] No JWT keys configured - generating development keys");
             try {
                 KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
                 generator.initialize(2048);
@@ -78,12 +76,14 @@ public class JwtUtil {
         this.expirationMs = expirationMs;
         this.refreshExpirationMs = refreshExpirationMs;
         
+        log.info("[STARTUP] Building JWKSet...");
         RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) this.publicKey)
                 .privateKey((RSAPrivateKey) this.privateKey)
                 .keyID(UUID.randomUUID().toString())
                 .build();
         
         this.jwkSet = new JWKSet(rsaKey);
+        log.info("[STARTUP] ========== END JwtUtil constructor ==========");
     }
 
     public String generateAccessToken(UUID userId, String email, String role) {
@@ -212,14 +212,29 @@ public class JwtUtil {
 
     private java.security.PrivateKey parsePrivateKey(String pem) {
         try {
-            String cleanedPem = pem.replace("\\n", "\n");
-            cleanedPem = cleanedPem
+            String content = pem.replace("\\n", "\n");
+            if (content.contains("-----BEGIN PRIVATE KEY-----") || content.contains("-----BEGIN RSA PRIVATE KEY-----")) {
+                content = content
+                    .replace("-----BEGIN PRIVATE KEY-----", "")
+                    .replace("-----END PRIVATE KEY-----", "")
+                    .replace("-----BEGIN RSA PRIVATE KEY-----", "")
+                    .replace("-----END RSA PRIVATE KEY-----", "")
+                    .replaceAll("\\s", "");
+                byte[] decoded = Base64.getDecoder().decode(content);
+                KeyFactory factory = KeyFactory.getInstance("RSA");
+                return factory.generatePrivate(new PKCS8EncodedKeySpec(decoded));
+            }
+            byte[] pemBytes = Base64.getDecoder().decode(content);
+            String pemString = new String(pemBytes, java.nio.charset.StandardCharsets.UTF_8);
+            String cleaned = pemString
                 .replace("-----BEGIN PRIVATE KEY-----", "")
                 .replace("-----END PRIVATE KEY-----", "")
+                .replace("-----BEGIN RSA PRIVATE KEY-----", "")
+                .replace("-----END RSA PRIVATE KEY-----", "")
                 .replaceAll("\\s", "");
-            byte[] decoded = Base64.getDecoder().decode(cleanedPem);
+            byte[] decoded = Base64.getDecoder().decode(cleaned);
             KeyFactory factory = KeyFactory.getInstance("RSA");
-            return factory.generatePrivate(new java.security.spec.PKCS8EncodedKeySpec(decoded));
+            return factory.generatePrivate(new PKCS8EncodedKeySpec(decoded));
         } catch (Exception e) {
             throw new IllegalStateException("Failed to parse RSA private key", e);
         }
@@ -227,14 +242,29 @@ public class JwtUtil {
 
     private java.security.PublicKey parsePublicKey(String pem) {
         try {
-            String cleanedPem = pem.replace("\\n", "\n");
-            cleanedPem = cleanedPem
+            String content = pem.replace("\\n", "\n");
+            if (content.contains("-----BEGIN PUBLIC KEY-----") || content.contains("-----BEGIN RSA PUBLIC KEY-----")) {
+                content = content
+                    .replace("-----BEGIN PUBLIC KEY-----", "")
+                    .replace("-----END PUBLIC KEY-----", "")
+                    .replace("-----BEGIN RSA PUBLIC KEY-----", "")
+                    .replace("-----END RSA PUBLIC KEY-----", "")
+                    .replaceAll("\\s", "");
+                byte[] decoded = Base64.getDecoder().decode(content);
+                KeyFactory factory = KeyFactory.getInstance("RSA");
+                return factory.generatePublic(new X509EncodedKeySpec(decoded));
+            }
+            byte[] pemBytes = Base64.getDecoder().decode(content);
+            String pemString = new String(pemBytes, java.nio.charset.StandardCharsets.UTF_8);
+            String cleaned = pemString
                 .replace("-----BEGIN PUBLIC KEY-----", "")
                 .replace("-----END PUBLIC KEY-----", "")
+                .replace("-----BEGIN RSA PUBLIC KEY-----", "")
+                .replace("-----END RSA PUBLIC KEY-----", "")
                 .replaceAll("\\s", "");
-            byte[] decoded = Base64.getDecoder().decode(cleanedPem);
+            byte[] decoded = Base64.getDecoder().decode(cleaned);
             KeyFactory factory = KeyFactory.getInstance("RSA");
-            return factory.generatePublic(new java.security.spec.X509EncodedKeySpec(decoded));
+            return factory.generatePublic(new X509EncodedKeySpec(decoded));
         } catch (Exception e) {
             throw new IllegalStateException("Failed to parse RSA public key", e);
         }

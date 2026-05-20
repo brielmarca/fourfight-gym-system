@@ -71,7 +71,7 @@ export function Pricing() {
                 background: "#111111",
                 border: p.featured ? "1px solid #C1121F" : "1px solid #1E1E1E",
                 borderRadius: "4px",
-                padding: "40px 32px",
+                padding: "clamp(24px, 5vw, 40px) clamp(16px, 4vw, 32px)",
                 transitionDelay: `${i * 100}ms`,
                 boxShadow: p.featured ? "0 0 60px rgba(193,18,31,0.08)" : "none",
               }}
@@ -111,7 +111,7 @@ export function Pricing() {
                 <span
                   className="font-display"
                   style={{
-                    fontSize: "56px",
+                    fontSize: "clamp(36px, 8vw, 56px)",
                     color: p.featured ? "#C1121F" : "#F5F5F5",
                     lineHeight: 1,
                   }}

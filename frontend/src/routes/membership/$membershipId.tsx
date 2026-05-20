@@ -21,12 +21,6 @@ export const Route = createFileRoute("/membership/$membershipId")({
     }
   },
   component: MembershipMethodPage,
-  head: () => ({
-    meta: [
-      { title: "Metodo de Pagamento — 4Four Fight Academy" },
-      { name: "description", content: "Selecione o metodo de pagamento" },
-    ],
-  }),
 });
 
 function MembershipMethodPage() {
@@ -82,7 +76,7 @@ function MembershipMethodPage() {
 
       <main className="max-w-2xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h1 className="font-display text-4xl md:text-5xl tracking-wider">Metodo de Pagamento</h1>
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-wider">Metodo de Pagamento</h1>
           <p className="mt-4 text-text-secondary">Escolha o método de pagamento</p>
         </div>
 
@@ -99,7 +93,7 @@ function MembershipMethodPage() {
                   paymentMethod === "MBWAY"
                     ? "border-primary bg-primary/5"
                     : "border-border-subtle hover:border-primary/50"
-                } border-2 rounded-lg p-6 cursor-pointer transition-all`}
+                } border-2 rounded-lg p-4 md:p-6 cursor-pointer transition-all`}
               >
                 <div className="flex items-center gap-4">
                   <RadioGroupItem value="MBWAY" id="mbway" />
@@ -123,7 +117,7 @@ function MembershipMethodPage() {
                   paymentMethod === "CARD"
                     ? "border-primary bg-primary/5"
                     : "border-border-subtle hover:border-primary/50"
-                } border-2 rounded-lg p-6 cursor-pointer transition-all`}
+                } border-2 rounded-lg p-4 md:p-6 cursor-pointer transition-all`}
               >
                 <div className="flex items-center gap-4">
                   <RadioGroupItem value="CARD" id="card" />

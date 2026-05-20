@@ -7,10 +7,12 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+@Slf4j
 @Configuration
 public class SwaggerConfig {
 
@@ -19,7 +21,8 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI openAPI() {
-        return new OpenAPI()
+        log.info("[STARTUP] START SwaggerConfig.openAPI creation");
+        OpenAPI api = new OpenAPI()
             .info(new Info()
                 .title(appName)
                 .version("1.0.0")
@@ -32,5 +35,7 @@ public class SwaggerConfig {
                     .bearerFormat("JWT")
                     .description("JWT access token (Bearer token)")))
             .security(Arrays.asList(new SecurityRequirement().addList("bearerAuth")));
+        log.info("[STARTUP] END SwaggerConfig.openAPI creation");
+        return api;
     }
 }

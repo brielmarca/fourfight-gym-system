@@ -11,12 +11,6 @@ import { MapPin, Phone, Mail, Clock, Send, Calendar, Loader2, Check, X } from "l
 
 export const Route = createFileRoute("/contact")({
   component: ContactPage,
-  head: () => ({
-    meta: [
-      { title: "Contacto — 4Four Fight Academy" },
-      { name: "description", content: "Contacta a 4Four Fight Academy em Gondomar." },
-    ],
-  }),
 });
 
 const contactInfo = [
@@ -65,7 +59,7 @@ function ContactPage() {
       <div className="pt-32 pb-20 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h1 className="font-display text-5xl md:text-6xl tracking-wider">FALA COMIGO</h1>
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">FALA COMIGO</h1>
             <p className="mt-4 text-text-secondary text-lg">
               Tens dúvidas? Queres experimentar? Fala connosco!
             </p>
@@ -218,7 +212,7 @@ function ContactPage() {
           {/* ENCONTRE-NOS Section */}
           <div className="mt-16 max-w-6xl mx-auto">
             <div className="text-center mb-8">
-              <h2 className="font-display text-4xl md:text-5xl tracking-wider text-foreground">
+              <h2 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-wider text-foreground">
                 ENCONTRE-NOS
               </h2>
               <p className="mt-4 text-text-secondary text-lg">
@@ -226,7 +220,7 @@ function ContactPage() {
               </p>
             </div>
 
-            <DarkMap height="400px" className="rounded-2xl" />
+            <DarkMap height="clamp(250px, 50vw, 400px)" className="rounded-2xl" />
 
             <div className="mt-6 text-center">
               <Button

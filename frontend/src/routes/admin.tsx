@@ -23,9 +23,6 @@ export const Route = createFileRoute("/admin")({
     }
   },
   component: AdminPage,
-  head: () => ({
-    meta: [{ title: "Painel Admin — 4Four Fight Academy" }],
-  }),
 });
 
 function AdminPage() {
@@ -81,7 +78,7 @@ function AdminPage() {
               FIGHT ACADEMY — ADMIN
             </span>
           </a>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <a href="/" className="text-xs text-text-secondary hover:text-foreground">
               Ver Site
             </a>
@@ -91,7 +88,7 @@ function AdminPage() {
               className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground"
             >
               <LogOut size={14} className="mr-1" />
-              Sair
+              <span className="hidden sm:inline">Sair</span>
             </Button>
           </div>
         </div>
@@ -99,12 +96,13 @@ function AdminPage() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="font-display text-4xl tracking-wider">PAINEL ADMIN</h1>
+          <h1 className="font-display text-3xl sm:text-4xl tracking-wider">PAINEL ADMIN</h1>
           <p className="text-text-secondary mt-1">Gerencie sua academia</p>
         </div>
 
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="bg-surface border border-border-subtle">
+          <div className="overflow-x-auto">
+            <TabsList className="bg-surface border border-border-subtle">
             <TabsTrigger
               value="dashboard"
               className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white"
@@ -130,6 +128,7 @@ function AdminPage() {
               Planos
             </TabsTrigger>
           </TabsList>
+          </div>
 
           <TabsContent value="dashboard">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -193,6 +192,7 @@ function AdminPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow className="border-border-subtle">
@@ -235,6 +235,7 @@ function AdminPage() {
                     )}
                   </TableBody>
                 </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

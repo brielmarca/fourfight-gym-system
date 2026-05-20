@@ -25,6 +25,11 @@ public class MfaService {
     private final TimeProvider timeProvider = new SystemTimeProvider();
     private final CodeVerifier codeVerifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
 
+    public MfaService() {
+        log.info("[STARTUP] START MfaService constructor");
+        log.info("[STARTUP] END MfaService constructor");
+    }
+
     public String generateSecret() {
         return secretGenerator.generate();
     }

@@ -34,12 +34,12 @@ function Navbar() {
       style={{ zIndex: 999 }}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        <a href="/" className="flex items-center">
+        <a href="/" className="flex items-center shrink-0">
           <img
             src="/logo.png"
             alt="4Four Fight Academy"
             style={{
-              height: "48px",
+              height: "40px",
               width: "auto",
               mixBlendMode: "screen",
               filter: "brightness(1.1)",
@@ -99,10 +99,10 @@ function Navbar() {
 
         <button
           aria-label="Open menu"
-          className="md:hidden text-foreground"
+          className="md:hidden text-foreground shrink-0 p-1"
           onClick={() => setOpen(true)}
         >
-          <Menu size={28} />
+          <Menu size={24} />
         </button>
       </div>
 
@@ -127,13 +127,13 @@ function Navbar() {
             <X size={28} />
           </button>
         </div>
-        <nav className="flex-1 flex flex-col items-center justify-center gap-8">
+        <nav className="flex-1 flex flex-col items-center justify-center gap-6 overflow-y-auto py-8">
           {links.map((l) => (
             <a
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className="font-display text-[40px] leading-none tracking-wider"
+              className="font-display text-[32px] sm:text-[40px] leading-none tracking-wider"
             >
               {l.label}
             </a>
@@ -144,7 +144,7 @@ function Navbar() {
                 <a
                   href="/admin"
                   onClick={() => setOpen(false)}
-                  className="font-display text-[40px] leading-none tracking-wider text-primary"
+                  className="font-display text-[32px] sm:text-[40px] leading-none tracking-wider text-primary"
                 >
                   ADMIN
                 </a>
@@ -152,7 +152,7 @@ function Navbar() {
               <a
                 href="/student-area"
                 onClick={() => setOpen(false)}
-                className="font-display text-[40px] leading-none tracking-wider"
+                className="font-display text-[32px] sm:text-[40px] leading-none tracking-wider"
               >
                 MINHA ÁREA
               </a>
@@ -161,7 +161,7 @@ function Navbar() {
                   handleLogout();
                   setOpen(false);
                 }}
-                className="font-display text-[40px] leading-none tracking-wider text-destructive"
+                className="font-display text-[32px] sm:text-[40px] leading-none tracking-wider text-destructive"
               >
                 SAIR
               </button>

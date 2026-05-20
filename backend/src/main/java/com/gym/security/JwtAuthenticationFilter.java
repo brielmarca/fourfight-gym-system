@@ -1,5 +1,6 @@
 package com.gym.security;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +24,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final GymUserDetailsService userDetailsService;
+
+    @PostConstruct
+    public void init() {
+        log.info("[STARTUP] START JwtAuthenticationFilter init");
+        log.info("[STARTUP] END JwtAuthenticationFilter init");
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

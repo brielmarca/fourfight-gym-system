@@ -23,15 +23,6 @@ import boxeTrainingVideo from "@/assets/gymlutas/jiu-jitsu-video.mp4";
 
 export const Route = createFileRoute("/programas/boxe-kickboxing")({
   component: BoxeKickboxingPage,
-  head: () => ({
-    meta: [
-      { title: "Boxe / Kickboxing — 4Four Fight Academy" },
-      {
-        name: "description",
-        content: "Precisão, potência, ritmo e disciplina no combate em pé na 4Four Fight Academy.",
-      },
-    ],
-  }),
 });
 
 const trainingContent = [

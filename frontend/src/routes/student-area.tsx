@@ -92,7 +92,7 @@ function StudentAreaPage() {
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="font-display text-4xl tracking-wider">ÁREA DO ALUNO</h1>
+          <h1 className="font-display text-3xl sm:text-4xl tracking-wider">ÁREA DO ALUNO</h1>
           <p className="text-text-secondary mt-1">
             Bem-vindo de volta, {profile?.userName || "Atleta"}! 👋
           </p>
@@ -175,6 +175,7 @@ function StudentAreaPage() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
+          <div className="overflow-x-auto">
           <TabsList className="bg-surface border border-border-subtle">
             <TabsTrigger value="overview" className="tracking-[0.15em] uppercase text-xs">
               Visão Geral
@@ -186,6 +187,7 @@ function StudentAreaPage() {
               Minha Mensalidade
             </TabsTrigger>
           </TabsList>
+          </div>
 
           <TabsContent value="overview">
             <Card className="bg-surface border-border-subtle">

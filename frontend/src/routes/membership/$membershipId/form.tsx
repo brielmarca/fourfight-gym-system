@@ -158,7 +158,7 @@ function MembershipFormPage() {
         )}
 
         <div className="text-center mb-12">
-          <h1 className="font-display text-4xl md:text-5xl tracking-wider">
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-wider">
             Detalhes de Pagamento
           </h1>
           <p className="mt-4 text-text-secondary">

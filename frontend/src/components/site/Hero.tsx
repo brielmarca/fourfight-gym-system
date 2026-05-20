@@ -119,7 +119,7 @@ export function Hero() {
         }}
       >
         <div
-          className="max-w-5xl mx-auto grid grid-cols-3 text-center"
+          className="max-w-5xl mx-auto grid grid-cols-3 text-center gap-2 px-2"
           style={{ padding: "28px 0" }}
         >
           {[

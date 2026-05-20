@@ -88,7 +88,7 @@ export function ProgramModal({ program, isOpen, onClose }: ProgramModalProps) {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                   <div className="bg-[#111111] rounded-xl p-4 border border-[#1E1E1E]">
                     <div className="flex items-center gap-2 text-text-secondary text-xs uppercase tracking-wider mb-2">
                       <Award size={14} />

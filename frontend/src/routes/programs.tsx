@@ -57,17 +57,17 @@ function ProgramsPage() {
       <div className="pt-32 pb-20 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h1 className="font-display text-5xl md:text-6xl tracking-wider">NOSSOS PROGRAMAS</h1>
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">NOSSOS PROGRAMAS</h1>
             <p className="mt-4 text-text-secondary text-lg">
               Träs modalidades de elite. Uma academia.
             </p>
           </div>
 
-          <div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-8">
+          <div className="mx-auto max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {programs.map((p, i) => (
               <Card
                 key={p.title}
-                className="w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)] bg-surface border-border-subtle"
+                className="bg-surface border-border-subtle"
               >
                 <CardHeader className="text-center pb-2">
                   <p.icon

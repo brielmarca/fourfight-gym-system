@@ -52,7 +52,7 @@ function MembershipSuccessPage() {
           </div>
 
           <div>
-            <h1 className="font-display text-5xl md:text-6xl tracking-wider text-green-500">
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider text-green-500">
               Pagamento Efetuado!
             </h1>
             <p className="mt-4 text-text-secondary text-lg">

@@ -165,7 +165,7 @@ function SchedulePage() {
               <p className="text-text-secondary text-lg">
                 Inicia sessão para ver horários disponíveis para o teu plano.
               </p>
-              <Link href="/login" search={{ redirect: "/schedule" }}>
+              <Link to="/login" search={{ redirect: "/schedule" }}>
                 <Button className="btn-red tracking-[0.2em] uppercase text-xs px-8 py-4">
                   Fazer Login
                 </Button>
@@ -177,7 +177,7 @@ function SchedulePage() {
                 <Zap size={32} style={{ color: "#C1121F" }} />
               </div>
               <p className="text-text-secondary text-lg">Ainda não tens um plano ativo.</p>
-              <Link href="/plans">
+              <Link to="/plans">
                 <Button className="btn-red tracking-[0.2em] uppercase text-xs px-8 py-4">
                   Ver Planos
                 </Button>

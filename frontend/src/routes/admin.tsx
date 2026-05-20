@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Link, createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/contexts/auth-context";
 import { isAuthenticated, getUser, clearTokens } from "@/lib/api";
 import {
@@ -33,6 +33,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminPage() {
+  const navigate = useNavigate();
   const { user, hasRole, logout } = useAuth();
   const { data: belts = [], isLoading: beltsLoading } = useBelts();
   const { data: membershipsData, isLoading: membershipsLoading } = useMemberships(0, 50);
@@ -45,13 +46,13 @@ function AdminPage() {
   const loading = beltsLoading || membershipsLoading || plansLoading || pendingReceptionLoading;
 
   if (user && !hasRole(["ADMIN", "MANAGER"])) {
-    window.location.href = "/student-area";
+    void navigate({ to: "/student-area", replace: true });
     return null;
   }
 
   const handleLogout = () => {
     logout();
-    window.location.href = "/";
+    void navigate({ to: "/", replace: true });
   };
 
   if (loading) {
@@ -83,16 +84,16 @@ function AdminPage() {
     <div className="min-h-screen bg-background">
       <header className="bg-surface border-b border-border-subtle">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <a href="/" className="flex flex-col">
+          <Link to="/" className="flex flex-col">
             <span className="font-display text-xl sm:text-2xl tracking-wider">4FOUR</span>
             <span className="font-sans text-[7px] sm:text-[8px] tracking-[0.3em] text-muted-foreground">
               FIGHT ACADEMY ADMIN
             </span>
-          </a>
+          </Link>
           <div className="flex items-center gap-2 md:gap-4">
-            <a href="/" className="text-xs text-text-secondary hover:text-foreground">
+            <Link to="/" className="text-xs text-text-secondary hover:text-foreground">
               Ver Site
-            </a>
+            </Link>
             <Button
               onClick={handleLogout}
               variant="ghost"

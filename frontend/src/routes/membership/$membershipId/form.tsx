@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useSearch, redirect } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate, useSearch, redirect } from "@tanstack/react-router";
 import { api, isAuthenticated } from "@/lib/api";
 import { useProcessPayment } from "@/queries";
 import { Button } from "@/components/ui/button";
@@ -128,7 +128,7 @@ function MembershipFormPage() {
     <div className="min-h-screen bg-background">
       <header className="bg-surface border-b border-border-subtle">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <a href="/" className="flex items-center">
+          <Link to="/" className="flex items-center">
             <img
               src="/assets/logo.png"
               alt="4Four Fight Academy"
@@ -139,7 +139,7 @@ function MembershipFormPage() {
                 filter: "brightness(1.1)",
               }}
             />
-          </a>
+          </Link>
         </div>
       </header>
 

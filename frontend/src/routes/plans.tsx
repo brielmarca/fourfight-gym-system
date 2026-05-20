@@ -52,24 +52,25 @@ function PlansPage() {
     <div className="min-h-screen bg-background">
       <header className="bg-surface border-b border-border-subtle">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <a href="/" className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground md:hidden">
+          <Link to="/" className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground md:hidden">
             Incio
-          </a>
+          </Link>
           <nav className="hidden md:flex items-center gap-6">
             <Link
-              href="/"
+              to="/"
               className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground"
             >
               Incio
             </Link>
             <Link
-              href="/#contact"
+              to="/"
+              hash="contact"
               className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground"
             >
               Contacto
             </Link>
             <Link
-              href="/login"
+              to="/login"
               className="btn-red bg-primary text-primary-foreground px-4 py-2 text-xs tracking-wider uppercase font-semibold rounded-[2px]"
             >
               Login
@@ -191,7 +192,7 @@ function PlansPage() {
           <div className="text-center py-20 space-y-4">
             <p className="text-text-secondary">Nenhum plano disponível no momento.</p>
             <Button asChild variant="outline" className="mt-4">
-              <a href="/contact">Contacte-nos para mais informações</a>
+              <Link to="/contact">Contacte-nos para mais informações</Link>
             </Button>
           </div>
         )}

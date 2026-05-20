@@ -1,4 +1,4 @@
-import { createFileRoute, useSearch, useNavigate, redirect } from "@tanstack/react-router";
+import { Link, createFileRoute, useSearch, useNavigate, redirect } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
@@ -30,7 +30,7 @@ function MembershipSuccessPage() {
     <div className="min-h-screen bg-background">
       <header className="bg-surface border-b border-border-subtle">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <a href="/" className="flex items-center">
+          <Link to="/" className="flex items-center">
             <img
               src="/assets/logo.png"
               alt="4Four Fight Academy"
@@ -41,7 +41,7 @@ function MembershipSuccessPage() {
                 filter: "brightness(1.1)",
               }}
             />
-          </a>
+          </Link>
         </div>
       </header>
 
@@ -98,17 +98,17 @@ function MembershipSuccessPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             <Button asChild className="btn-red px-8 py-3 tracking-[0.2em] uppercase">
-              <a href="/student-area">
+              <Link to="/student-area">
                 Ir para Area do Aluno
                 <ArrowRight className="h-4 w-4" />
-              </a>
+              </Link>
             </Button>
             <Button
               asChild
               variant="outline"
               className="px-8 py-3 tracking-[0.2em] uppercase border-border-subtle"
             >
-              <a href="/programs">Explorar Programas</a>
+              <Link to="/programs">Explorar Programas</Link>
             </Button>
           </div>
 

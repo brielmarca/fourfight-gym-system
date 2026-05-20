@@ -1,3 +1,5 @@
+import { Link } from "@tanstack/react-router";
+
 export function Hero() {
   return (
     <section
@@ -90,18 +92,18 @@ export function Hero() {
         </p>
 
         <div className="hero-cta-group" style={{ animationDelay: "1.05s", opacity: 1 }}>
-          <a
-            href="/plans"
+          <Link
+            to="/plans"
             className="hero-cta-btn hero-cta-btn-primary"
           >
             COMEÇAR AGORA<span className="cta-desktop-suffix">  7 DIAS GRÁTIS</span>
-          </a>
-          <a
-            href="/plans"
+          </Link>
+          <Link
+            to="/plans"
             className="hero-cta-btn hero-cta-btn-secondary"
           >
             VER PLANOS
-          </a>
+          </Link>
         </div>
       </div>
 

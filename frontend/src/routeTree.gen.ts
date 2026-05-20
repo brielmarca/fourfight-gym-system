@@ -21,7 +21,6 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProgramasMmaRouteImport } from './routes/programas.mma'
 import { Route as ProgramasJiuJitsuRouteImport } from './routes/programas.jiu-jitsu'
-import { Route as ProgramasForcaCondicionamentoRouteImport } from './routes/programas.forca-condicionamento'
 import { Route as ProgramasCapoeiraRouteImport } from './routes/programas.capoeira'
 import { Route as ProgramasBoxeKickboxingRouteImport } from './routes/programas.boxe-kickboxing'
 import { Route as MembershipSuccessRouteImport } from './routes/membership/success'
@@ -89,12 +88,6 @@ const ProgramasJiuJitsuRoute = ProgramasJiuJitsuRouteImport.update({
   path: '/programas/jiu-jitsu',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProgramasForcaCondicionamentoRoute =
-  ProgramasForcaCondicionamentoRouteImport.update({
-    id: '/programas/forca-condicionamento',
-    path: '/programas/forca-condicionamento',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ProgramasCapoeiraRoute = ProgramasCapoeiraRouteImport.update({
   id: '/programas/capoeira',
   path: '/programas/capoeira',
@@ -143,7 +136,6 @@ export interface FileRoutesByFullPath {
   '/membership/success': typeof MembershipSuccessRoute
   '/programas/boxe-kickboxing': typeof ProgramasBoxeKickboxingRoute
   '/programas/capoeira': typeof ProgramasCapoeiraRoute
-  '/programas/forca-condicionamento': typeof ProgramasForcaCondicionamentoRoute
   '/programas/jiu-jitsu': typeof ProgramasJiuJitsuRoute
   '/programas/mma': typeof ProgramasMmaRoute
   '/membership/$membershipId/form': typeof MembershipMembershipIdFormRoute
@@ -164,7 +156,6 @@ export interface FileRoutesByTo {
   '/membership/success': typeof MembershipSuccessRoute
   '/programas/boxe-kickboxing': typeof ProgramasBoxeKickboxingRoute
   '/programas/capoeira': typeof ProgramasCapoeiraRoute
-  '/programas/forca-condicionamento': typeof ProgramasForcaCondicionamentoRoute
   '/programas/jiu-jitsu': typeof ProgramasJiuJitsuRoute
   '/programas/mma': typeof ProgramasMmaRoute
   '/membership/$membershipId/form': typeof MembershipMembershipIdFormRoute
@@ -186,7 +177,6 @@ export interface FileRoutesById {
   '/membership/success': typeof MembershipSuccessRoute
   '/programas/boxe-kickboxing': typeof ProgramasBoxeKickboxingRoute
   '/programas/capoeira': typeof ProgramasCapoeiraRoute
-  '/programas/forca-condicionamento': typeof ProgramasForcaCondicionamentoRoute
   '/programas/jiu-jitsu': typeof ProgramasJiuJitsuRoute
   '/programas/mma': typeof ProgramasMmaRoute
   '/membership/$membershipId/form': typeof MembershipMembershipIdFormRoute
@@ -209,7 +199,6 @@ export interface FileRouteTypes {
     | '/membership/success'
     | '/programas/boxe-kickboxing'
     | '/programas/capoeira'
-    | '/programas/forca-condicionamento'
     | '/programas/jiu-jitsu'
     | '/programas/mma'
     | '/membership/$membershipId/form'
@@ -230,7 +219,6 @@ export interface FileRouteTypes {
     | '/membership/success'
     | '/programas/boxe-kickboxing'
     | '/programas/capoeira'
-    | '/programas/forca-condicionamento'
     | '/programas/jiu-jitsu'
     | '/programas/mma'
     | '/membership/$membershipId/form'
@@ -251,7 +239,6 @@ export interface FileRouteTypes {
     | '/membership/success'
     | '/programas/boxe-kickboxing'
     | '/programas/capoeira'
-    | '/programas/forca-condicionamento'
     | '/programas/jiu-jitsu'
     | '/programas/mma'
     | '/membership/$membershipId/form'
@@ -273,7 +260,6 @@ export interface RootRouteChildren {
   MembershipSuccessRoute: typeof MembershipSuccessRoute
   ProgramasBoxeKickboxingRoute: typeof ProgramasBoxeKickboxingRoute
   ProgramasCapoeiraRoute: typeof ProgramasCapoeiraRoute
-  ProgramasForcaCondicionamentoRoute: typeof ProgramasForcaCondicionamentoRoute
   ProgramasJiuJitsuRoute: typeof ProgramasJiuJitsuRoute
   ProgramasMmaRoute: typeof ProgramasMmaRoute
 }
@@ -364,13 +350,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProgramasJiuJitsuRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/programas/forca-condicionamento': {
-      id: '/programas/forca-condicionamento'
-      path: '/programas/forca-condicionamento'
-      fullPath: '/programas/forca-condicionamento'
-      preLoaderRoute: typeof ProgramasForcaCondicionamentoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/programas/capoeira': {
       id: '/programas/capoeira'
       path: '/programas/capoeira'
@@ -446,7 +425,6 @@ const rootRouteChildren: RootRouteChildren = {
   MembershipSuccessRoute: MembershipSuccessRoute,
   ProgramasBoxeKickboxingRoute: ProgramasBoxeKickboxingRoute,
   ProgramasCapoeiraRoute: ProgramasCapoeiraRoute,
-  ProgramasForcaCondicionamentoRoute: ProgramasForcaCondicionamentoRoute,
   ProgramasJiuJitsuRoute: ProgramasJiuJitsuRoute,
   ProgramasMmaRoute: ProgramasMmaRoute,
 }

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-import { Swords, Hand, Dumbbell, Zap, Target, Clock, Award, Users } from "lucide-react";
+import { Swords, Hand, Zap, Target, Clock, Award, Users } from "lucide-react";
 
 export const Route = createFileRoute("/programs")({
   component: ProgramsPage,
@@ -29,13 +29,6 @@ const programs = [
     level: "Iniciante a Avançado",
   },
   {
-    icon: Dumbbell,
-    title: "FORÇA & CONDICIONAMENTO",
-    desc: "Condicionamento atlético construído para lutadores. Potência, resistência e prevenção de lesões.",
-    details: ["Treino funcional", "Hipertrofia", "Cardio", "Mobilidade"],
-    level: "Todos os níveis",
-  },
-  {
     icon: Zap,
     title: "CAPOEIRA",
     desc: "Arte marcial brasileira que combina ritmo, mobilidade, expressão corporal e técnica.",
@@ -59,7 +52,7 @@ function ProgramsPage() {
           <div className="text-center mb-16">
             <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">NOSSOS PROGRAMAS</h1>
             <p className="mt-4 text-text-secondary text-lg">
-              Träs modalidades de elite. Uma academia.
+              Quatro modalidades de elite. Uma academia.
             </p>
           </div>
 
@@ -106,13 +99,6 @@ function ProgramsPage() {
                       className="w-full btn-red tracking-[0.2em] uppercase text-xs transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_15px_rgba(193,18,31,0.3)] hover:scale-[1.02] cursor-pointer"
                     >
                       <Link to="/programas/boxe-kickboxing">Ver Mais</Link>
-                    </Button>
-                  ) : p.title === "FORÇA & CONDICIONAMENTO" ? (
-                    <Button
-                      asChild
-                      className="w-full btn-red tracking-[0.2em] uppercase text-xs transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_15px_rgba(193,18,31,0.3)] hover:scale-[1.02] cursor-pointer"
-                    >
-                      <Link to="/programas/forca-condicionamento">Ver Mais</Link>
                     </Button>
                   ) : p.title === "CAPOEIRA" ? (
                     <Button

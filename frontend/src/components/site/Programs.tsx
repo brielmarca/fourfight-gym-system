@@ -1,4 +1,4 @@
-import { Swords, Hand, Dumbbell, type LucideIcon } from "lucide-react";
+import { Swords, Hand, Zap, Target, type LucideIcon } from "lucide-react";
 import { useState } from "react";
 import { ProgramModal } from "./ProgramModal";
 
@@ -44,19 +44,22 @@ const programs: ProgramData[] = [
     schedule: "Seg/Qua 18h-19h, Ter/Qui 19h-20h",
   },
   {
-    icon: Dumbbell,
-    title: "FORÇA & CONDICIONAMENTO",
-    desc: "Condicionamento atlético construído para lutadores. Potência, resistência e prevenção de lesões.",
-    details: [
-      "Treino funcional",
-      "Hipertrofia e força",
-      "Cardio de alta intensidade",
-      "Mobilidade e flexibilidade",
-      "Prevenção de lesões",
-    ],
+    icon: Zap,
+    title: "CAPOEIRA",
+    desc: "Arte marcial brasileira com ritmo, técnica e expressão corporal para todos os níveis.",
+    details: ["Ginga e movimentação", "Musicalidade", "Defesa e ataque", "Flexibilidade", "Coordenação"],
     level: "Todos os níveis",
-    duration: "45-60 min",
-    schedule: "Seg a Sex 7h-22h (Livre)",
+    duration: "60 min",
+    schedule: "Ter/Qui 18h-19h, Sáb 11h-12h",
+  },
+  {
+    icon: Target,
+    title: "MMA",
+    desc: "Combinação completa de striking, wrestling e grappling com foco em performance de combate.",
+    details: ["Striking", "Wrestling", "Grappling", "Condicionamento de luta", "Sparring técnico"],
+    level: "Iniciante a Avançado",
+    duration: "60-90 min",
+    schedule: "Seg/Qua/Sex 20h-21h30",
   },
 ];
 
@@ -145,7 +148,7 @@ export function Programs() {
               FORJA A TUA DISCIPLINA
             </h2>
             <p className="mt-4" style={{ fontSize: "14px", color: "#666" }}>
-              Três modalidades de elite. Uma academia.
+              Quatro modalidades de elite. Uma academia.
             </p>
             <div
               className="mx-auto mt-6"
@@ -153,7 +156,7 @@ export function Programs() {
             />
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {programs.map((p, i) => (
               <ProgramCard key={p.title} {...p} delay={i * 100} onClick={() => openModal(p)} />
             ))}

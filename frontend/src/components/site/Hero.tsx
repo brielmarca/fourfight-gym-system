@@ -121,7 +121,7 @@ export function Hero() {
           {[
             ["500+", "Atletas Treinados"],
             ["12+", "Anos de Excelência"],
-            ["3", "Modalidades"],
+            ["4", "Modalidades"],
           ].map(([n, l], i) => (
             <div
               key={l}

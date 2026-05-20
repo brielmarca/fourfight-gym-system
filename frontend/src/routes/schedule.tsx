@@ -102,7 +102,8 @@ function SchedulePage() {
     "Todos",
     "Jiu-Jitsu",
     "Boxe / Kickboxing",
-    "Força & Condicionamento",
+    "Capoeira",
+    "MMA",
   ];
 
   const filteredClasses = classes

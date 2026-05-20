@@ -6,15 +6,6 @@ import { Swords, Hand, Dumbbell, Zap, Target, Clock, Award, Users } from "lucide
 
 export const Route = createFileRoute("/programs")({
   component: ProgramsPage,
-  head: () => ({
-    meta: [
-      { title: "Programas — 4Four Fight Academy" },
-      {
-        name: "description",
-        content: "Jiu-Jitsu, Boxe, Kickboxing e Força & Condicionamento na 4Four Fight Academy.",
-      },
-    ],
-  }),
 });
 
 const programs = [

@@ -23,9 +23,6 @@ export const Route = createFileRoute("/admin")({
     }
   },
   component: AdminPage,
-  head: () => ({
-    meta: [{ title: "Painel Admin — 4Four Fight Academy" }],
-  }),
 });
 
 function AdminPage() {

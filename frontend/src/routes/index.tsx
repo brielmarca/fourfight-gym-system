@@ -9,16 +9,6 @@ import { Contact } from "@/components/site/Contact";
 
 export const Route = createFileRoute("/")({
   component: Index,
-  head: () => ({
-    meta: [
-      { title: "4Four Fight Academy — Elite Training in Gondomar" },
-      {
-        name: "description",
-        content:
-          "Elite Jiu-Jitsu, Boxing, Kickboxing and Strength Training in Gondomar. Professional instructors. Competition-ready academy.",
-      },
-    ],
-  }),
 });
 
 function Index() {

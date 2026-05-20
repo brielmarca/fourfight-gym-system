@@ -21,16 +21,6 @@ import capoeiraVideo from "@/assets/gymlutas/jiu-jitsu-video.mp4";
 
 export const Route = createFileRoute("/programas/capoeira")({
   component: CapoeiraPage,
-  head: () => ({
-    meta: [
-      { title: "Capoeira — 4Four Fight Academy" },
-      {
-        name: "description",
-        content:
-          "Arte marcial brasileira que combina ritmo, mobilidade, expressão corporal e técnica na 4Four Fight Academy.",
-      },
-    ],
-  }),
 });
 
 const trainingContent = [

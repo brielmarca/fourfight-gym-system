@@ -6,15 +6,6 @@ import { Shield, Trophy, Users, Star, MapPin, Phone, Mail, Clock } from "lucide-
 
 export const Route = createFileRoute("/about")({
   component: AboutPage,
-  head: () => ({
-    meta: [
-      { title: "Sobre — 4Four Fight Academy" },
-      {
-        name: "description",
-        content: "Conoce a infraestrutura da 4Four Fight Academy em Gondomar.",
-      },
-    ],
-  }),
 });
 
 const features = [

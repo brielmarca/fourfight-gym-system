@@ -21,12 +21,6 @@ export const Route = createFileRoute("/membership/$membershipId")({
     }
   },
   component: MembershipMethodPage,
-  head: () => ({
-    meta: [
-      { title: "Metodo de Pagamento — 4Four Fight Academy" },
-      { name: "description", content: "Selecione o metodo de pagamento" },
-    ],
-  }),
 });
 
 function MembershipMethodPage() {

@@ -22,16 +22,6 @@ import forcaTrainingVideo from "@/assets/gymlutas/jiu-jitsu-video.mp4";
 
 export const Route = createFileRoute("/programas/forca-condicionamento")({
   component: ForcaCondicionamentoPage,
-  head: () => ({
-    meta: [
-      { title: "Força & Condicionamento — 4Four Fight Academy" },
-      {
-        name: "description",
-        content:
-          "Potência, resistência e preparação física para alto desempenho na 4Four Fight Academy.",
-      },
-    ],
-  }),
 });
 
 const trainingContent = [

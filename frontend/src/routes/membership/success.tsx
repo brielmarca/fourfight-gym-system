@@ -13,12 +13,6 @@ export const Route = createFileRoute("/membership/success")({
     }
   },
   component: MembershipSuccessPage,
-  head: () => ({
-    meta: [
-      { title: "Pagamento Efetuado — 4Four Fight Academy" },
-      { name: "description", content: "A sua adesao esta agora ativa" },
-    ],
-  }),
 });
 
 function MembershipSuccessPage() {

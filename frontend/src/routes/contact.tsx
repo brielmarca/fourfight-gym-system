@@ -11,12 +11,6 @@ import { MapPin, Phone, Mail, Clock, Send, Calendar, Loader2, Check, X } from "l
 
 export const Route = createFileRoute("/contact")({
   component: ContactPage,
-  head: () => ({
-    meta: [
-      { title: "Contacto — 4Four Fight Academy" },
-      { name: "description", content: "Contacta a 4Four Fight Academy em Gondomar." },
-    ],
-  }),
 });
 
 const contactInfo = [

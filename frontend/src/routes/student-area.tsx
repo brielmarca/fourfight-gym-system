@@ -33,9 +33,6 @@ export const Route = createFileRoute("/student-area")({
     }
   },
   component: StudentAreaPage,
-  head: () => ({
-    meta: [{ title: "Área do Aluno — 4Four Fight Academy" }],
-  }),
 });
 
 function StudentAreaPage() {

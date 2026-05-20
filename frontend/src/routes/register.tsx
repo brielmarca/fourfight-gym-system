@@ -10,7 +10,6 @@ import { Loader2, Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/register")({
   component: RegisterPage,
-  head: () => ({ meta: [{ title: "Criar Conta — 4Four Fight Academy" }] }),
 });
 
 function getSafeRedirect(search: unknown): string | null {

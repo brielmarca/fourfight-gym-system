@@ -16,12 +16,6 @@ export const Route = createFileRoute("/checkout/$planId")({
     }
   },
   component: CheckoutPage,
-  head: () => ({
-    meta: [
-      { title: "Checkout — 4Four Fight Academy" },
-      { name: "description", content: "Complete a sua adesao" },
-    ],
-  }),
 });
 
 function CheckoutPage() {

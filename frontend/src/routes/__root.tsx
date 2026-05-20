@@ -1,13 +1,5 @@
-import {
-  Outlet,
-  Link,
-  createRootRoute,
-  HeadContent,
-  Scripts,
-  useLocation,
-} from "@tanstack/react-router";
+import { Outlet, Link, createRootRoute, useLocation } from "@tanstack/react-router";
 
-import appCss from "../styles.css?url";
 import { HomeButton } from "../components/site/HomeButton";
 import { Footer } from "../components/site/Footer";
 import { AuthProvider } from "../contexts/auth-context";
@@ -17,7 +9,6 @@ const publicFooterRoutes = new Set(["/", "/about", "/programs", "/schedule", "/p
 
 function shouldShowFooter(pathname: string) {
   const normalizedPath = pathname.length > 1 ? pathname.replace(/\/$/, "") : pathname;
-
   return publicFooterRoutes.has(normalizedPath) || normalizedPath.startsWith("/programas/");
 }
 
@@ -44,48 +35,9 @@ function NotFoundComponent() {
 }
 
 export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { httpEquiv: "Content-Type", content: "text/html; charset=utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "4Four Fight Academy" },
-      {
-        name: "description",
-        content: "Jiu-Jitsu, Boxe, Kickboxing e Condicionamento Físico de Elite em Gondomar.",
-      },
-      { name: "author", content: "4Four Fight Academy" },
-      { property: "og:title", content: "4Four Fight Academy" },
-      { property: "og:description", content: "Sistema oficial da 4Four Fight Academy" },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@4FourFightAcademy" },
-    ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-    ],
-  }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
 });
-
-function RootShell({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="pt-BR">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
 
 function RootComponent() {
   const location = useLocation();

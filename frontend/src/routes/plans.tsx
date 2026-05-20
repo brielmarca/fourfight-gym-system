@@ -10,16 +10,6 @@ import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/plans")({
   component: PlansPage,
-  head: () => ({
-    meta: [
-      { title: "Planos e Preços — 4Four Fight Academy" },
-      {
-        name: "description",
-        content:
-          "Escolha seu plano de treino na 4Four Fight Academy. Jiu-Jitsu, Boxing, Kickboxing e Musculação.",
-      },
-    ],
-  }),
 });
 
 function PlansPage() {

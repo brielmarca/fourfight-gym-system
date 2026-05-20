@@ -21,16 +21,6 @@ import mmaVideo from "@/assets/gymlutas/jiu-jitsu-video.mp4";
 
 export const Route = createFileRoute("/programas/mma")({
   component: MMAPage,
-  head: () => ({
-    meta: [
-      { title: "MMA — 4Four Fight Academy" },
-      {
-        name: "description",
-        content:
-          "Combinação completa de striking, wrestling, grappling e condicionamento para combate na 4Four Fight Academy.",
-      },
-    ],
-  }),
 });
 
 const trainingContent = [

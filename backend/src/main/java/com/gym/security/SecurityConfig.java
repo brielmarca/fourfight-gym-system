@@ -57,7 +57,6 @@ public class SecurityConfig {
                 // All other auth endpoints require authentication
                 .requestMatchers("/api/auth/**").authenticated()
                 // Stripe webhook (no auth header from Stripe)
-                .requestMatchers(HttpMethod.POST, "/api/checkout").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/stripe/webhook").permitAll()
                 // Public read-only data
                 .requestMatchers("/api/plans/**", "/api/classes/**", "/api/programs/**").permitAll()

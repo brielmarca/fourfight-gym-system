@@ -91,6 +91,7 @@ public class StripeWebhookService {
     private void processEvent(Event event) {
         switch (event.getType()) {
             case "checkout.session.completed" -> handleCheckoutSessionCompleted(event);
+            case "customer.subscription.created" -> handleSubscriptionCreated(event);
             case "invoice.paid" -> handleInvoicePaid(event);
             case "invoice.payment_failed" -> handleInvoicePaymentFailed(event);
             case "customer.subscription.deleted" -> handleSubscriptionDeleted(event);
@@ -121,7 +122,7 @@ public class StripeWebhookService {
         }
 
         membership.setStripeSubscriptionId(subscriptionId);
-        membership.setStatus(Membership.MembershipStatus.ACTIVE);
+        membership.setStatus(Membership.MembershipStatus.PENDING_PAYMENT);
         membership.setAutoRenew(true);
 
         if (session.getExpiresAt() != null) {
@@ -131,7 +132,28 @@ public class StripeWebhookService {
         }
 
         membershipRepository.save(membership);
-        log.info("Membership activated via Stripe checkout: {} (subscription: {})", membership.getId(), subscriptionId);
+        log.info("Membership linked to Stripe subscription after checkout: {} (subscription: {})", membership.getId(), subscriptionId);
+    }
+
+    private void handleSubscriptionCreated(Event event) {
+        EventDataObjectDeserializer deserializer = event.getDataObjectDeserializer();
+        Subscription subscription = deserializer.getObject().map(obj -> (Subscription) obj).orElse(null);
+
+        if (subscription == null) {
+            log.error("Failed to deserialize subscription");
+            return;
+        }
+
+        Membership membership = membershipRepository
+            .findByStripeSubscriptionId(subscription.getId())
+            .orElse(null);
+
+        if (membership == null) {
+            return;
+        }
+
+        membership.setCancelAtPeriodEnd(subscription.getCancelAtPeriodEnd());
+        membershipRepository.save(membership);
     }
 
     private void handleInvoicePaid(Event event) {
@@ -172,16 +194,24 @@ public class StripeWebhookService {
 
         paymentRepository.save(payment);
 
+        LocalDate startDate = LocalDate.now();
+        if (invoice.getPeriodStart() != null) {
+            startDate = LocalDate.ofInstant(Instant.ofEpochSecond(invoice.getPeriodStart()), java.time.ZoneId.systemDefault());
+        }
+
         if (invoice.getPeriodEnd() != null) {
             membership.setCurrentPeriodEnd(
                     LocalDate.ofInstant(Instant.ofEpochSecond(invoice.getPeriodEnd()), java.time.ZoneId.systemDefault())
             );
+            membership.setEndDate(membership.getCurrentPeriodEnd());
         }
         if (invoice.getPeriodStart() != null) {
             membership.setCurrentPeriodStart(
                     LocalDate.ofInstant(Instant.ofEpochSecond(invoice.getPeriodStart()), java.time.ZoneId.systemDefault())
             );
         }
+
+        membership.setStartDate(startDate);
 
         membership.setStatus(Membership.MembershipStatus.ACTIVE);
         membershipRepository.save(membership);
@@ -224,6 +254,8 @@ public class StripeWebhookService {
                 .build();
 
         paymentRepository.save(payment);
+        membership.setStatus(Membership.MembershipStatus.SUSPENDED);
+        membershipRepository.save(membership);
         log.warn("Invoice payment failed for membership: {}", membership.getId());
     }
 

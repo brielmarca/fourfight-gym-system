@@ -29,7 +29,7 @@ export function useCheckoutStatus(membershipId: string) {
   return useQuery<CheckoutResponse>({
     queryKey: queryKeys.memberships.status(membershipId),
     queryFn: () => api.membership.getStatus(membershipId),
-    enabled: !!membershipId && !membershipId.startsWith("demo-"),
+    enabled: !!membershipId,
   });
 }
 

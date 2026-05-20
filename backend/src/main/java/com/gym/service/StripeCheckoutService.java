@@ -11,8 +11,13 @@ import com.gym.repository.PlanRepository;
 import com.gym.repository.UserRepository;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
+import com.stripe.model.Price;
+import com.stripe.model.Product;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.CustomerCreateParams;
+import com.stripe.param.PriceCreateParams;
+import com.stripe.param.PriceListParams;
+import com.stripe.param.ProductCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,9 +43,6 @@ public class StripeCheckoutService {
 
     @Value("${stripe.frontend-cancel-url:http://localhost:5173/plans}")
     private String frontendCancelUrl;
-
-    @Value("${app.frontend-url:http://localhost:5173}")
-    private String frontendUrl;
 
     public StripeCheckoutService(
             UserRepository userRepository,
@@ -76,31 +78,23 @@ public class StripeCheckoutService {
             throw new BusinessRuleException("Failed to initialize payment customer: " + e.getMessage());
         }
 
+        String stripePriceId;
+        try {
+            stripePriceId = resolveOrCreateStripePriceId(plan);
+        } catch (StripeException e) {
+            log.error("Failed to resolve Stripe price for plan {}", plan.getId(), e);
+            throw new BusinessRuleException("Failed to prepare Stripe price: " + e.getMessage());
+        }
+
         SessionCreateParams.Builder sessionBuilder = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
                 .setCustomer(customerId)
-                .setCurrency("eur")
                 .setSuccessUrl(frontendSuccessUrl + "?session_id={CHECKOUT_SESSION_ID}")
                 .setCancelUrl(frontendCancelUrl)
                 .addLineItem(
                         SessionCreateParams.LineItem.builder()
                                 .setQuantity(1L)
-                                .setPriceData(
-                                        SessionCreateParams.LineItem.PriceData.builder()
-                                                .setProductData(
-                                                        SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                                                .setName(plan.getName() + " - 4Four Fight Academy")
-                                                                .build()
-                                                )
-                                                .setUnitAmountDecimal(plan.getPrice().multiply(java.math.BigDecimal.valueOf(100)))
-                                                .setCurrency("eur")
-                                                .setRecurring(
-                                                        SessionCreateParams.LineItem.PriceData.Recurring.builder()
-                                                                .setInterval(SessionCreateParams.LineItem.PriceData.Recurring.Interval.MONTH)
-                                                                .build()
-                                                )
-                                                .build()
-                                )
+                                .setPrice(stripePriceId)
                                 .build()
                 )
                 .putMetadata("userId", user.getId().toString())
@@ -122,9 +116,9 @@ public class StripeCheckoutService {
                 .startDate(LocalDate.now())
                 .endDate(LocalDate.now().plusDays(plan.getDurationDays()))
                 .stripeCheckoutSessionId(session.getId())
-                .stripePriceId(plan.getStripePriceId())
-                .status(Membership.MembershipStatus.ACTIVE)
-                .autoRenew(true)
+                .stripePriceId(stripePriceId)
+                .status(Membership.MembershipStatus.PENDING_PAYMENT)
+                .autoRenew(false)
                 .build();
 
         membershipRepository.save(pendingMembership);
@@ -148,5 +142,83 @@ public class StripeCheckoutService {
         userRepository.save(user);
 
         return customer.getId();
+    }
+
+    private String resolveOrCreateStripePriceId(Plan plan) throws StripeException {
+        String existingPriceId = plan.getStripePriceId();
+        if (existingPriceId != null && !existingPriceId.isBlank()) {
+            Price existing = Price.retrieve(existingPriceId);
+            if (isEurMonthlyPrice(existing, plan)) {
+                return existingPriceId;
+            }
+            log.warn("Existing Stripe price {} for plan {} is not EUR monthly with expected amount", existingPriceId, plan.getId());
+        }
+
+        String lookupKey = "fourfight_plan_" + plan.getId() + "_eur_monthly";
+        PriceListParams listParams = PriceListParams.builder()
+            .addLookupKey(lookupKey)
+            .setActive(true)
+            .setLimit(1L)
+            .build();
+        var priceList = Price.list(listParams);
+        if (!priceList.getData().isEmpty()) {
+            Price matched = priceList.getData().get(0);
+            if (isEurMonthlyPrice(matched, plan)) {
+                persistStripeIds(plan, matched.getProduct(), matched.getId());
+                return matched.getId();
+            }
+        }
+
+        String productId = ensureStripeProduct(plan);
+        long unitAmount = plan.getPrice().movePointRight(2).longValueExact();
+
+        PriceCreateParams createParams = PriceCreateParams.builder()
+            .setCurrency("eur")
+            .setUnitAmount(unitAmount)
+            .setProduct(productId)
+            .setLookupKey(lookupKey)
+            .setRecurring(
+                PriceCreateParams.Recurring.builder()
+                    .setInterval(PriceCreateParams.Recurring.Interval.MONTH)
+                    .build()
+            )
+            .putMetadata("planId", plan.getId().toString())
+            .build();
+
+        Price created = Price.create(createParams);
+        persistStripeIds(plan, productId, created.getId());
+        return created.getId();
+    }
+
+    private boolean isEurMonthlyPrice(Price price, Plan plan) {
+        if (price == null || price.getRecurring() == null || price.getUnitAmount() == null) {
+            return false;
+        }
+        boolean eur = "eur".equalsIgnoreCase(price.getCurrency());
+        boolean monthly = "month".equalsIgnoreCase(price.getRecurring().getInterval());
+        long expected = plan.getPrice().movePointRight(2).longValueExact();
+        return eur && monthly && expected == price.getUnitAmount();
+    }
+
+    private String ensureStripeProduct(Plan plan) throws StripeException {
+        if (plan.getStripeProductId() != null && !plan.getStripeProductId().isBlank()) {
+            return plan.getStripeProductId();
+        }
+
+        ProductCreateParams productParams = ProductCreateParams.builder()
+            .setName(plan.getName() + " - 4Four Fight Academy")
+            .setDescription(plan.getDescription())
+            .putMetadata("planId", plan.getId().toString())
+            .build();
+        Product product = Product.create(productParams);
+        plan.setStripeProductId(product.getId());
+        planRepository.save(plan);
+        return product.getId();
+    }
+
+    private void persistStripeIds(Plan plan, String productId, String priceId) {
+        plan.setStripeProductId(productId);
+        plan.setStripePriceId(priceId);
+        planRepository.save(plan);
     }
 }

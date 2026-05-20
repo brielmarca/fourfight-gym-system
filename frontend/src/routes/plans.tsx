@@ -17,38 +17,7 @@ function PlansPage() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const displayPlans =
-    plans && plans.length > 0
-      ? plans
-      : [
-          {
-            id: "demo-basico",
-            name: "Basico",
-            price: 29.99,
-            durationDays: 30,
-            maxClasses: 3,
-            isActive: true,
-            description: "Plano basica",
-          },
-          {
-            id: "demo-padrao",
-            name: "Padrao",
-            price: 49.99,
-            durationDays: 30,
-            maxClasses: -1,
-            isActive: true,
-            description: "Plano padrao",
-          },
-          {
-            id: "demo-premium",
-            name: "Premium",
-            price: 79.99,
-            durationDays: 30,
-            maxClasses: -1,
-            isActive: true,
-            description: "Plano premium",
-          },
-        ];
+  const displayPlans = plans && plans.length > 0 ? plans : [];
 
   if (!selectedPlan && displayPlans.length > 1) {
     setSelectedPlan(displayPlans[1].id);
@@ -125,7 +94,7 @@ function PlansPage() {
         {error && !plans ? (
           <div className="text-center py-20 space-y-4">
             <p className="text-text-secondary">
-              Erro ao carregar planos. A mostrar planos de demonstração.
+              Erro ao carregar planos. Tente novamente em instantes.
             </p>
           </div>
         ) : null}

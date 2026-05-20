@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { api, getUser, isAuthenticated } from "@/lib/api";
 import { useCreateReceptionRequest, usePlan, useStripeCheckout } from "@/queries";
 import { Button } from "@/components/ui/button";

@@ -39,18 +39,20 @@ export const Route = createRootRoute({
   notFoundComponent: NotFoundComponent,
 });
 
-function RootComponent() {
-  const location = useLocation();
-  const isHomePage = location.pathname === "/";
-  const showFooter = shouldShowFooter(location.pathname);
+  function RootComponent() {
+    const location = useLocation();
+    const isHomePage = location.pathname === "/";
+    const showFooter = shouldShowFooter(location.pathname);
 
-  return (
-    <QueryProvider>
-      <AuthProvider>
-        {!isHomePage && <HomeButton />}
-        <Outlet />
-        {showFooter && <Footer />}
-      </AuthProvider>
-    </QueryProvider>
-  );
-}
+    return (
+      <QueryProvider>
+        <AuthProvider>
+          <div className="overflow-x-hidden">
+            {!isHomePage && <HomeButton />}
+            <Outlet />
+            {showFooter && <Footer />}
+          </div>
+        </AuthProvider>
+      </QueryProvider>
+    );
+  }

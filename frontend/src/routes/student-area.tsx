@@ -72,29 +72,30 @@ function StudentAreaPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-surface border-b border-border-subtle">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex flex-col hover:opacity-80 transition-opacity">
-            <span className="font-display text-2xl tracking-wider">4FOUR</span>
-            <span className="font-sans text-[8px] tracking-[0.3em] text-text-muted">
+            <span className="font-display text-xl sm:text-2xl tracking-wider">4FOUR</span>
+            <span className="font-sans text-[7px] sm:text-[8px] tracking-[0.3em] text-text-muted">
               FIGHT ACADEMY
             </span>
           </Link>
           <Button
             onClick={handleLogout}
             variant="ghost"
+            size="sm"
             className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground"
           >
-            <LogOut size={14} className="mr-1" />
-            Sair
+            <LogOut size={14} className="sm:mr-1" />
+            <span className="hidden sm:inline">Sair</span>
           </Button>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="font-display text-3xl sm:text-4xl tracking-wider">ÁREA DO ALUNO</h1>
-          <p className="text-text-secondary mt-1">
-            Bem-vindo de volta, {profile?.userName || "Atleta"}! 👋
+      <main className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="font-display text-2xl sm:text-4xl tracking-wider">ÁREA DO ALUNO</h1>
+          <p className="text-text-secondary mt-1 text-sm sm:text-base">
+            Bem-vindo de volta, {profile?.userName || "Atleta"}!
           </p>
           {!membership && (
             <p className="mt-3 text-sm text-primary font-semibold">

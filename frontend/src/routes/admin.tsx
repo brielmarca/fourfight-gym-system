@@ -71,11 +71,11 @@ function AdminPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-surface border-b border-border-subtle">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <a href="/" className="flex flex-col">
-            <span className="font-display text-2xl tracking-wider">4FOUR</span>
-            <span className="font-sans text-[8px] tracking-[0.3em] text-muted-foreground">
-              FIGHT ACADEMY — ADMIN
+            <span className="font-display text-xl sm:text-2xl tracking-wider">4FOUR</span>
+            <span className="font-sans text-[7px] sm:text-[8px] tracking-[0.3em] text-muted-foreground">
+              FIGHT ACADEMY ADMIN
             </span>
           </a>
           <div className="flex items-center gap-2 md:gap-4">
@@ -85,19 +85,20 @@ function AdminPage() {
             <Button
               onClick={handleLogout}
               variant="ghost"
+              size="sm"
               className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground"
             >
-              <LogOut size={14} className="mr-1" />
+              <LogOut size={14} className="sm:mr-1" />
               <span className="hidden sm:inline">Sair</span>
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="font-display text-3xl sm:text-4xl tracking-wider">PAINEL ADMIN</h1>
-          <p className="text-text-secondary mt-1">Gerencie sua academia</p>
+      <main className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="font-display text-2xl sm:text-4xl tracking-wider">PAINEL ADMIN</h1>
+          <p className="text-text-secondary mt-1 text-sm sm:text-base">Gerencie sua academia</p>
         </div>
 
         <Tabs defaultValue="dashboard" className="space-y-6">
@@ -131,7 +132,7 @@ function AdminPage() {
           </div>
 
           <TabsContent value="dashboard">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               <Card className="bg-surface border-border-subtle">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs tracking-[0.2em] uppercase text-text-secondary">

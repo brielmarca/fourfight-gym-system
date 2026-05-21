@@ -110,6 +110,7 @@ function ContactPage() {
                           value={form.name}
                           onChange={(e) => setForm({ ...form, name: e.target.value })}
                           required
+                          disabled={createContact.isPending}
                           className="bg-surface-2 border-border-subtle"
                         />
                       </div>
@@ -121,47 +122,55 @@ function ContactPage() {
                           placeholder="+351"
                           value={form.phone}
                           onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                          disabled={createContact.isPending}
                           className="bg-surface-2 border-border-subtle"
                         />
+                        <p className="text-[11px] text-text-muted">Opcional</p>
                       </div>
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs tracking-wider uppercase text-text-secondary">
                         Email *
                       </label>
-                      <Input
-                        type="email"
-                        placeholder="teu@email.com"
-                        value={form.email}
-                        onChange={(e) => setForm({ ...form, email: e.target.value })}
-                        required
-                        className="bg-surface-2 border-border-subtle"
-                      />
+                        <Input
+                          type="email"
+                          placeholder="teu@email.com"
+                          value={form.email}
+                          onChange={(e) => setForm({ ...form, email: e.target.value })}
+                          required
+                          disabled={createContact.isPending}
+                          className="bg-surface-2 border-border-subtle"
+                        />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs tracking-wider uppercase text-text-secondary">
                         Assunto *
                       </label>
-                      <Input
-                        placeholder="Assunto da mensagem"
-                        value={form.subject}
-                        onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                        required
-                        className="bg-surface-2 border-border-subtle"
-                      />
+                        <Input
+                          placeholder="Assunto da mensagem"
+                          value={form.subject}
+                          onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                          required
+                          disabled={createContact.isPending}
+                          className="bg-surface-2 border-border-subtle"
+                        />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs tracking-wider uppercase text-text-secondary">
                         Mensagem *
                       </label>
-                      <Textarea
-                        placeholder="O que queres saber?"
-                        value={form.message}
-                        onChange={(e) => setForm({ ...form, message: e.target.value })}
-                        required
-                        className="bg-surface-2 border-border-subtle min-h-[120px]"
-                      />
-                    </div>
+                        <Textarea
+                          placeholder="O que queres saber?"
+                          value={form.message}
+                          onChange={(e) => setForm({ ...form, message: e.target.value })}
+                          required
+                          disabled={createContact.isPending}
+                          className="bg-surface-2 border-border-subtle min-h-[120px]"
+                        />
+                        <p className="text-[11px] text-text-muted text-right">
+                          {form.message.length}/1000 caracteres
+                        </p>
+                      </div>
                     <Button
                       type="submit"
                       disabled={createContact.isPending}

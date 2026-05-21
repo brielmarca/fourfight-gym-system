@@ -43,6 +43,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Feedback, EmptyState } from "@/components/ui/feedback";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/schedule")({
   component: SchedulePage,
@@ -105,6 +106,7 @@ function SchedulePage() {
   const today = new Date().getDay();
   const userPlan = membershipToUserPlan(membership);
   const loading = classesLoading || enrollmentsLoading || membershipLoading;
+  const isInitialLoading = loading && classes.length === 0;
 
   const timeSlots = getTimeSlots(classes);
   const modalities: (Modality | "Todos")[] = [
@@ -291,9 +293,24 @@ function SchedulePage() {
                     action={{ label: "Tentar novamente", onClick: () => refetchClasses() }}
                   />
                 </div>
+              ) : isInitialLoading ? (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <Card key={index} className="bg-surface border-border-subtle">
+                      <CardHeader className="pb-2">
+                        <Skeleton className="h-6 w-24 bg-surface-2" />
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <Skeleton className="h-16 w-full bg-surface-2" />
+                        <Skeleton className="h-16 w-full bg-surface-2" />
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               ) : loading ? (
-                <div className="flex items-center justify-center py-20">
-                  <Loader2 size={40} className="animate-spin" style={{ color: "#C1121F" }} />
+                <div className="flex items-center justify-center py-20 gap-2 text-text-secondary">
+                  <Loader2 size={18} className="animate-spin" style={{ color: "#C1121F" }} />
+                  <span className="text-sm">A atualizar horarios...</span>
                 </div>
               ) : filteredClasses.length === 0 ? (
                 <EmptyState
@@ -404,7 +421,7 @@ function SchedulePage() {
                                         Inscrito
                                       </Badge>
                                     ) : selected ? (
-                                      <Button
+                                     <Button
                                         size="sm"
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -414,7 +431,10 @@ function SchedulePage() {
                                         className="text-xs tracking-wider uppercase min-w-[70px]"
                                       >
                                         {enrolling === cls.id ? (
-                                          <Loader2 size={12} className="animate-spin" />
+                                          <span className="flex items-center gap-1">
+                                            <Loader2 size={12} className="animate-spin" />
+                                            A enviar
+                                          </span>
                                         ) : (
                                           "Confirmar"
                                         )}
@@ -422,6 +442,11 @@ function SchedulePage() {
                                     ) : null}
                                   </div>
                                 </div>
+                                {selected && !enrolled && accessible && (
+                                  <p className="mt-2 text-[10px] text-text-muted">
+                                    Clica em confirmar para finalizar a inscricao nesta aula.
+                                  </p>
+                                )}
                               </li>
                             );
                           })}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { isAuthenticated } from "@/lib/api";
 import { usePlans } from "@/queries";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Feedback, EmptyState } from "@/components/ui/feedback";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { Loader2, AlertTriangle } from "lucide-react";
 
@@ -20,11 +21,14 @@ function PlansPage() {
 
   const displayPlans = plans && plans.length > 0 ? plans : [];
 
-  if (!selectedPlan && displayPlans.length > 1) {
-    setSelectedPlan(displayPlans[1].id);
-  } else if (!selectedPlan && displayPlans.length > 0) {
+  useEffect(() => {
+    if (selectedPlan || displayPlans.length === 0) return;
+    if (displayPlans.length > 1) {
+      setSelectedPlan(displayPlans[1].id);
+      return;
+    }
     setSelectedPlan(displayPlans[0].id);
-  }
+  }, [displayPlans, selectedPlan]);
 
   const handleSelectPlan = (planId: string) => {
     setSelectedPlan(planId);
@@ -41,9 +45,28 @@ function PlansPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="flex flex-col items-center justify-center py-20 space-y-4">
-          <div className="w-10 h-10 border-2 border-primary border-t-transparent animate-spin" />
-          <p className="text-sm text-text-secondary tracking-wider">A carregar planos...</p>
+        <div className="max-w-6xl mx-auto px-4 py-10 sm:py-16">
+          <div className="text-center mb-10 sm:mb-16">
+            <Skeleton className="h-10 w-64 sm:w-80 mx-auto bg-surface" />
+            <Skeleton className="h-4 w-72 sm:w-[32rem] mx-auto mt-4 bg-surface" />
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <Card key={index} className="bg-surface border-border-subtle">
+                <CardHeader className="space-y-3">
+                  <Skeleton className="h-8 w-32 mx-auto bg-surface-2" />
+                  <Skeleton className="h-4 w-24 mx-auto bg-surface-2" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Skeleton className="h-10 w-24 mx-auto bg-surface-2" />
+                  <Skeleton className="h-4 w-full bg-surface-2" />
+                  <Skeleton className="h-4 w-5/6 bg-surface-2" />
+                  <Skeleton className="h-4 w-2/3 bg-surface-2" />
+                  <Skeleton className="h-10 w-full bg-surface-2" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -172,12 +195,15 @@ function PlansPage() {
                       i === 1 ? "btn-red" : "btn-ghost border-border-subtle"
                     }`}
                   >
-                    {selectedPlan === plan.id ? (
-                      <span className="flex items-center justify-center gap-2">+ Selecionado</span>
-                    ) : (
-                      "Selecionar"
-                    )}
-                  </Button>
+                     {selectedPlan === plan.id ? (
+                       <span className="flex items-center justify-center gap-2">+ Selecionado</span>
+                     ) : (
+                       "Selecionar"
+                     )}
+                   </Button>
+                  <p className="mt-2 text-[11px] text-text-muted text-center">
+                    Seras redirecionado para login se ainda nao tiveres sessao iniciada.
+                  </p>
                   {i === 1 && (
                     <p className="mt-3 text-xs text-text-secondary text-center">
                       Inclui tudo do Basico + aulas coletivas e avaliacao mensal

@@ -31,6 +31,7 @@ export function useMyEnrollments() {
   return useQuery<ClassEnrollment[]>({
     queryKey: queryKeys.enrollments.my(),
     queryFn: () => api.classEnrollments.getAll(),
+    staleTime: 1000 * 60 * 2,
   });
 }
 

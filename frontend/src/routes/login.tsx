@@ -87,19 +87,22 @@ function LoginPage() {
           </Link>
         </div>
 
-        <Card className="bg-surface border-border-subtle">
+        <Card
+          className="bg-surface border-border-subtle"
+          style={{ borderTop: "2px solid #C1121F" }}
+        >
           <CardHeader className="text-center pb-2">
             <CardTitle className="font-display text-2xl tracking-wider">
               BEM-VINDO DE VOLTA
             </CardTitle>
             <CardDescription className="text-text-secondary">
-              Introduza as suas credenciais para aceder à sua conta
+              Introduz as tuas credenciais para aceder à tua conta
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="bg-destructive/10 border border-destructive/30 text-destructive px-4 py-2 text-sm rounded-md whitespace-pre-line">
+                <div className="bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
                   {error}
                 </div>
               )}

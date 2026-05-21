@@ -103,17 +103,20 @@ function RegisterPage() {
           </Link>
         </div>
 
-        <Card className="bg-surface border-border-subtle">
+        <Card
+          className="bg-surface border-border-subtle"
+          style={{ borderTop: "2px solid #C1121F" }}
+        >
           <div className="text-center pb-2 pt-6">
             <CardTitle className="font-display text-2xl tracking-wider">CRIAR CONTA</CardTitle>
             <CardDescription className="text-text-secondary mt-2">
-              Preencha os dados abaixo para se registrar
+              Preenche os dados abaixo para criar a tua conta
             </CardDescription>
           </div>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="bg-destructive/10 border border-destructive/30 text-destructive px-4 py-2 text-sm rounded-md whitespace-pre-line">
+                <div className="bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
                   {error}
                 </div>
               )}

@@ -58,7 +58,7 @@ export function Pricing() {
             Junte-se a 500+ alunos que já transformaram o seu treino.
           </p>
           <p className="mt-2 text-sm" style={{ color: "#C1121F", fontWeight: 600 }}>
-            ⭐ Garantia de 7 dias ou seu dinheiro de volta
+            Garantia de 7 dias ou o teu dinheiro de volta
           </p>
         </div>
 

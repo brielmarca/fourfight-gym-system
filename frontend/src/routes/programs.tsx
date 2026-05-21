@@ -50,7 +50,9 @@ function ProgramsPage() {
       <div className="pt-32 pb-20 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">NOSSOS PROGRAMAS</h1>
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">
+              NOSSOS PROGRAMAS
+            </h1>
             <p className="mt-4 text-text-secondary text-lg">
               Quatro modalidades de elite. Uma academia.
             </p>
@@ -58,10 +60,7 @@ function ProgramsPage() {
 
           <div className="mx-auto max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {programs.map((p, i) => (
-              <Card
-                key={p.title}
-                className="bg-surface border-border-subtle"
-              >
+              <Card key={p.title} className="bg-surface border-border-subtle">
                 <CardHeader className="text-center pb-2">
                   <p.icon
                     size={48}
@@ -87,31 +86,19 @@ function ProgramsPage() {
                     </ul>
                   </div>
                   {p.title === "JIU-JITSU" ? (
-                    <Button
-                      asChild
-                      className="w-full btn-red tracking-[0.2em] uppercase text-xs transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_15px_rgba(193,18,31,0.3)] hover:scale-[1.02] cursor-pointer"
-                    >
+                    <Button asChild className="w-full btn-red tracking-[0.2em] uppercase text-xs">
                       <Link to="/programas/jiu-jitsu">Ver Mais</Link>
                     </Button>
                   ) : p.title === "BOXE / KICKBOXING" ? (
-                    <Button
-                      asChild
-                      className="w-full btn-red tracking-[0.2em] uppercase text-xs transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_15px_rgba(193,18,31,0.3)] hover:scale-[1.02] cursor-pointer"
-                    >
+                    <Button asChild className="w-full btn-red tracking-[0.2em] uppercase text-xs">
                       <Link to="/programas/boxe-kickboxing">Ver Mais</Link>
                     </Button>
                   ) : p.title === "CAPOEIRA" ? (
-                    <Button
-                      asChild
-                      className="w-full btn-red tracking-[0.2em] uppercase text-xs transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_15px_rgba(193,18,31,0.3)] hover:scale-[1.02] cursor-pointer"
-                    >
+                    <Button asChild className="w-full btn-red tracking-[0.2em] uppercase text-xs">
                       <Link to="/programas/capoeira">Ver Mais</Link>
                     </Button>
                   ) : p.title === "MMA" ? (
-                    <Button
-                      asChild
-                      className="w-full btn-red tracking-[0.2em] uppercase text-xs transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_15px_rgba(193,18,31,0.3)] hover:scale-[1.02] cursor-pointer"
-                    >
+                    <Button asChild className="w-full btn-red tracking-[0.2em] uppercase text-xs">
                       <Link to="/programas/mma">Ver Mais</Link>
                     </Button>
                   ) : (

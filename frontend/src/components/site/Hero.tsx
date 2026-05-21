@@ -4,7 +4,7 @@ export function Hero() {
   return (
     <section
       id="top"
-      className="relative min-h-[100dvh] w-full overflow-hidden flex items-center justify-center"
+      className="relative w-full overflow-hidden"
     >
       {/* Single BG image */}
       <div className="absolute inset-0">
@@ -33,7 +33,7 @@ export function Hero() {
       />
 
       <div
-        className="relative w-full max-w-[1040px] mx-auto px-4 sm:px-6 text-center pt-16 pb-32 sm:pt-36 sm:pb-44"
+        className="relative w-full max-w-[1040px] mx-auto px-4 sm:px-6 text-center pt-32 pb-16 sm:pt-44 sm:pb-20"
         style={{ zIndex: 10 }}
       >
         {/* Top label with side lines */}
@@ -107,11 +107,11 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Stats bar */}
+      {/* Stats bar — in normal flow, not absolute */}
       <div
-        className="absolute bottom-0 left-0 right-0 w-full"
+        className="relative w-full"
         style={{
-          background: "rgba(10,10,10,0.85)",
+          background: "rgba(10,10,10,0.92)",
           borderTop: "1px solid #1E1E1E",
           zIndex: 10,
         }}

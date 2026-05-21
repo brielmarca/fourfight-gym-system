@@ -93,7 +93,7 @@ public class StripeCheckoutService {
                 .setSuccessUrl(frontendSuccessUrl + "?session_id={CHECKOUT_SESSION_ID}")
                 .setCancelUrl(frontendCancelUrl)
                 .setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.REQUIRED)
-                .addAllAllowedCountries(List.of("PT"))
+                .putExtraParam("allowed_countries", java.util.List.of("PT"))
                 .addLineItem(
                         SessionCreateParams.LineItem.builder()
                                 .setQuantity(1L)

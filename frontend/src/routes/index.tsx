@@ -6,7 +6,6 @@ import { Academy } from "@/components/site/Academy";
 import { Schedule } from "@/components/site/Schedule";
 import { Pricing } from "@/components/site/Pricing";
 import { Contact } from "@/components/site/Contact";
-import { Footer } from "@/components/site/Footer";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -14,7 +13,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
-    <main className="bg-background text-foreground min-h-screen">
+    <main className="bg-background text-foreground">
       <Navbar />
       <Hero />
       <Academy />
@@ -22,7 +21,6 @@ function Index() {
       <Schedule />
       <Pricing />
       <Contact />
-      <Footer />
     </main>
   );
 }

@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 const ACADEMY_COORDS: [number, number] = [41.1401, -8.535];
 
@@ -8,10 +11,6 @@ interface DarkMapProps {
 }
 
 function LeafletMap({ height, className }: DarkMapProps) {
-  const { MapContainer, TileLayer, Marker, Popup } = require("react-leaflet");
-  const L = require("leaflet");
-  require("leaflet/dist/leaflet.css");
-
   const customIcon = L.divIcon({
     className: "custom-marker",
     html: `<div style="background: #C1121F; width: 16px; height: 16px; border-radius: 50%; border: 3px solid #0B0B0B; box-shadow: 0 0 12px rgba(193, 18, 31, 0.6);"></div>`,

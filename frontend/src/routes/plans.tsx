@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 import { isAuthenticated } from "@/lib/api";
 import { usePlans } from "@/queries";
 import { Button } from "@/components/ui/button";
@@ -108,18 +109,42 @@ function PlansPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-10 sm:py-16">
-        <div className="text-center mb-10 sm:mb-16">
-          <h1 className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">
+        <motion.div
+          className="text-center mb-10 sm:mb-16"
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+        >
+          <motion.h1
+            className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider"
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.6 }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
+          >
             Escolha Seu Plano
-          </h1>
-          <p className="mt-3 sm:mt-4 text-text-secondary text-base sm:text-lg max-w-2xl mx-auto px-2">
+          </motion.h1>
+          <motion.p
+            className="mt-3 sm:mt-4 text-text-secondary text-base sm:text-lg max-w-2xl mx-auto px-2"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, amount: 0.6 }}
+            transition={{ duration: 0.45, delay: 0.08, ease: "easeOut" }}
+          >
             Comece hoje mesmo. Todos os planos incluem acesso academia, vestirios completos e app da
             comunidade.
-          </p>
-          <p className="mt-2 text-sm text-primary font-semibold px-2">
+          </motion.p>
+          <motion.p
+            className="mt-2 text-sm text-primary font-semibold px-2"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, amount: 0.6 }}
+            transition={{ duration: 0.45, delay: 0.14, ease: "easeOut" }}
+          >
             Plano Popular: Padrao melhor custo-beneficio
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         {error && !plans ? (
           <div className="max-w-md mx-auto mb-8">
@@ -132,43 +157,67 @@ function PlansPage() {
         ) : null}
 
         {displayPlans.length > 0 ? (
-          <div className="grid md:grid-cols-3 gap-6">
+          <motion.div
+            className="grid md:grid-cols-3 gap-6"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={{
+              hidden: {},
+              show: {
+                transition: {
+                  staggerChildren: 0.08,
+                },
+              },
+            }}
+          >
             {displayPlans.map((plan, i) => (
-              <Card
+              <motion.div
                 key={plan.id}
-                className={`relative flex flex-col bg-surface border-border-subtle transition-all duration-300 ${
-                  i === 1 ? "border-primary" : "hover:border-border-accent"
-                }`}
-                style={{
-                  borderTop: i === 1 ? "2px solid #C1121F" : "2px solid #1E1E1E",
-                  boxShadow: i === 1 ? "0 0 40px rgba(193,18,31,0.12)" : "none",
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  show: {
+                    opacity: 1,
+                    y: 0,
+                    transition: { duration: 0.42, ease: "easeOut" },
+                  },
                 }}
+                animate={i === 1 ? { boxShadow: ["0 0 30px rgba(193,18,31,0.1)", "0 0 42px rgba(193,18,31,0.16)", "0 0 30px rgba(193,18,31,0.1)"] } : undefined}
+                transition={i === 1 ? { duration: 3.2, repeat: Infinity, ease: "easeInOut" } : undefined}
               >
-                {i === 1 && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] tracking-[0.2em] uppercase">
-                    Mais Popular
-                  </Badge>
-                )}
-                <CardHeader className="text-center pb-2">
-                  <CardTitle className="font-display text-2xl tracking-wider">
-                    {plan.name}
-                  </CardTitle>
-                  <CardDescription className="text-text-secondary">
-                    {plan.durationDays} dias
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1 flex flex-col">
-                  <div className="text-center mb-6">
-                    <span
-                      className="font-display text-5xl"
-                      style={{ color: i === 1 ? "#C1121F" : "#F5F5F5" }}
-                    >
-                      €{plan.price}
-                    </span>
-                    <span className="text-text-secondary text-sm">
-                      /{plan.durationDays === 30 ? "mês" : "meses"}
-                    </span>
-                  </div>
+                <Card
+                  className={`relative flex h-full flex-col bg-surface border-border-subtle transition-all duration-300 ${
+                    i === 1 ? "border-primary" : "hover:border-border-accent"
+                  }`}
+                  style={{
+                    borderTop: i === 1 ? "2px solid #C1121F" : "2px solid #1E1E1E",
+                  }}
+                >
+                  {i === 1 && (
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] tracking-[0.2em] uppercase">
+                      Mais Popular
+                    </Badge>
+                  )}
+                  <CardHeader className="text-center pb-2">
+                    <CardTitle className="font-display text-2xl tracking-wider">
+                      {plan.name}
+                    </CardTitle>
+                    <CardDescription className="text-text-secondary">
+                      {plan.durationDays} dias
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col">
+                    <div className="text-center mb-6">
+                      <span
+                        className="font-display text-5xl"
+                        style={{ color: i === 1 ? "#C1121F" : "#F5F5F5" }}
+                      >
+                        €{plan.price}
+                      </span>
+                      <span className="text-text-secondary text-sm">
+                        /{plan.durationDays === 30 ? "mês" : "meses"}
+                      </span>
+                    </div>
 
                   <ul className="flex-1 mb-6 space-y-3">
                     {plan.maxClasses && (
@@ -219,10 +268,11 @@ function PlansPage() {
                       Acesso 24h + nutricionista incluso
                     </p>
                   )}
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         ) : (
           <EmptyState
             icon={AlertTriangle}

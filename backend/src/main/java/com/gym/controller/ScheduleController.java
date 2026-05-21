@@ -3,7 +3,6 @@ package com.gym.controller;
 import com.gym.dto.request.CreateClassScheduleRequest;
 import com.gym.dto.request.UpdateClassScheduleRequest;
 import com.gym.dto.response.ClassScheduleResponse;
-import com.gym.security.GymUserDetailsService.JwtUserPrincipal;
 import com.gym.service.ClassScheduleService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -12,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -29,10 +27,8 @@ public class ScheduleController {
     private final ClassScheduleService classScheduleService;
 
     @GetMapping("/api/schedule")
-    public ResponseEntity<List<ClassScheduleResponse>> getSchedule(
-        @AuthenticationPrincipal JwtUserPrincipal principal
-    ) {
-        return ResponseEntity.ok(classScheduleService.getActiveForMember(principal.id()));
+    public ResponseEntity<List<ClassScheduleResponse>> getSchedule() {
+        return ResponseEntity.ok(classScheduleService.getActiveSchedule());
     }
 
     @GetMapping("/api/admin/schedule")

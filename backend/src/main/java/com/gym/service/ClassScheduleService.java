@@ -4,11 +4,9 @@ import com.gym.dto.request.CreateClassScheduleRequest;
 import com.gym.dto.request.UpdateClassScheduleRequest;
 import com.gym.dto.response.ClassScheduleResponse;
 import com.gym.entity.ClassSchedule;
-import com.gym.entity.Membership;
 import com.gym.exception.BusinessRuleException;
 import com.gym.exception.ResourceNotFoundException;
 import com.gym.repository.ClassScheduleRepository;
-import com.gym.repository.MembershipRepository;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -21,21 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class ClassScheduleService {
 
     private final ClassScheduleRepository classScheduleRepository;
-    private final MembershipRepository membershipRepository;
 
-    public List<ClassScheduleResponse> getActiveForMember(UUID userId) {
-        boolean hasActiveMembership = membershipRepository
-            .findByUserIdAndStatus(userId, Membership.MembershipStatus.ACTIVE)
-            .stream()
-            .anyMatch(Membership::isActive);
-
-        if (!hasActiveMembership) {
-            throw new BusinessRuleException(
-                "ACTIVE_MEMBERSHIP_REQUIRED",
-                "Horários completos disponíveis para membros com plano ativo."
-            );
-        }
-
+    public List<ClassScheduleResponse> getActiveSchedule() {
         return classScheduleRepository.findByActiveTrueOrderByDayOfWeekAscStartTimeAsc()
             .stream()
             .sorted(scheduleComparator())

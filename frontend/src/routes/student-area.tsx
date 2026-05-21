@@ -36,6 +36,7 @@ export const Route = createFileRoute("/student-area")({
 });
 
 function StudentAreaPage() {
+  const navigate = Route.useNavigate();
   const { user, hasRole, logout } = useAuth();
   const { data: profile, isLoading: profileLoading } = useMyStudentProfile();
   const { data: membership, isLoading: membershipLoading } = useMyMembership();
@@ -45,13 +46,13 @@ function StudentAreaPage() {
   const loading = profileLoading || membershipLoading || attendanceLoading || enrollmentsLoading;
 
   if (user && hasRole(["ADMIN", "MANAGER"])) {
-    window.location.href = "/admin";
+    void navigate({ to: "/admin", replace: true });
     return null;
   }
 
   const handleLogout = () => {
     logout();
-    window.location.href = "/";
+    void navigate({ to: "/", replace: true });
   };
 
   if (loading) {
@@ -100,9 +101,9 @@ function StudentAreaPage() {
           {!membership && (
             <p className="mt-3 text-sm text-primary font-semibold">
               ⚡ Ainda não tens plano ativo —{" "}
-              <a href="/plans" className="underline">
-                escolhe um abaixo
-              </a>
+                <Link to="/plans" className="underline">
+                  escolhe um abaixo
+                </Link>
             </p>
           )}
         </div>
@@ -218,13 +219,13 @@ function StudentAreaPage() {
                 )}
                 <div className="mt-4 pt-4 border-t border-border-subtle">
                   {membership ? (
-                    <Link href="/schedule">
+                    <Link to="/schedule">
                       <Button className="btn-red w-full tracking-[0.2em] uppercase text-xs">
                         📅 VER HORÁRIOS E AGENDAR
                       </Button>
                     </Link>
                   ) : (
-                    <Link href="/plans">
+                    <Link to="/plans">
                       <Button className="btn-red w-full tracking-[0.2em] uppercase text-xs">
                         🎯 ESCOLHER PLANO AGORA
                       </Button>
@@ -335,7 +336,7 @@ function StudentAreaPage() {
                 ) : (
                   <div className="text-center py-6 space-y-4">
                     <p className="text-text-secondary">Ainda não tens uma mensalidade ativa.</p>
-                    <Link href="/plans">
+                    <Link to="/plans">
                       <Button className="btn-red tracking-[0.2em] uppercase">Ver Planos</Button>
                     </Link>
                   </div>

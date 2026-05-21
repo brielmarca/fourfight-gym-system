@@ -29,7 +29,7 @@ export function useLoginMutation() {
 
 export function useRegisterMutation() {
   return useMutation({
-    mutationFn: (data: { name: string; email: string; password: string; phone?: string }) =>
+    mutationFn: (data: { name: string; email: string; password: string; phone?: string; dateOfBirth?: string }) =>
       api.auth.register(data),
   });
 }

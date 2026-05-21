@@ -14,10 +14,11 @@ import {
   Heart,
   Activity,
 } from "lucide-react";
-import capoeiraHero from "@/assets/gymlutas/jiu-jitsu-2.jpg";
-import capoeiraGallery1 from "@/assets/gymlutas/jiu-jitsu-1.jpg";
-import capoeiraGallery2 from "@/assets/gymlutas/jiu-jitsu-3.jpg";
-import capoeiraVideo from "@/assets/gymlutas/jiu-jitsu-video.mp4";
+import capoeiraHero from "@/assets/gymlutas/jiu-jitsu-2.webp";
+import capoeiraGallery1 from "@/assets/gymlutas/jiu-jitsu-1.webp";
+import capoeiraGallery2 from "@/assets/gymlutas/jiu-jitsu-3.webp";
+import capoeiraVideoWebm from "@/assets/gymlutas/jiu-jitsu-video.webm";
+import capoeiraVideoMp4 from "@/assets/gymlutas/jiu-jitsu-video.mp4";
 
 export const Route = createFileRoute("/programas/capoeira")({
   component: CapoeiraPage,
@@ -414,7 +415,8 @@ function CapoeiraPage() {
               playsInline
               className="w-full max-h-[620px] object-cover transition-transform duration-500 group-hover:scale-[1.01]"
             >
-              <source src={capoeiraVideo} type="video/mp4" />
+              <source src={capoeiraVideoWebm} type="video/webm" />
+              <source src={capoeiraVideoMp4} type="video/mp4" />
             </video>
           </div>
         </div>

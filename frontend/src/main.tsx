@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
+import { restoreAuthSession } from "@/lib/api";
 import "./styles.css";
 
 const router = createRouter({
@@ -18,10 +19,25 @@ declare module "@tanstack/react-router" {
 }
 
 const rootElement = document.getElementById("root");
-if (rootElement) {
-  createRoot(rootElement).render(
-    <StrictMode>
-      <RouterProvider router={router} />
-    </StrictMode>,
-  );
+
+const protectedPrefixes = ["/admin", "/student-area", "/checkout", "/membership"];
+
+function shouldBlockForAuthRestore(pathname: string): boolean {
+  return protectedPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
+
+async function bootstrap() {
+  if (typeof window !== "undefined" && shouldBlockForAuthRestore(window.location.pathname)) {
+    await restoreAuthSession();
+  }
+
+  if (rootElement) {
+    createRoot(rootElement).render(
+      <StrictMode>
+        <RouterProvider router={router} />
+      </StrictMode>,
+    );
+  }
+}
+
+void bootstrap();

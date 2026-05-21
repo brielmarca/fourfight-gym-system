@@ -17,38 +17,7 @@ function PlansPage() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const displayPlans =
-    plans && plans.length > 0
-      ? plans
-      : [
-          {
-            id: "demo-basico",
-            name: "Basico",
-            price: 29.99,
-            durationDays: 30,
-            maxClasses: 3,
-            isActive: true,
-            description: "Plano basica",
-          },
-          {
-            id: "demo-padrao",
-            name: "Padrao",
-            price: 49.99,
-            durationDays: 30,
-            maxClasses: -1,
-            isActive: true,
-            description: "Plano padrao",
-          },
-          {
-            id: "demo-premium",
-            name: "Premium",
-            price: 79.99,
-            durationDays: 30,
-            maxClasses: -1,
-            isActive: true,
-            description: "Plano premium",
-          },
-        ];
+  const displayPlans = plans && plans.length > 0 ? plans : [];
 
   if (!selectedPlan && displayPlans.length > 1) {
     setSelectedPlan(displayPlans[1].id);
@@ -83,24 +52,25 @@ function PlansPage() {
     <div className="min-h-screen bg-background">
       <header className="bg-surface border-b border-border-subtle">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <a href="/" className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground md:hidden">
+          <Link to="/" className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground md:hidden">
             Incio
-          </a>
+          </Link>
           <nav className="hidden md:flex items-center gap-6">
             <Link
-              href="/"
+              to="/"
               className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground"
             >
               Incio
             </Link>
             <Link
-              href="/#contact"
+              to="/"
+              hash="contact"
               className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground"
             >
               Contacto
             </Link>
             <Link
-              href="/login"
+              to="/login"
               className="btn-red bg-primary text-primary-foreground px-4 py-2 text-xs tracking-wider uppercase font-semibold rounded-[2px]"
             >
               Login
@@ -125,7 +95,7 @@ function PlansPage() {
         {error && !plans ? (
           <div className="text-center py-20 space-y-4">
             <p className="text-text-secondary">
-              Erro ao carregar planos. A mostrar planos de demonstração.
+              Erro ao carregar planos. Tente novamente em instantes.
             </p>
           </div>
         ) : null}
@@ -222,7 +192,7 @@ function PlansPage() {
           <div className="text-center py-20 space-y-4">
             <p className="text-text-secondary">Nenhum plano disponível no momento.</p>
             <Button asChild variant="outline" className="mt-4">
-              <a href="/contact">Contacte-nos para mais informações</a>
+              <Link to="/" hash="contact">Contacte-nos para mais informações</Link>
             </Button>
           </div>
         )}

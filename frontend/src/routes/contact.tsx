@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,9 @@ import { useCreateContact } from "@/queries";
 import { MapPin, Phone, Mail, Clock, Send, Calendar, Loader2, Check, X } from "lucide-react";
 
 export const Route = createFileRoute("/contact")({
+  beforeLoad: () => {
+    throw redirect({ to: "/", hash: "contact" });
+  },
   component: ContactPage,
 });
 

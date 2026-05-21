@@ -105,6 +105,6 @@ public class Membership {
     }
 
     public enum MembershipStatus {
-        ACTIVE, EXPIRED, CANCELLED, SUSPENDED
+        ACTIVE, EXPIRED, CANCELLED, SUSPENDED, PENDING_APPROVAL, PENDING_PAYMENT, REJECTED
     }
 }

@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { api, getUser, isAuthenticated } from "@/lib/api";
-import { usePlan, useStripeCheckout } from "@/queries";
+import { useCreateReceptionRequest, usePlan, useStripeCheckout } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
-import { AlertCircle, CreditCard, Loader2, Smartphone, Building, ExternalLink } from "lucide-react";
+import { CreditCard, Loader2, Building, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/checkout/$planId")({
   beforeLoad: ({ params }) => {
@@ -23,9 +23,11 @@ function CheckoutPage() {
   const navigate = useNavigate();
   const { data: plan, isLoading } = usePlan(planId);
   const stripeCheckout = useStripeCheckout();
+  const receptionRequest = useCreateReceptionRequest();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"STRIPE" | "MBWAY" | "RECECAO">("STRIPE");
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"STRIPE" | "RECECAO">("STRIPE");
 
   const displayPlan = plan || {
     id: planId,
@@ -40,6 +42,7 @@ function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccessMessage(null);
 
     const user = getUser();
     if (!user) {
@@ -65,16 +68,15 @@ function CheckoutPage() {
     }
 
     if (paymentMethod === "RECECAO") {
-      setError("Dirija-se à receção da 4Four Fight Academy para efetuar o pagamento presencialmente.");
-      return;
-    }
-
-    if (paymentMethod === "MBWAY") {
-      navigate({
-        to: "/membership/$membershipId",
-        params: { membershipId: `demo-${Date.now()}` },
-        search: { method: "MBWAY" },
-      });
+      setSubmitting(true);
+      try {
+        const response = await receptionRequest.mutateAsync(planId);
+        setSuccessMessage(response.message || "Pedido enviado. A sua adesao ficara pendente ate aprovacao na rececao.");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Nao foi possivel enviar o pedido para aprovacao.");
+      } finally {
+        setSubmitting(false);
+      }
       return;
     }
   };
@@ -104,9 +106,9 @@ function CheckoutPage() {
      <div className="min-h-screen bg-background">
        <header className="bg-surface border-b border-border-subtle">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <a href="/" className="flex items-center">
+          <Link to="/" className="flex items-center">
             <img
-              src="/logo.png"
+              src="/assets/logo.png"
               alt="4Four Fight Academy"
               style={{
                 height: "44px",
@@ -115,7 +117,7 @@ function CheckoutPage() {
                 filter: "brightness(1.1)",
               }}
             />
-          </a>
+          </Link>
         </div>
       </header>
 
@@ -168,14 +170,21 @@ function CheckoutPage() {
                     </div>
                   )}
 
+                  {successMessage && (
+                    <div className="p-3 rounded-md bg-primary/10 text-primary text-sm border border-primary/20">
+                      {successMessage}
+                    </div>
+                  )}
+
                   <RadioGroup
                      value={paymentMethod}
                      onValueChange={(value) => {
                        setError(null);
-                       setPaymentMethod(value as "STRIPE" | "MBWAY" | "RECECAO");
-                     }}
-                     className="grid gap-4"
-                   >
+                        setSuccessMessage(null);
+                        setPaymentMethod(value as "STRIPE" | "RECECAO");
+                      }}
+                      className="grid gap-4"
+                    >
                      <Label
                        htmlFor="stripe"
                        className={`${
@@ -197,27 +206,7 @@ function CheckoutPage() {
                      </Label>
 
                      <Label
-                       htmlFor="mbway"
-                       className={`${
-                         paymentMethod === "MBWAY"
-                           ? "border-primary bg-primary/5"
-                           : "border-border-subtle hover:border-primary/50"
-                       } border-2 rounded-lg p-5 cursor-pointer transition-all`}
-                     >
-                       <div className="flex items-center gap-4">
-                         <RadioGroupItem value="MBWAY" id="mbway" />
-                         <Smartphone className="h-6 w-6 text-primary" />
-                         <div>
-                         <CardTitle className="text-lg">MB WAY (Demo)</CardTitle>
-                            <CardDescription>
-                              Pagamento via telemóvel
-                            </CardDescription>
-                         </div>
-                       </div>
-                     </Label>
-
-                     <Label
-                       htmlFor="rececao"
+                        htmlFor="rececao"
                        className={`${
                          paymentMethod === "RECECAO"
                            ? "border-primary bg-primary/5"
@@ -257,10 +246,10 @@ function CheckoutPage() {
 
                   <Button
                     type="submit"
-                    disabled={submitting || stripeCheckout.isPending}
+                    disabled={submitting || stripeCheckout.isPending || receptionRequest.isPending}
                     className="w-full btn-red h-auto min-h-14 px-4 py-4 text-sm sm:text-base tracking-[0.08em] sm:tracking-[0.2em] uppercase font-semibold whitespace-normal leading-relaxed text-center"
                   >
-                    {submitting || stripeCheckout.isPending ? (
+                    {submitting || stripeCheckout.isPending || receptionRequest.isPending ? (
                       <span className="flex flex-wrap items-center justify-center gap-2 text-center">
                         <Loader2 className="h-4 w-4 animate-spin" />
                         A processar...
@@ -270,7 +259,7 @@ function CheckoutPage() {
                         Pagar com Stripe <ExternalLink className="h-4 w-4" />
                       </span>
                     ) : (
-                      `Confirmar Adesao — €${displayPlan.price}`
+                      "Enviar pedido para aprovacao"
                     )}
                   </Button>
 

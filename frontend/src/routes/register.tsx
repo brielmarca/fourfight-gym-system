@@ -63,14 +63,15 @@ function RegisterPage() {
         email: formData.email,
         password: formData.password,
         phone: formData.phone,
+        dateOfBirth: formData.dateOfBirth,
       });
 
       const response = await api.auth.login(formData.email, formData.password);
-      if (!response.refreshToken) {
-        throw new Error("A conta foi criada, mas o login requer validação adicional.");
+      if (!response.accessToken) {
+        throw new Error("A conta foi criada, mas o login requer validacao adicional.");
       }
 
-      setTokens(response.accessToken, response.refreshToken);
+      setTokens(response.accessToken);
 
       if (redirect) {
         navigate({ to: redirect, replace: true });
@@ -90,7 +91,7 @@ function RegisterPage() {
         <div className="text-center mb-6 sm:mb-8">
           <Link to="/" className="inline-flex items-center justify-center">
             <img
-              src="/logo.png"
+              src="/assets/logo.png"
               alt="4Four Fight Academy"
               style={{
                 height: "60px",

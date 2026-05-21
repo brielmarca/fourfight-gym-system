@@ -18,6 +18,16 @@ interface StripeSubscriptionResponse {
   stripeSubscriptionId: string;
 }
 
+interface ReceptionRequestItem {
+  membershipId: string;
+  userName: string;
+  userEmail: string;
+  planName: string;
+  planPrice: number;
+  status: string;
+  requestedAt: string;
+}
+
 export function useStripeCheckout() {
   return useMutation({
     mutationFn: (planId: string) =>
@@ -41,6 +51,44 @@ export function useCancelStripeSubscription() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.stripe.subscription() });
       queryClient.invalidateQueries({ queryKey: queryKeys.memberships.my() });
+    },
+  });
+}
+
+export function useCreateReceptionRequest() {
+  return useMutation({
+    mutationFn: (planId: string) => api.stripe.createReceptionRequest(planId),
+  });
+}
+
+export function usePendingReceptionRequests(enabled = true) {
+  return useQuery<ReceptionRequestItem[]>({
+    queryKey: queryKeys.stripe.receptionPending(),
+    queryFn: () => api.stripe.listPendingReceptionRequests(),
+    enabled,
+  });
+}
+
+export function useApproveReceptionRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (membershipId: string) => api.stripe.approveReceptionRequest(membershipId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.stripe.receptionPending() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.memberships.list(0, 50) });
+    },
+  });
+}
+
+export function useRejectReceptionRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (membershipId: string) => api.stripe.rejectReceptionRequest(membershipId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.stripe.receptionPending() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.memberships.list(0, 50) });
     },
   });
 }

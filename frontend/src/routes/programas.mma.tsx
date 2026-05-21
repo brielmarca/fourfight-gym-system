@@ -14,10 +14,11 @@ import {
   Activity,
   Swords,
 } from "lucide-react";
-import mmaHero from "@/assets/gymlutas/jiu-jitsu-3.jpg";
-import mmaGallery1 from "@/assets/gymlutas/jiu-jitsu-1.jpg";
-import mmaGallery2 from "@/assets/gymlutas/jiu-jitsu-2.jpg";
-import mmaVideo from "@/assets/gymlutas/jiu-jitsu-video.mp4";
+import mmaHero from "@/assets/gymlutas/jiu-jitsu-3.webp";
+import mmaGallery1 from "@/assets/gymlutas/jiu-jitsu-1.webp";
+import mmaGallery2 from "@/assets/gymlutas/jiu-jitsu-2.webp";
+import mmaVideoWebm from "@/assets/gymlutas/jiu-jitsu-video.webm";
+import mmaVideoMp4 from "@/assets/gymlutas/jiu-jitsu-video.mp4";
 
 export const Route = createFileRoute("/programas/mma")({
   component: MMAPage,
@@ -407,7 +408,8 @@ function MMAPage() {
               playsInline
               className="w-full max-h-[620px] object-cover transition-transform duration-500 group-hover:scale-[1.01]"
             >
-              <source src={mmaVideo} type="video/mp4" />
+              <source src={mmaVideoWebm} type="video/webm" />
+              <source src={mmaVideoMp4} type="video/mp4" />
             </video>
           </div>
         </div>

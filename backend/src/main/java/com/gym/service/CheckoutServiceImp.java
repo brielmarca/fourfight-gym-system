@@ -15,6 +15,7 @@ import com.gym.entity.Payment;
 import com.gym.entity.Plan;
 import com.gym.entity.Student;
 import com.gym.entity.User;
+import com.gym.exception.BusinessRuleException;
 import com.gym.repository.MembershipRepository;
 import com.gym.repository.PaymentRepository;
 import com.gym.repository.PlanRepository;
@@ -54,15 +55,7 @@ public class CheckoutServiceImp implements CheckoutService {
         Plan plan = planRepository.findById(request.planId())
                 .orElseThrow(() -> new IllegalArgumentException("Plan not found: " + request.planId()));
 
-        // 3. Check for existing active membership and cancel it (upgrade scenario)
-        membershipRepository.findByUserIdAndStatus(user.getId(), Membership.MembershipStatus.ACTIVE)
-                .forEach(existing -> {
-                    existing.setStatus(Membership.MembershipStatus.CANCELLED);
-                    membershipRepository.save(existing);
-                    log.info("Cancelled existing membership: {} for user: {}", existing.getId(), user.getEmail());
-                });
-
-        // 4. Create or update student record
+        // 3. Create or update student record
         Student student = studentRepository.findByEmail(user.getEmail()).orElse(null);
         if (student == null) {
             student = Student.builder()
@@ -79,7 +72,18 @@ public class CheckoutServiceImp implements CheckoutService {
             studentRepository.save(student);
         }
 
-        // 5. Create membership linked to authenticated user
+        Payment.PaymentMethod paymentMethod;
+        try {
+            paymentMethod = Payment.PaymentMethod.valueOf(request.paymentMethod().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new BusinessRuleException("Unsupported payment method");
+        }
+
+        Membership.MembershipStatus pendingStatus = paymentMethod == Payment.PaymentMethod.RECEPTION
+                ? Membership.MembershipStatus.PENDING_APPROVAL
+                : Membership.MembershipStatus.PENDING_PAYMENT;
+
+        // 4. Create membership linked to authenticated user
         LocalDate startDate = LocalDate.now();
         LocalDate endDate = startDate.plusDays(plan.getDurationDays());
 
@@ -88,19 +92,19 @@ public class CheckoutServiceImp implements CheckoutService {
                 .plan(plan)
                 .startDate(startDate)
                 .endDate(endDate)
-                .status(Membership.MembershipStatus.ACTIVE)
-                .autoRenew(true)
+                .status(pendingStatus)
+                .autoRenew(false)
                 .build();
         membership = membershipRepository.save(membership);
         log.info("Created membership: {} for user: {} with plan: {}", membership.getId(), user.getEmail(), plan.getName());
 
-        // 6. Create payment record (initially PENDING)
+        // 5. Create payment record (initially PENDING)
         Payment payment = Payment.builder()
                 .user(user)
                 .membership(membership)
                 .amount(plan.getPrice())
                 .currency(plan.getCurrency())
-                .method(Payment.PaymentMethod.valueOf(request.paymentMethod().toUpperCase()))
+                .method(paymentMethod)
                 .status(Payment.PaymentStatus.PENDING)
                 .build();
         payment = paymentRepository.save(payment);
@@ -114,7 +118,9 @@ public class CheckoutServiceImp implements CheckoutService {
                 .planPrice(plan.getPrice())
                 .paymentMethod(request.paymentMethod())
                 .paymentStatus(Payment.PaymentStatus.PENDING)
-                .message("Checkout initiated. Proceed to payment.")
+                .message(paymentMethod == Payment.PaymentMethod.RECEPTION
+                        ? "Pedido enviado. Aguardando aprovacao na rececao."
+                        : "Checkout initiated. Proceed to Stripe payment.")
                 .userId(user.getId())
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -131,71 +137,28 @@ public class CheckoutServiceImp implements CheckoutService {
             throw new SecurityException("Payment does not belong to authenticated user");
         }
 
-        // Simulate payment processing based on method
+        // Demo/manual processing methods were removed from production flow.
         Payment.PaymentMethod method = payment.getMethod();
-        boolean paymentSuccess = false;
-        String gatewayRef = null;
-        String gatewayResponse = null;
-
-        if (method == Payment.PaymentMethod.MBWAY) {
-            // Simulate MBWay payment
-            log.info("Processing MBWay payment for phone: {}", formRequest.phoneNumber());
-            paymentSuccess = true;
-            gatewayRef = "MBWAY_" + System.currentTimeMillis();
-            gatewayResponse = "{\"status\":\"success\",\"phone\":\"" + formRequest.phoneNumber() + "\"}";
-        } else if (method == Payment.PaymentMethod.CARD) {
-            // Simulate Card payment
-            log.info("Processing Card payment for cardholder: {}", formRequest.cardHolderName());
-            paymentSuccess = true;
-            gatewayRef = "CARD_" + System.currentTimeMillis();
-            gatewayResponse = "{\"status\":\"success\",\"cardholder\":\"" + formRequest.cardHolderName() + "\"}";
-        } else {
-            // Fallback for other methods
-            paymentSuccess = true;
-            gatewayRef = "GENERIC_" + System.currentTimeMillis();
-            gatewayResponse = "{\"status\":\"success\"}";
+        if (method == Payment.PaymentMethod.STRIPE) {
+            throw new BusinessRuleException("Stripe payments must be completed through /api/stripe/checkout and webhooks");
         }
 
-        if (paymentSuccess) {
-            payment.complete(gatewayRef, gatewayResponse);
-            paymentRepository.save(payment);
-            log.info("Payment {} completed successfully", paymentId);
-
-            // Activate membership
-            Membership membership = payment.getMembership();
-            membership.setStatus(Membership.MembershipStatus.ACTIVE);
-            membershipRepository.save(membership);
-
-            // Activate student
-            Student student = studentRepository.findByEmail(payment.getUser().getEmail()).orElse(null);
-            if (student != null) {
-                student.setIsActive(true);
-                studentRepository.save(student);
-            }
-
+        if (method == Payment.PaymentMethod.RECEPTION) {
             return CheckoutResponse.builder()
                     .id(payment.getId())
                     .name(payment.getUser().getName())
                     .email(payment.getUser().getEmail())
-                    .planName(membership.getPlan().getName())
-                    .planPrice(membership.getPlan().getPrice())
+                    .planName(payment.getMembership().getPlan().getName())
+                    .planPrice(payment.getMembership().getPlan().getPrice())
                     .paymentMethod(method.name())
-                    .paymentStatus(Payment.PaymentStatus.COMPLETED)
-                    .message("Payment successful! Your membership is now active.")
+                    .paymentStatus(Payment.PaymentStatus.PENDING)
+                    .message("Pedido enviado. Aguardando aprovacao na rececao.")
                     .userId(payment.getUser().getId())
-                    .createdAt(payment.getPaidAt())
-                    .build();
-        } else {
-            payment.setStatus(Payment.PaymentStatus.FAILED);
-            paymentRepository.save(payment);
-            log.warn("Payment {} failed", paymentId);
-
-            return CheckoutResponse.builder()
-                    .id(payment.getId())
-                    .paymentStatus(Payment.PaymentStatus.FAILED)
-                    .message("Payment failed. Please try again.")
+                    .createdAt(payment.getCreatedAt())
                     .build();
         }
+
+        throw new BusinessRuleException("Demo payment methods are disabled");
     }
 
     @Override

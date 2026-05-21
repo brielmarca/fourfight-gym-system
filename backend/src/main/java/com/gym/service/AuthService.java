@@ -59,6 +59,7 @@ public class AuthService {
             .email(request.email())
             .passwordHash(passwordEncoder.encode(request.password()))
             .phone(request.phone())
+            .dateOfBirth(request.dateOfBirth())
             .role(User.Role.CLIENT)
             .isActive(true)
             .build();

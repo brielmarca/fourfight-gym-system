@@ -162,13 +162,12 @@ public class DataInitializer {
         List<MartialArt> martialArts = List.of(
             MartialArt.builder().name("Jiu-Jitsu").build(),
             MartialArt.builder().name("Boxe / Kickboxing").build(),
-            MartialArt.builder().name("Forca & Condicionamento").build(),
             MartialArt.builder().name("Capoeira").build(),
             MartialArt.builder().name("MMA").build()
         );
 
         martialArtRepository.saveAll(martialArts);
-        log.info("Martial arts seeded: Jiu-Jitsu, Boxe / Kickboxing, Forca & Condicionamento, Capoeira, MMA");
+        log.info("Martial arts seeded: Jiu-Jitsu, Boxe / Kickboxing, Capoeira, MMA");
     }
 
     private void initGraduations() {
@@ -181,7 +180,6 @@ public class DataInitializer {
 
         MartialArt jiuJitsu = martialArtRepository.findByName("Jiu-Jitsu").orElseThrow();
         MartialArt boxeKickboxing = martialArtRepository.findByName("Boxe / Kickboxing").orElseThrow();
-        MartialArt forcaCondicionamento = martialArtRepository.findByName("Forca & Condicionamento").orElseThrow();
         MartialArt capoeira = martialArtRepository.findByName("Capoeira").orElseThrow();
         MartialArt mma = martialArtRepository.findByName("MMA").orElseThrow();
 
@@ -202,13 +200,6 @@ public class DataInitializer {
             Graduation.builder().name("Intermedio").levelOrder(2).martialArt(boxeKickboxing).build(),
             Graduation.builder().name("Avancado").levelOrder(3).martialArt(boxeKickboxing).build(),
             Graduation.builder().name("Competicao").levelOrder(4).martialArt(boxeKickboxing).build()
-        );
-
-        List<Graduation> forcaGraduations = List.of(
-            Graduation.builder().name("Base").levelOrder(1).martialArt(forcaCondicionamento).build(),
-            Graduation.builder().name("Intermedio").levelOrder(2).martialArt(forcaCondicionamento).build(),
-            Graduation.builder().name("Avancado").levelOrder(3).martialArt(forcaCondicionamento).build(),
-            Graduation.builder().name("Performance").levelOrder(4).martialArt(forcaCondicionamento).build()
         );
 
         List<Graduation> capoeiraGraduations = List.of(
@@ -239,7 +230,6 @@ public class DataInitializer {
 
         graduationRepository.saveAll(jiuJitsuGraduations);
         graduationRepository.saveAll(boxeKickboxingGraduations);
-        graduationRepository.saveAll(forcaGraduations);
         graduationRepository.saveAll(capoeiraGraduations);
         graduationRepository.saveAll(mmaGraduations);
 

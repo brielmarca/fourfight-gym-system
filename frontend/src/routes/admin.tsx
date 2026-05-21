@@ -1,7 +1,14 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Link, createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/contexts/auth-context";
 import { isAuthenticated, getUser, clearTokens } from "@/lib/api";
-import { useBelts, useMemberships, usePlans } from "@/queries";
+import {
+  useApproveReceptionRequest,
+  useBelts,
+  useMemberships,
+  usePendingReceptionRequests,
+  usePlans,
+  useRejectReceptionRequest,
+} from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,21 +33,26 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminPage() {
+  const navigate = useNavigate();
   const { user, hasRole, logout } = useAuth();
   const { data: belts = [], isLoading: beltsLoading } = useBelts();
   const { data: membershipsData, isLoading: membershipsLoading } = useMemberships(0, 50);
   const { data: plans = [], isLoading: plansLoading } = usePlans();
+  const canManageReception = hasRole(["ADMIN"]);
+  const { data: pendingReception = [], isLoading: pendingReceptionLoading } = usePendingReceptionRequests(canManageReception);
+  const approveReception = useApproveReceptionRequest();
+  const rejectReception = useRejectReceptionRequest();
 
-  const loading = beltsLoading || membershipsLoading || plansLoading;
+  const loading = beltsLoading || membershipsLoading || plansLoading || pendingReceptionLoading;
 
   if (user && !hasRole(["ADMIN", "MANAGER"])) {
-    window.location.href = "/student-area";
+    void navigate({ to: "/student-area", replace: true });
     return null;
   }
 
   const handleLogout = () => {
     logout();
-    window.location.href = "/";
+    void navigate({ to: "/", replace: true });
   };
 
   if (loading) {
@@ -72,16 +84,16 @@ function AdminPage() {
     <div className="min-h-screen bg-background">
       <header className="bg-surface border-b border-border-subtle">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <a href="/" className="flex flex-col">
+          <Link to="/" className="flex flex-col">
             <span className="font-display text-xl sm:text-2xl tracking-wider">4FOUR</span>
             <span className="font-sans text-[7px] sm:text-[8px] tracking-[0.3em] text-muted-foreground">
               FIGHT ACADEMY ADMIN
             </span>
-          </a>
+          </Link>
           <div className="flex items-center gap-2 md:gap-4">
-            <a href="/" className="text-xs text-text-secondary hover:text-foreground">
+            <Link to="/" className="text-xs text-text-secondary hover:text-foreground">
               Ver Site
-            </a>
+            </Link>
             <Button
               onClick={handleLogout}
               variant="ghost"
@@ -128,6 +140,14 @@ function AdminPage() {
             >
               Planos
             </TabsTrigger>
+            {canManageReception && (
+              <TabsTrigger
+                value="reception"
+                className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white"
+              >
+                Receção
+              </TabsTrigger>
+            )}
           </TabsList>
           </div>
 
@@ -307,6 +327,82 @@ function AdminPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {canManageReception && <TabsContent value="reception">
+            <Card className="bg-surface border-border-subtle">
+              <CardHeader>
+                <CardTitle className="text-xs tracking-[0.2em] uppercase">
+                  Pedidos pendentes na receção
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-border-subtle">
+                        <TableHead className="text-text-secondary">Cliente</TableHead>
+                        <TableHead className="text-text-secondary">Plano</TableHead>
+                        <TableHead className="text-text-secondary">Preco</TableHead>
+                        <TableHead className="text-text-secondary">Pedido</TableHead>
+                        <TableHead className="text-text-secondary">Status</TableHead>
+                        <TableHead className="text-text-secondary text-right">Acoes</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pendingReception.length > 0 ? (
+                        pendingReception.map((request) => {
+                          const handling =
+                            approveReception.isPending || rejectReception.isPending;
+                          return (
+                            <TableRow key={request.membershipId} className="border-border-subtle">
+                              <TableCell>
+                                <p className="font-medium">{request.userName}</p>
+                                <p className="text-xs text-text-secondary">{request.userEmail}</p>
+                              </TableCell>
+                              <TableCell>{request.planName}</TableCell>
+                              <TableCell>€{request.planPrice}</TableCell>
+                              <TableCell>
+                                {new Date(request.requestedAt).toLocaleDateString("pt-PT")}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="secondary">{request.status}</Badge>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Button
+                                    size="sm"
+                                    className="btn-red"
+                                    disabled={handling}
+                                    onClick={() => approveReception.mutate(request.membershipId)}
+                                  >
+                                    Aprovar
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={handling}
+                                    onClick={() => rejectReception.mutate(request.membershipId)}
+                                  >
+                                    Rejeitar
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-8 text-text-secondary">
+                            Sem pedidos pendentes na receção.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>}
         </Tabs>
       </main>
     </div>

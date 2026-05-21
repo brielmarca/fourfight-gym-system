@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -77,6 +78,15 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Malformed request body");
         problem.setTitle("Bad Request");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(problem);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<org.springframework.http.ProblemDetail> handle(AccessDeniedException ex) {
+        log.warn("Access denied: {}", ex.getMessage());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Access denied");
+        problem.setTitle("Forbidden");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
             .body(problem);
     }
 

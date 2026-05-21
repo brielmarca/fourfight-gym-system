@@ -25,9 +25,10 @@ import {
   Heart,
   Zap,
 } from "lucide-react";
-import jiuJitsu1 from "@/assets/gymlutas/jiu-jitsu-1.jpg";
-import jiuJitsu3 from "@/assets/gymlutas/jiu-jitsu-3.jpg";
-import jiuJitsuVideo from "@/assets/gymlutas/jiu-jitsu-video.mp4";
+import jiuJitsu1 from "@/assets/gymlutas/jiu-jitsu-1.webp";
+import jiuJitsu3 from "@/assets/gymlutas/jiu-jitsu-3.webp";
+import jiuJitsuVideoWebm from "@/assets/gymlutas/jiu-jitsu-video.webm";
+import jiuJitsuVideoMp4 from "@/assets/gymlutas/jiu-jitsu-video.mp4";
 
 export const Route = createFileRoute("/programas/jiu-jitsu")({
   component: JiuJitsuPage,
@@ -385,7 +386,8 @@ function JiuJitsuPage() {
               playsInline
               className="w-full h-auto transition-transform duration-500 group-hover:scale-[1.01]"
             >
-              <source src={jiuJitsuVideo} type="video/mp4" />
+              <source src={jiuJitsuVideoWebm} type="video/webm" />
+              <source src={jiuJitsuVideoMp4} type="video/mp4" />
             </video>
           </div>
         </div>

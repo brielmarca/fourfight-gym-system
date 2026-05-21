@@ -16,13 +16,7 @@ function Index() {
     <main className="bg-background text-foreground min-h-screen">
       <Navbar />
       <Hero />
-      {/* TEMP DEBUG: Commented out middle sections
-      <Programs />
-      <Academy />
-      <Schedule />
-      <Pricing />
       <Contact />
-      */}
     </main>
   );
 }

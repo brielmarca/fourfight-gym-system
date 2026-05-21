@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -18,6 +19,8 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
     Page<Payment> findByUserId(UUID userId, Pageable pageable);
 
     Page<Payment> findByMembershipId(UUID membershipId, Pageable pageable);
+
+    Optional<Payment> findFirstByMembershipIdOrderByCreatedAtDesc(UUID membershipId);
 
     Page<Payment> findByStatus(Payment.PaymentStatus status, Pageable pageable);
 

@@ -16,10 +16,11 @@ import {
   Users,
   Zap,
 } from "lucide-react";
-import boxeHero from "@/assets/gymlutas/jiu-jitsu-3.jpg";
-import boxeGallery1 from "@/assets/gymlutas/jiu-jitsu-1.jpg";
-import boxeGallery2 from "@/assets/gymlutas/jiu-jitsu-2.jpg";
-import boxeTrainingVideo from "@/assets/gymlutas/jiu-jitsu-video.mp4";
+import boxeHero from "@/assets/gymlutas/jiu-jitsu-3.webp";
+import boxeGallery1 from "@/assets/gymlutas/jiu-jitsu-1.webp";
+import boxeGallery2 from "@/assets/gymlutas/jiu-jitsu-2.webp";
+import boxeTrainingVideoWebm from "@/assets/gymlutas/jiu-jitsu-video.webm";
+import boxeTrainingVideoMp4 from "@/assets/gymlutas/jiu-jitsu-video.mp4";
 
 export const Route = createFileRoute("/programas/boxe-kickboxing")({
   component: BoxeKickboxingPage,
@@ -491,7 +492,8 @@ function BoxeKickboxingPage() {
               playsInline
               className="w-full max-h-[620px] object-cover transition-transform duration-500 group-hover:scale-[1.01]"
             >
-              <source src={boxeTrainingVideo} type="video/mp4" />
+              <source src={boxeTrainingVideoWebm} type="video/webm" />
+              <source src={boxeTrainingVideoMp4} type="video/mp4" />
             </video>
           </div>
         </div>

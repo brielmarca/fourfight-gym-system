@@ -8,7 +8,7 @@ const links = [
   { label: "PROGRAMAS", href: "/programs" },
   { label: "HORÁRIOS", href: "/schedule" },
   { label: "PLANOS", href: "/plans" },
-  { label: "CONTACTO", href: "/", hash: "contact" as const },
+  { label: "CONTACTO", href: "/contact" },
 ];
 
 function Navbar() {
@@ -55,7 +55,6 @@ function Navbar() {
             <Link
               key={l.href}
               to={l.href}
-              hash={l.hash}
               className="text-[11px] tracking-[0.15em] uppercase transition-colors duration-200"
               style={{ color: "#888" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = "#F5F5F5")}
@@ -138,7 +137,6 @@ function Navbar() {
             <Link
               key={l.href}
               to={l.href}
-              hash={l.hash}
               onClick={() => setOpen(false)}
               className="font-display text-[28px] sm:text-[40px] leading-none tracking-wider text-center"
             >

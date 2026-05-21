@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { isAuthenticated } from "@/lib/api";
+import { useAuth } from "@/contexts/auth-context";
 import { usePlans } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -9,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Feedback, EmptyState } from "@/components/ui/feedback";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { Loader2, AlertTriangle } from "lucide-react";
+import { House, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/plans")({
   component: PlansPage,
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/plans")({
 
 function PlansPage() {
   const { data: plans, isLoading, error, refetch } = usePlans();
+  const { isAuthenticated: isUserAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [hoveredPlanId, setHoveredPlanId] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -86,32 +88,30 @@ function PlansPage() {
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link
             to="/"
-            className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground md:hidden"
+            aria-label="Ir para início"
+            className="inline-flex h-10 w-10 items-center justify-center border border-border-subtle text-text-secondary transition-colors hover:text-foreground"
           >
-            Início
+            <House size={18} />
           </Link>
-          <nav className="hidden md:flex items-center gap-6">
-            <Link
-              to="/"
-              className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground"
-            >
-              Início
-            </Link>
-            <Link
-              to="/"
-              hash="contact"
-              className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground"
-            >
-              Contacto
-            </Link>
-            <Link
-              to="/login"
-              className="btn-red bg-primary text-primary-foreground px-4 py-2 text-xs tracking-wider uppercase font-semibold"
-            >
-              Login
-            </Link>
-          </nav>
-          <div className="md:hidden w-12" aria-hidden="true" />
+          <div>
+            {isAuthLoading ? (
+              <div className="h-9 w-28" aria-hidden="true" />
+            ) : isUserAuthenticated ? (
+              <Link
+                to="/student-area"
+                className="btn-red border border-primary bg-transparent text-primary px-4 py-2 text-xs tracking-wider uppercase font-semibold hover:text-primary-foreground"
+              >
+                Área do Aluno
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                className="btn-red bg-primary text-primary-foreground px-4 py-2 text-xs tracking-wider uppercase font-semibold"
+              >
+                Login
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 

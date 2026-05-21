@@ -1,6 +1,6 @@
 import { Link, createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/contexts/auth-context";
-import { isAuthenticated, getUser, clearTokens } from "@/lib/api";
+import { isAuthenticated, getUser } from "@/lib/api";
 import {
   useApproveReceptionRequest,
   useBelts,
@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, LogOut } from "lucide-react";
+import { Loader2, LogOut, Users, Shield, CreditCard, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: () => {
@@ -39,7 +39,8 @@ function AdminPage() {
   const { data: membershipsData, isLoading: membershipsLoading } = useMemberships(0, 50);
   const { data: plans = [], isLoading: plansLoading } = usePlans();
   const canManageReception = hasRole(["ADMIN"]);
-  const { data: pendingReception = [], isLoading: pendingReceptionLoading } = usePendingReceptionRequests(canManageReception);
+  const { data: pendingReception = [], isLoading: pendingReceptionLoading } =
+    usePendingReceptionRequests(canManageReception);
   const approveReception = useApproveReceptionRequest();
   const rejectReception = useRejectReceptionRequest();
 
@@ -60,7 +61,7 @@ function AdminPage() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <Loader2 size={40} className="animate-spin mx-auto mb-4" style={{ color: "#C1121F" }} />
-          <p className="text-text-secondary text-sm tracking-wider">Loading...</p>
+          <p className="text-text-secondary text-sm tracking-wider">A carregar painel...</p>
         </div>
       </div>
     );
@@ -115,98 +116,119 @@ function AdminPage() {
 
         <Tabs defaultValue="dashboard" className="space-y-6">
           <div className="overflow-x-auto">
-            <TabsList className="bg-surface border border-border-subtle">
-            <TabsTrigger
-              value="dashboard"
-              className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white"
-            >
-              Dashboard
-            </TabsTrigger>
-            <TabsTrigger
-              value="students"
-              className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white"
-            >
-              Alunos
-            </TabsTrigger>
-            <TabsTrigger
-              value="belts"
-              className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white"
-            >
-              Faixas
-            </TabsTrigger>
-            <TabsTrigger
-              value="plans"
-              className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white"
-            >
-              Planos
-            </TabsTrigger>
-            {canManageReception && (
+            <TabsList className="bg-surface border border-border-subtle p-1">
               <TabsTrigger
-                value="reception"
-                className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white"
+                value="dashboard"
+                className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white rounded-sm"
               >
-                Receção
+                Dashboard
               </TabsTrigger>
-            )}
-          </TabsList>
+              <TabsTrigger
+                value="students"
+                className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white rounded-sm"
+              >
+                Alunos
+              </TabsTrigger>
+              <TabsTrigger
+                value="belts"
+                className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white rounded-sm"
+              >
+                Faixas
+              </TabsTrigger>
+              <TabsTrigger
+                value="plans"
+                className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white rounded-sm"
+              >
+                Planos
+              </TabsTrigger>
+              {canManageReception && (
+                <TabsTrigger
+                  value="reception"
+                  className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white rounded-sm"
+                >
+                  Receção
+                </TabsTrigger>
+              )}
+            </TabsList>
           </div>
 
           <TabsContent value="dashboard">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-              <Card className="bg-surface border-border-subtle">
+              <Card
+                className="bg-surface border-border-subtle"
+                style={{ borderTop: "2px solid #C1121F" }}
+              >
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-xs tracking-[0.2em] uppercase text-text-secondary">
+                  <CardTitle className="text-xs tracking-[0.2em] uppercase text-text-secondary flex items-center gap-2">
+                    <Users size={14} />
                     Total de Alunos
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="font-display text-4xl tracking-wider">
+                  <p className="font-display text-4xl tracking-wider" style={{ color: "#F5F5F5" }}>
                     {memberships?.totalElements || 0}
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-surface border-border-subtle">
+              <Card
+                className="bg-surface border-border-subtle"
+                style={{ borderTop: "2px solid #22C55E" }}
+              >
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-xs tracking-[0.2em] uppercase text-text-secondary">
+                  <CardTitle className="text-xs tracking-[0.2em] uppercase text-text-secondary flex items-center gap-2">
+                    <Shield size={14} />
                     Matrículas Ativas
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="font-display text-4xl tracking-wider text-green-500">
+                  <p className="font-display text-4xl tracking-wider" style={{ color: "#22C55E" }}>
                     {activeCount}
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-surface border-border-subtle">
+              <Card
+                className="bg-surface border-border-subtle"
+                style={{ borderTop: "2px solid #C1121F" }}
+              >
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-xs tracking-[0.2em] uppercase text-text-secondary">
+                  <CardTitle className="text-xs tracking-[0.2em] uppercase text-text-secondary flex items-center gap-2">
+                    <Clock size={14} />
                     Matrículas Expiradas
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="font-display text-4xl tracking-wider text-destructive">
+                  <p className="font-display text-4xl tracking-wider" style={{ color: "#C1121F" }}>
                     {expiredCount}
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-surface border-border-subtle">
+              <Card
+                className="bg-surface border-border-subtle"
+                style={{ borderTop: "2px solid #C1121F" }}
+              >
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-xs tracking-[0.2em] uppercase text-text-secondary">
+                  <CardTitle className="text-xs tracking-[0.2em] uppercase text-text-secondary flex items-center gap-2">
+                    <CreditCard size={14} />
                     Faixas Cadastradas
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="font-display text-4xl tracking-wider">{belts.length}</p>
+                  <p className="font-display text-4xl tracking-wider" style={{ color: "#F5F5F5" }}>
+                    {belts.length}
+                  </p>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
           <TabsContent value="students">
-            <Card className="bg-surface border-border-subtle">
+            <Card
+              className="bg-surface border-border-subtle"
+              style={{ borderTop: "2px solid #C1121F" }}
+            >
               <CardHeader>
                 <CardTitle className="text-xs tracking-[0.2em] uppercase">
                   Todos os Alunos
@@ -214,55 +236,65 @@ function AdminPage() {
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-border-subtle">
-                      <TableHead className="text-text-secondary">Aluno</TableHead>
-                      <TableHead className="text-text-secondary">Plano</TableHead>
-                      <TableHead className="text-text-secondary">Início</TableHead>
-                      <TableHead className="text-text-secondary">Validade</TableHead>
-                      <TableHead className="text-text-secondary">Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {memberships?.content?.length > 0 ? (
-                      memberships.content.map((m) => (
-                        <TableRow key={m.id} className="border-border-subtle">
-                          <TableCell className="font-medium">{m.userName}</TableCell>
-                          <TableCell>{m.planName}</TableCell>
-                          <TableCell>{new Date(m.startDate).toLocaleDateString("pt-PT")}</TableCell>
-                          <TableCell>{new Date(m.endDate).toLocaleDateString("pt-PT")}</TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                m.status === "ACTIVE"
-                                  ? "default"
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-border-subtle hover:bg-transparent">
+                        <TableHead className="text-text-secondary">Aluno</TableHead>
+                        <TableHead className="text-text-secondary">Plano</TableHead>
+                        <TableHead className="text-text-secondary">Início</TableHead>
+                        <TableHead className="text-text-secondary">Validade</TableHead>
+                        <TableHead className="text-text-secondary">Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {memberships?.content?.length > 0 ? (
+                        memberships.content.map((m) => (
+                          <TableRow key={m.id} className="border-border-subtle">
+                            <TableCell className="font-medium">{m.userName}</TableCell>
+                            <TableCell>{m.planName}</TableCell>
+                            <TableCell>
+                              {new Date(m.startDate).toLocaleDateString("pt-PT")}
+                            </TableCell>
+                            <TableCell>{new Date(m.endDate).toLocaleDateString("pt-PT")}</TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={
+                                  m.status === "ACTIVE"
+                                    ? "border-primary/30 bg-primary/10 text-primary"
+                                    : m.status === "EXPIRED"
+                                      ? "border-destructive/30 bg-destructive/10 text-destructive"
+                                      : "border-border-subtle bg-surface-2 text-text-secondary"
+                                }
+                              >
+                                {m.status === "ACTIVE"
+                                  ? "Ativo"
                                   : m.status === "EXPIRED"
-                                    ? "destructive"
-                                    : "secondary"
-                              }
-                            >
-                              {m.status}
-                            </Badge>
+                                    ? "Expirado"
+                                    : m.status}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow className="hover:bg-transparent">
+                          <TableCell colSpan={5} className="text-center py-12 text-text-secondary">
+                            Nenhum aluno encontrado
                           </TableCell>
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8 text-text-secondary">
-                          Nenhum aluno encontrado
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="belts">
-            <Card className="bg-surface border-border-subtle">
+            <Card
+              className="bg-surface border-border-subtle"
+              style={{ borderTop: "2px solid #C1121F" }}
+            >
               <CardHeader>
                 <CardTitle className="text-xs tracking-[0.2em] uppercase">
                   Gerenciar Faixas
@@ -274,12 +306,15 @@ function AdminPage() {
                     {belts.map((belt) => (
                       <div
                         key={belt.id}
-                        className="flex items-center justify-between p-3 bg-surface-2 rounded-md"
+                        className="flex items-center justify-between p-3 bg-surface-2 border border-border-subtle"
                       >
                         <div className="flex items-center gap-3">
                           <div
-                            className="w-6 h-6 rounded-full border-2"
-                            style={{ borderColor: belt.colorHex }}
+                            className="w-6 h-6 border-2"
+                            style={{
+                              borderColor: belt.colorHex,
+                              backgroundColor: belt.colorHex + "22",
+                            }}
                           />
                           <span className="font-medium">{belt.name}</span>
                         </div>
@@ -288,16 +323,22 @@ function AdminPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-text-secondary">
-                    Nenhuma faixa cadastrada. Cadastre as faixas da academia.
-                  </p>
+                  <div className="text-center py-12">
+                    <Shield size={32} className="mx-auto mb-3 text-text-muted" />
+                    <p className="text-text-secondary">
+                      Nenhuma faixa cadastrada. Cadastre as faixas da academia.
+                    </p>
+                  </div>
                 )}
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="plans">
-            <Card className="bg-surface border-border-subtle">
+            <Card
+              className="bg-surface border-border-subtle"
+              style={{ borderTop: "2px solid #C1121F" }}
+            >
               <CardHeader>
                 <CardTitle className="text-xs tracking-[0.2em] uppercase">
                   Planos de Mensalidade
@@ -309,100 +350,118 @@ function AdminPage() {
                     {plans.map((plan) => (
                       <div
                         key={plan.id}
-                        className="flex items-center justify-between p-3 bg-surface-2 rounded-md"
+                        className="flex items-center justify-between p-3 bg-surface-2 border border-border-subtle"
                       >
                         <div>
                           <p className="font-medium">{plan.name}</p>
                           <p className="text-xs text-text-secondary">
-                            {plan.durationDays} dias • {plan.maxClasses || "Ilimitadas"} aulas
+                            {plan.durationDays} dias · {plan.maxClasses || "Ilimitadas"} aulas
                           </p>
                         </div>
-                        <p className="font-display text-xl">€{plan.price}</p>
+                        <p className="font-display text-xl" style={{ color: "#C1121F" }}>
+                          €{plan.price}
+                        </p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-text-secondary">Nenhum plano cadastrado.</p>
+                  <div className="text-center py-12">
+                    <CreditCard size={32} className="mx-auto mb-3 text-text-muted" />
+                    <p className="text-text-secondary">Nenhum plano cadastrado.</p>
+                  </div>
                 )}
               </CardContent>
             </Card>
           </TabsContent>
 
-          {canManageReception && <TabsContent value="reception">
-            <Card className="bg-surface border-border-subtle">
-              <CardHeader>
-                <CardTitle className="text-xs tracking-[0.2em] uppercase">
-                  Pedidos pendentes na receção
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="border-border-subtle">
-                        <TableHead className="text-text-secondary">Cliente</TableHead>
-                        <TableHead className="text-text-secondary">Plano</TableHead>
-                        <TableHead className="text-text-secondary">Preco</TableHead>
-                        <TableHead className="text-text-secondary">Pedido</TableHead>
-                        <TableHead className="text-text-secondary">Status</TableHead>
-                        <TableHead className="text-text-secondary text-right">Acoes</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {pendingReception.length > 0 ? (
-                        pendingReception.map((request) => {
-                          const handling =
-                            approveReception.isPending || rejectReception.isPending;
-                          return (
-                            <TableRow key={request.membershipId} className="border-border-subtle">
-                              <TableCell>
-                                <p className="font-medium">{request.userName}</p>
-                                <p className="text-xs text-text-secondary">{request.userEmail}</p>
-                              </TableCell>
-                              <TableCell>{request.planName}</TableCell>
-                              <TableCell>€{request.planPrice}</TableCell>
-                              <TableCell>
-                                {new Date(request.requestedAt).toLocaleDateString("pt-PT")}
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant="secondary">{request.status}</Badge>
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                  <Button
-                                    size="sm"
-                                    className="btn-red"
-                                    disabled={handling}
-                                    onClick={() => approveReception.mutate(request.membershipId)}
-                                  >
-                                    Aprovar
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    disabled={handling}
-                                    onClick={() => rejectReception.mutate(request.membershipId)}
-                                  >
-                                    Rejeitar
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })
-                      ) : (
-                        <TableRow>
-                          <TableCell colSpan={6} className="text-center py-8 text-text-secondary">
-                            Sem pedidos pendentes na receção.
-                          </TableCell>
+          {canManageReception && (
+            <TabsContent value="reception">
+              <Card
+                className="bg-surface border-border-subtle"
+                style={{ borderTop: "2px solid #C1121F" }}
+              >
+                <CardHeader>
+                  <CardTitle className="text-xs tracking-[0.2em] uppercase">
+                    Pedidos pendentes na receção
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-border-subtle hover:bg-transparent">
+                          <TableHead className="text-text-secondary">Cliente</TableHead>
+                          <TableHead className="text-text-secondary">Plano</TableHead>
+                          <TableHead className="text-text-secondary">Preço</TableHead>
+                          <TableHead className="text-text-secondary">Pedido</TableHead>
+                          <TableHead className="text-text-secondary">Status</TableHead>
+                          <TableHead className="text-text-secondary text-right">Ações</TableHead>
                         </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>}
+                      </TableHeader>
+                      <TableBody>
+                        {pendingReception.length > 0 ? (
+                          pendingReception.map((request) => {
+                            const handling =
+                              approveReception.isPending || rejectReception.isPending;
+                            return (
+                              <TableRow key={request.membershipId} className="border-border-subtle">
+                                <TableCell>
+                                  <p className="font-medium">{request.userName}</p>
+                                  <p className="text-xs text-text-secondary">{request.userEmail}</p>
+                                </TableCell>
+                                <TableCell>{request.planName}</TableCell>
+                                <TableCell>€{request.planPrice}</TableCell>
+                                <TableCell>
+                                  {new Date(request.requestedAt).toLocaleDateString("pt-PT")}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge
+                                    variant="outline"
+                                    className="border-border-subtle bg-surface-2 text-text-secondary"
+                                  >
+                                    {request.status}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex items-center justify-end gap-2">
+                                    <Button
+                                      size="sm"
+                                      className="btn-red"
+                                      disabled={handling}
+                                      onClick={() => approveReception.mutate(request.membershipId)}
+                                    >
+                                      Aprovar
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      disabled={handling}
+                                      onClick={() => rejectReception.mutate(request.membershipId)}
+                                    >
+                                      Rejeitar
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })
+                        ) : (
+                          <TableRow className="hover:bg-transparent">
+                            <TableCell
+                              colSpan={6}
+                              className="text-center py-12 text-text-secondary"
+                            >
+                              Sem pedidos pendentes na receção.
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
       </main>
     </div>

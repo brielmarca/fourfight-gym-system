@@ -41,8 +41,8 @@ function PlansPage() {
     return (
       <div className="min-h-screen bg-background">
         <div className="flex flex-col items-center justify-center py-20 space-y-4">
-          <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-text-secondary">Carregando planos...</p>
+          <div className="w-10 h-10 border-2 border-primary border-t-transparent animate-spin" />
+          <p className="text-sm text-text-secondary tracking-wider">A carregar planos...</p>
         </div>
       </div>
     );
@@ -52,15 +52,18 @@ function PlansPage() {
     <div className="min-h-screen bg-background">
       <header className="bg-surface border-b border-border-subtle">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground md:hidden">
-            Incio
+          <Link
+            to="/"
+            className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground md:hidden"
+          >
+            Início
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             <Link
               to="/"
               className="text-xs tracking-wider uppercase text-text-secondary hover:text-foreground"
             >
-              Incio
+              Início
             </Link>
             <Link
               to="/"
@@ -71,7 +74,7 @@ function PlansPage() {
             </Link>
             <Link
               to="/login"
-              className="btn-red bg-primary text-primary-foreground px-4 py-2 text-xs tracking-wider uppercase font-semibold rounded-[2px]"
+              className="btn-red bg-primary text-primary-foreground px-4 py-2 text-xs tracking-wider uppercase font-semibold"
             >
               Login
             </Link>
@@ -82,10 +85,12 @@ function PlansPage() {
 
       <main className="max-w-6xl mx-auto px-4 py-10 sm:py-16">
         <div className="text-center mb-10 sm:mb-16">
-          <h1 className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">Escolha Seu Plano</h1>
+          <h1 className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">
+            Escolha Seu Plano
+          </h1>
           <p className="mt-3 sm:mt-4 text-text-secondary text-base sm:text-lg max-w-2xl mx-auto px-2">
-            Comece hoje mesmo. Todos os planos incluem acesso academia, vestirios completos e app
-            da comunidade.
+            Comece hoje mesmo. Todos os planos incluem acesso academia, vestirios completos e app da
+            comunidade.
           </p>
           <p className="mt-2 text-sm text-primary font-semibold px-2">
             Plano Popular: Padrao melhor custo-beneficio
@@ -105,11 +110,12 @@ function PlansPage() {
             {displayPlans.map((plan, i) => (
               <Card
                 key={plan.id}
-                className={`relative flex flex-col bg-surface border-border-subtle transition-all hover:scale-105 hover:border-red-500 hover:shadow-lg ${
-                  i === 1 ? "border-primary" : ""
+                className={`relative flex flex-col bg-surface border-border-subtle transition-all duration-300 ${
+                  i === 1 ? "border-primary" : "hover:border-border-accent"
                 }`}
                 style={{
-                  boxShadow: i === 1 ? "0 0 40px rgba(193,18,31,0.15)" : "none",
+                  borderTop: i === 1 ? "2px solid #C1121F" : "2px solid #1E1E1E",
+                  boxShadow: i === 1 ? "0 0 40px rgba(193,18,31,0.12)" : "none",
                 }}
               >
                 {i === 1 && (
@@ -192,7 +198,9 @@ function PlansPage() {
           <div className="text-center py-20 space-y-4">
             <p className="text-text-secondary">Nenhum plano disponível no momento.</p>
             <Button asChild variant="outline" className="mt-4">
-              <Link to="/" hash="contact">Contacte-nos para mais informações</Link>
+              <Link to="/" hash="contact">
+                Contacte-nos para mais informações
+              </Link>
             </Button>
           </div>
         )}
@@ -202,25 +210,40 @@ function PlansPage() {
             PERGUNTAS FREQUENTES
           </h2>
           <div className="space-y-4 sm:space-y-6">
-            <div className="bg-surface p-4 sm:p-6 rounded-md border border-border-subtle">
-              <h3 className="font-semibold mb-2 text-sm sm:text-base">Posso experimentar uma aula grtis?</h3>
+            <div
+              className="bg-surface p-4 sm:p-6 border border-border-subtle"
+              style={{ borderLeft: "3px solid #C1121F" }}
+            >
+              <h3 className="font-semibold mb-2 text-sm sm:text-base">
+                Posso experimentar uma aula grátis?
+              </h3>
               <p className="text-text-secondary text-sm">
                 Sim! Oferecemos uma aula experimental gratuita para novos alunos. Contacta-nos para
                 agendares.
               </p>
             </div>
-            <div className="bg-surface p-4 sm:p-6 rounded-md border border-border-subtle">
-              <h3 className="font-semibold mb-2 text-sm sm:text-base">Como funciona o cancelamento?</h3>
+            <div
+              className="bg-surface p-4 sm:p-6 border border-border-subtle"
+              style={{ borderLeft: "3px solid #C1121F" }}
+            >
+              <h3 className="font-semibold mb-2 text-sm sm:text-base">
+                Como funciona o cancelamento?
+              </h3>
               <p className="text-text-secondary text-sm">
                 Podes cancelar a qualquer momento. Sem contratos, sem burocracia. O cancelamento
-                entra em vigor no fim do perodo pago.
+                entra em vigor no fim do período pago.
               </p>
             </div>
-            <div className="bg-surface p-4 sm:p-6 rounded-md border border-border-subtle">
-              <h3 className="font-semibold mb-2 text-sm sm:text-base">O que est includo no plano?</h3>
+            <div
+              className="bg-surface p-4 sm:p-6 border border-border-subtle"
+              style={{ borderLeft: "3px solid #C1121F" }}
+            >
+              <h3 className="font-semibold mb-2 text-sm sm:text-base">
+                O que está incluído no plano?
+              </h3>
               <p className="text-text-secondary text-sm">
-                Todos os planos incluem acesso s aulas selecionadas, vestirios e app da
-                comunidade. Planos superiores incluem benefcios adicionais.
+                Todos os planos incluem acesso às aulas selecionadas, vestiários e app da
+                comunidade. Planos superiores incluem benefícios adicionais.
               </p>
             </div>
           </div>

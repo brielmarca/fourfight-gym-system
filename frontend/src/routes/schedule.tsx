@@ -34,6 +34,13 @@ import {
   Filter,
   ChevronDown,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Route = createFileRoute("/schedule")({
   component: SchedulePage,
@@ -151,7 +158,9 @@ function SchedulePage() {
       <div className="pt-32 pb-20 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">HORÁRIO DAS AULAS</h1>
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">
+              HORÁRIO DAS AULAS
+            </h1>
             <p className="mt-4 text-text-secondary text-lg">
               Treina quando te convém. Aparece. Repete.
             </p>
@@ -209,7 +218,7 @@ function SchedulePage() {
                     onClick={() => setMessage(null)}
                     className="ml-auto text-xs opacity-70 hover:opacity-100"
                   >
-                    ✕
+                    <X size={14} />
                   </button>
                 </div>
               )}
@@ -217,47 +226,58 @@ function SchedulePage() {
               <div className="mb-8 flex flex-wrap gap-4 items-center justify-center">
                 <div className="flex items-center gap-2">
                   <Filter size={16} className="text-text-secondary" />
-                  <select
+                  <Select
                     value={modalityFilter}
-                    onChange={(e) => setModalityFilter(e.target.value as Modality | "Todos")}
-                    className="bg-surface border border-border-subtle text-foreground rounded px-3 py-2 text-sm"
+                    onValueChange={(v) => setModalityFilter(v as Modality | "Todos")}
                   >
-                    {modalities.map((m) => (
-                      <option key={m} value={m}>
-                        {m}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-[180px] bg-surface border-border-subtle text-foreground text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {modalities.map((m) => (
+                        <SelectItem key={m} value={m}>
+                          {m}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar size={16} className="text-text-secondary" />
-                  <select
-                    value={dayFilter}
-                    onChange={(e) => setDayFilter(Number(e.target.value) as DayOfWeek | "Todos")}
-                    className="bg-surface border border-border-subtle text-foreground rounded px-3 py-2 text-sm"
+                  <Select
+                    value={dayFilter === "Todos" ? "Todos" : String(dayFilter)}
+                    onValueChange={(v) =>
+                      setDayFilter(v === "Todos" ? "Todos" : (Number(v) as DayOfWeek))
+                    }
                   >
-                    <option value="Todos">Todos os dias</option>
-                    {Object.entries(dayNames).map(([key, name]) => (
-                      <option key={key} value={key}>
-                        {name}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-[180px] bg-surface border-border-subtle text-foreground text-sm">
+                      <SelectValue placeholder="Todos os dias" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Todos">Todos os dias</SelectItem>
+                      {Object.entries(dayNames).map(([key, name]) => (
+                        <SelectItem key={key} value={key}>
+                          {name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock size={16} className="text-text-secondary" />
-                  <select
-                    value={timeFilter}
-                    onChange={(e) => setTimeFilter(e.target.value)}
-                    className="bg-surface border border-border-subtle text-foreground rounded px-3 py-2 text-sm"
-                  >
-                    <option value="Todos">Todas as horas</option>
-                    {timeSlots.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
+                  <Select value={timeFilter} onValueChange={setTimeFilter}>
+                    <SelectTrigger className="w-[180px] bg-surface border-border-subtle text-foreground text-sm">
+                      <SelectValue placeholder="Todas as horas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Todos">Todas as horas</SelectItem>
+                      {timeSlots.map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {t}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 

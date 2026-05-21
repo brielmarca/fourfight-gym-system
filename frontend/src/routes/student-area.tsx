@@ -1,13 +1,11 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useAuth } from "@/contexts/auth-context";
-import { isAuthenticated, getUser, clearTokens } from "@/lib/api";
+import { isAuthenticated } from "@/lib/api";
 import {
   useMyStudentProfile,
   useMyMembership,
   useMyMonthlyAttendance,
   useMyEnrollments,
-  useStripeSubscription,
-  useCancelStripeSubscription,
 } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +21,8 @@ import {
   Target,
   Check,
   Clock,
-  MapPin,
+  Flame,
+  TrendingUp,
 } from "lucide-react";
 
 export const Route = createFileRoute("/student-area")({
@@ -100,16 +99,19 @@ function StudentAreaPage() {
           </p>
           {!membership && (
             <p className="mt-3 text-sm text-primary font-semibold">
-              ⚡ Ainda não tens plano ativo —{" "}
-                <Link to="/plans" className="underline">
-                  escolhe um abaixo
-                </Link>
+              Ainda não tens plano ativo —{" "}
+              <Link to="/plans" className="underline">
+                escolhe um abaixo
+              </Link>
             </p>
           )}
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-surface border-border-subtle">
+          <Card
+            className="bg-surface border-border-subtle"
+            style={{ borderTop: "2px solid #C1121F" }}
+          >
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <Award size={20} style={{ color: "#C1121F" }} />
@@ -123,13 +125,16 @@ function StudentAreaPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-surface border-border-subtle">
+          <Card
+            className="bg-surface border-border-subtle"
+            style={{ borderTop: "2px solid #C1121F" }}
+          >
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <Calendar size={20} style={{ color: "#C1121F" }} />
                 <div>
                   <p className="text-xs tracking-wider uppercase text-text-secondary">
-                    Presença este Mês
+                    Presenças este Mês
                   </p>
                   <p className="font-display text-xl tracking-wider">{monthlyAttendance}</p>
                 </div>
@@ -137,7 +142,10 @@ function StudentAreaPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-surface border-border-subtle">
+          <Card
+            className="bg-surface border-border-subtle"
+            style={{ borderTop: "2px solid #C1121F" }}
+          >
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <CreditCard size={20} style={{ color: "#C1121F" }} />
@@ -151,15 +159,22 @@ function StudentAreaPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-surface border-border-subtle">
+          <Card
+            className="bg-surface border-border-subtle"
+            style={{ borderTop: "2px solid #C1121F" }}
+          >
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <Target size={20} style={{ color: "#C1121F" }} />
                 <div>
                   <p className="text-xs tracking-wider uppercase text-text-secondary">Status</p>
                   <Badge
-                    variant={membership?.status === "ACTIVE" ? "default" : "destructive"}
-                    className="tracking-wider mt-1"
+                    variant="outline"
+                    className={
+                      membership?.status === "ACTIVE"
+                        ? "border-primary/30 bg-primary/10 text-primary tracking-wider mt-1"
+                        : "border-destructive/30 bg-destructive/10 text-destructive tracking-wider mt-1"
+                    }
                   >
                     {membership?.status === "ACTIVE" ? (
                       <>
@@ -178,21 +193,33 @@ function StudentAreaPage() {
 
         <Tabs defaultValue="overview" className="space-y-6">
           <div className="overflow-x-auto">
-          <TabsList className="bg-surface border border-border-subtle">
-            <TabsTrigger value="overview" className="tracking-[0.15em] uppercase text-xs">
-              Visão Geral
-            </TabsTrigger>
-            <TabsTrigger value="progress" className="tracking-[0.15em] uppercase text-xs">
-              Progresso
-            </TabsTrigger>
-            <TabsTrigger value="membership" className="tracking-[0.15em] uppercase text-xs">
-              Minha Mensalidade
-            </TabsTrigger>
-          </TabsList>
+            <TabsList className="bg-surface border border-border-subtle p-1">
+              <TabsTrigger
+                value="overview"
+                className="tracking-[0.15em] uppercase text-xs rounded-sm"
+              >
+                Visão Geral
+              </TabsTrigger>
+              <TabsTrigger
+                value="progress"
+                className="tracking-[0.15em] uppercase text-xs rounded-sm"
+              >
+                Progresso
+              </TabsTrigger>
+              <TabsTrigger
+                value="membership"
+                className="tracking-[0.15em] uppercase text-xs rounded-sm"
+              >
+                Minha Mensalidade
+              </TabsTrigger>
+            </TabsList>
           </div>
 
           <TabsContent value="overview">
-            <Card className="bg-surface border-border-subtle">
+            <Card
+              className="bg-surface border-border-subtle"
+              style={{ borderTop: "2px solid #C1121F" }}
+            >
               <CardHeader>
                 <CardTitle className="text-xs tracking-[0.2em] uppercase">
                   Aulas Agendadas
@@ -210,7 +237,12 @@ function StudentAreaPage() {
                           <Clock size={16} style={{ color: "#C1121F" }} />
                           <span>Aula #{enrollment.classId?.slice(0, 8)}</span>
                         </div>
-                        <Badge variant="outline">Agendada</Badge>
+                        <Badge
+                          variant="outline"
+                          className="border-primary/30 bg-primary/10 text-primary"
+                        >
+                          Agendada
+                        </Badge>
                       </div>
                     ))}
                   </div>
@@ -221,13 +253,13 @@ function StudentAreaPage() {
                   {membership ? (
                     <Link to="/schedule">
                       <Button className="btn-red w-full tracking-[0.2em] uppercase text-xs">
-                        📅 VER HORÁRIOS E AGENDAR
+                        Ver horários e agendar
                       </Button>
                     </Link>
                   ) : (
                     <Link to="/plans">
                       <Button className="btn-red w-full tracking-[0.2em] uppercase text-xs">
-                        🎯 ESCOLHER PLANO AGORA
+                        Escolher plano agora
                       </Button>
                     </Link>
                   )}
@@ -237,7 +269,10 @@ function StudentAreaPage() {
           </TabsContent>
 
           <TabsContent value="progress">
-            <Card className="bg-surface border-border-subtle">
+            <Card
+              className="bg-surface border-border-subtle"
+              style={{ borderTop: "2px solid #C1121F" }}
+            >
               <CardHeader>
                 <CardTitle className="text-xs tracking-[0.2em] uppercase">
                   Evolução Mensal
@@ -254,18 +289,32 @@ function StudentAreaPage() {
                     </div>
                     <Progress value={attendanceProgress} className="h-2 bg-surface-2" />
                   </div>
-                  <p className="text-sm text-text-secondary">
-                    {monthlyAttendance >= 8
-                      ? "🔥 Incrível! Estás no topo do teu objetivo este mês!"
-                      : monthlyAttendance >= 4
-                        ? "💪 Boa continuação! Mantém o ritmo de treino."
-                        : "🎯 Bora treinar mais este mês!"}
-                  </p>
+                  <div className="flex items-center gap-2 text-sm text-text-secondary">
+                    {monthlyAttendance >= 8 ? (
+                      <>
+                        <Flame size={16} style={{ color: "#C1121F" }} />
+                        <span>Incrível! Estás no topo do teu objetivo este mês.</span>
+                      </>
+                    ) : monthlyAttendance >= 4 ? (
+                      <>
+                        <TrendingUp size={16} style={{ color: "#C1121F" }} />
+                        <span>Boa continuação! Mantém o ritmo de treino.</span>
+                      </>
+                    ) : (
+                      <>
+                        <Target size={16} style={{ color: "#C1121F" }} />
+                        <span>Bora treinar mais este mês.</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-surface border-border-subtle mt-4">
+            <Card
+              className="bg-surface border-border-subtle mt-4"
+              style={{ borderTop: "2px solid #C1121F" }}
+            >
               <CardHeader>
                 <CardTitle className="text-xs tracking-[0.2em] uppercase">
                   Objetivos Pessoais
@@ -276,7 +325,7 @@ function StudentAreaPage() {
                   <p className="text-foreground">{profile.goals}</p>
                 ) : (
                   <p className="text-text-secondary text-sm">
-                    Define teus objetivos no teu perfil para acompanhar o progresso.
+                    Define os teus objetivos no teu perfil para acompanhar o progresso.
                   </p>
                 )}
               </CardContent>
@@ -284,7 +333,10 @@ function StudentAreaPage() {
           </TabsContent>
 
           <TabsContent value="membership">
-            <Card className="bg-surface border-border-subtle">
+            <Card
+              className="bg-surface border-border-subtle"
+              style={{ borderTop: "2px solid #C1121F" }}
+            >
               <CardHeader>
                 <CardTitle className="text-xs tracking-[0.2em] uppercase">
                   Dados da Mensalidade
@@ -307,8 +359,15 @@ function StudentAreaPage() {
                     </div>
                     <div className="flex justify-between py-2 border-b border-border-subtle">
                       <span className="text-text-secondary">Status</span>
-                      <Badge variant={membership.status === "ACTIVE" ? "default" : "destructive"}>
-                        {membership.status}
+                      <Badge
+                        variant="outline"
+                        className={
+                          membership.status === "ACTIVE"
+                            ? "border-primary/30 bg-primary/10 text-primary"
+                            : "border-destructive/30 bg-destructive/10 text-destructive"
+                        }
+                      >
+                        {membership.status === "ACTIVE" ? "Ativo" : "Inativo"}
                       </Badge>
                     </div>
                     {membership.stripeSubscriptionId && (
@@ -321,13 +380,15 @@ function StudentAreaPage() {
                         </div>
                         {membership.currentPeriodEnd && (
                           <div className="flex justify-between py-2 border-b border-border-subtle">
-                            <span className="text-text-secondary">Proxima renovacao</span>
-                            <span>{new Date(membership.currentPeriodEnd).toLocaleDateString("pt-PT")}</span>
+                            <span className="text-text-secondary">Próxima renovação</span>
+                            <span>
+                              {new Date(membership.currentPeriodEnd).toLocaleDateString("pt-PT")}
+                            </span>
                           </div>
                         )}
                         {membership.cancelAtPeriodEnd && (
-                          <div className="p-3 rounded-md bg-yellow-500/10 border border-yellow-500/30 text-sm text-yellow-500">
-                            A tua subscricao sera cancelada no fim do periodo atual.
+                          <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 text-sm text-yellow-500">
+                            A tua subscrição será cancelada no fim do período atual.
                           </div>
                         )}
                       </>

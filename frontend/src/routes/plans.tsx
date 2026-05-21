@@ -18,9 +18,16 @@ export const Route = createFileRoute("/plans")({
 function PlansPage() {
   const { data: plans, isLoading, error, refetch } = usePlans();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [hoveredPlanId, setHoveredPlanId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const displayPlans = plans && plans.length > 0 ? plans : [];
+  const popularPlanId =
+    displayPlans.find((plan) => plan.popular)?.id ??
+    displayPlans.find((plan) => plan.id === "standard")?.id ??
+    displayPlans[1]?.id ??
+    displayPlans[0]?.id ??
+    "standard";
 
   useEffect(() => {
     if (selectedPlan || displayPlans.length === 0) return;
@@ -159,6 +166,7 @@ function PlansPage() {
         {displayPlans.length > 0 ? (
           <motion.div
             className="grid md:grid-cols-3 gap-6"
+            onMouseLeave={() => setHoveredPlanId(null)}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.2 }}
@@ -171,14 +179,18 @@ function PlansPage() {
               },
             }}
           >
-            {displayPlans.map((plan, i) => (
-              <motion.div
-                key={plan.id}
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  show: {
-                    opacity: 1,
-                    y: 0,
+            {displayPlans.map((plan, i) => {
+              const isActiveHighlight = (hoveredPlanId ?? popularPlanId) === plan.id;
+              const isPopular = plan.id === popularPlanId;
+
+              return (
+                <motion.div
+                  key={plan.id}
+                  variants={{
+                    hidden: { opacity: 0, y: 20 },
+                   show: {
+                     opacity: 1,
+                     y: 0,
                     transition: { duration: 0.42, ease: "easeOut" },
                   },
                 }}
@@ -186,14 +198,15 @@ function PlansPage() {
                 transition={i === 1 ? { duration: 3.2, repeat: Infinity, ease: "easeInOut" } : undefined}
               >
                 <Card
-                  className={`relative flex h-full flex-col bg-surface border-border-subtle transition-all duration-300 ${
-                    i === 1 ? "border-primary" : "hover:border-border-accent"
+                  onMouseEnter={() => setHoveredPlanId(plan.id)}
+                  className={`relative flex h-full flex-col bg-surface transition-all duration-300 ${
+                    isActiveHighlight ? "border-primary" : "border-border-subtle"
                   }`}
                   style={{
-                    borderTop: i === 1 ? "2px solid #C1121F" : "2px solid #1E1E1E",
+                    borderTop: isActiveHighlight ? "2px solid #C1121F" : "2px solid #1E1E1E",
                   }}
                 >
-                  {i === 1 && (
+                  {isPopular && (
                     <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] tracking-[0.2em] uppercase">
                       Mais Popular
                     </Badge>
@@ -271,7 +284,8 @@ function PlansPage() {
                   </CardContent>
                 </Card>
               </motion.div>
-            ))}
+              );
+            })}
           </motion.div>
         ) : (
           <EmptyState

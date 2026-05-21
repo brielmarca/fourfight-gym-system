@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Feedback, EmptyState } from "@/components/ui/feedback";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { House, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/plans")({
   component: PlansPage,
@@ -86,13 +86,7 @@ function PlansPage() {
     <div className="min-h-screen bg-background">
       <header className="bg-surface border-b border-border-subtle">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link
-            to="/"
-            aria-label="Ir para início"
-            className="inline-flex h-10 w-10 items-center justify-center border border-border-subtle text-text-secondary transition-colors hover:text-foreground"
-          >
-            <House size={18} />
-          </Link>
+          <div className="h-10 w-10" aria-hidden="true" />
           <div>
             {isAuthLoading ? (
               <div className="h-9 w-28" aria-hidden="true" />

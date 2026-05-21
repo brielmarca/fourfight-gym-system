@@ -5,15 +5,16 @@ import { usePlans } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Feedback, EmptyState } from "@/components/ui/feedback";
 
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/plans")({
   component: PlansPage,
 });
 
 function PlansPage() {
-  const { data: plans, isLoading, error } = usePlans();
+  const { data: plans, isLoading, error, refetch } = usePlans();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -98,10 +99,12 @@ function PlansPage() {
         </div>
 
         {error && !plans ? (
-          <div className="text-center py-20 space-y-4">
-            <p className="text-text-secondary">
-              Erro ao carregar planos. Tente novamente em instantes.
-            </p>
+          <div className="max-w-md mx-auto mb-8">
+            <Feedback
+              type="error"
+              message="Erro ao carregar planos. Tente novamente em instantes."
+              action={{ label: "Tentar novamente", onClick: () => refetch() }}
+            />
           </div>
         ) : null}
 
@@ -195,14 +198,18 @@ function PlansPage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 space-y-4">
-            <p className="text-text-secondary">Nenhum plano disponível no momento.</p>
-            <Button asChild variant="outline" className="mt-4">
-              <Link to="/" hash="contact">
-                Contacte-nos para mais informações
-              </Link>
-            </Button>
-          </div>
+          <EmptyState
+            icon={AlertTriangle}
+            title="Nenhum plano disponível"
+            description="Nenhum plano disponível no momento."
+            action={
+              <Button asChild variant="outline" className="mt-4">
+                <Link to="/" hash="contact">
+                  Contacte-nos para mais informações
+                </Link>
+              </Button>
+            }
+          />
         )}
 
         <div id="faq" className="mt-14 sm:mt-20 max-w-2xl mx-auto px-2">

@@ -33,6 +33,7 @@ import {
   Zap,
   Filter,
   ChevronDown,
+  CalendarOff,
 } from "lucide-react";
 import {
   Select,
@@ -41,6 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Feedback, EmptyState } from "@/components/ui/feedback";
 
 export const Route = createFileRoute("/schedule")({
   component: SchedulePage,
@@ -60,7 +62,7 @@ function SchedulePage() {
   const navigate = useNavigate();
   const authenticated = isAuthenticated();
 
-  const { data: apiClasses, isLoading: classesLoading } = useClasses();
+  const { data: apiClasses, isLoading: classesLoading, error: classesError, refetch: refetchClasses } = useClasses();
   const { data: enrollments = [], isLoading: enrollmentsLoading } = useMyEnrollments();
   const { data: membership, isLoading: membershipLoading } = useMyMembership();
   const enrollMutation = useEnrollClass();
@@ -281,16 +283,24 @@ function SchedulePage() {
                 </div>
               </div>
 
-              {loading ? (
+              {classesError ? (
+                <div className="max-w-md mx-auto mb-8">
+                  <Feedback
+                    type="error"
+                    message="Erro ao carregar horários. Tente novamente."
+                    action={{ label: "Tentar novamente", onClick: () => refetchClasses() }}
+                  />
+                </div>
+              ) : loading ? (
                 <div className="flex items-center justify-center py-20">
                   <Loader2 size={40} className="animate-spin" style={{ color: "#C1121F" }} />
                 </div>
               ) : filteredClasses.length === 0 ? (
-                <div className="text-center py-20">
-                  <p className="text-text-secondary mb-4">
-                    Nenhuma aula encontrada com os filtros selecionados.
-                  </p>
-                </div>
+                <EmptyState
+                  icon={CalendarOff}
+                  title="Nenhuma aula encontrada"
+                  description="Nenhuma aula encontrada com os filtros selecionados. Tente ajustar os filtros."
+                />
               ) : (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {Object.entries(

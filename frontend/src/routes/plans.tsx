@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { isAuthenticated } from "@/lib/api";
+import { useAuth } from "@/contexts/auth-context";
 import { usePlans } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -16,6 +16,7 @@ function PlansPage() {
   const { data: plans, isLoading, error } = usePlans();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   const displayPlans = plans && plans.length > 0 ? plans : [];
 
@@ -29,7 +30,13 @@ function PlansPage() {
     setSelectedPlan(planId);
     const redirect = `/checkout/${planId}`;
 
-    if (!isAuthenticated()) {
+    // If auth is still loading, wait before deciding
+    if (authLoading) {
+      // Queue navigation to run after auth loads or show a message
+      return;
+    }
+
+    if (!isAuthenticated) {
       navigate({ to: "/login", search: { redirect } });
       return;
     }

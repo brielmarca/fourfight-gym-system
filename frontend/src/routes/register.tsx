@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useAuth } from "@/contexts/auth-context";
 import { api, setTokens } from "@/lib/api";
+import { isSafeRedirectPath } from "@/lib/redirect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
@@ -14,9 +15,7 @@ export const Route = createFileRoute("/register")({
 
 function getSafeRedirect(search: unknown): string | null {
   const redirect = (search as { redirect?: unknown }).redirect;
-  return typeof redirect === "string" && redirect.startsWith("/") && !redirect.startsWith("//")
-    ? redirect
-    : null;
+  return isSafeRedirectPath(redirect) ? redirect : null;
 }
 
 function RegisterPage() {

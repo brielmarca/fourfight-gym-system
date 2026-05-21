@@ -6,7 +6,7 @@ import {
   useRouterState,
   redirect,
 } from "@tanstack/react-router";
-import { isAuthenticated } from "@/lib/api";
+import { waitForAuthRestore } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -16,9 +16,14 @@ import { useState } from "react";
 import { Loader2, Smartphone, CreditCard } from "lucide-react";
 
 export const Route = createFileRoute("/membership/$membershipId")({
-  beforeLoad: ({ params }) => {
-    if (!isAuthenticated()) {
-      throw redirect({ to: "/login", search: { redirect: `/membership/${params.membershipId}` } });
+  beforeLoad: async ({ params }) => {
+    // Wait for auth restore to complete
+    const isAuth = await waitForAuthRestore();
+    if (!isAuth) {
+      throw redirect({
+        to: "/login",
+        search: { redirect: `/membership/${params.membershipId}` },
+      });
     }
   },
   component: MembershipMethodPage,

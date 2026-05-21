@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
-import { api, getUser, isAuthenticated } from "@/lib/api";
+import { api, getUser, waitForAuthRestore } from "@/lib/api";
 import { useCreateReceptionRequest, usePlan, useStripeCheckout } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,9 +10,14 @@ import { Label } from "@/components/ui/label";
 import { CreditCard, Loader2, Building, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/checkout/$planId")({
-  beforeLoad: ({ params }) => {
-    if (!isAuthenticated()) {
-      throw redirect({ to: "/login", search: { redirect: `/checkout/${params.planId}` } });
+  beforeLoad: async ({ params }) => {
+    // Wait for auth restore to complete
+    const isAuth = await waitForAuthRestore();
+    if (!isAuth) {
+      throw redirect({
+        to: "/login",
+        search: { redirect: `/checkout/${params.planId}` },
+      });
     }
   },
   component: CheckoutPage,

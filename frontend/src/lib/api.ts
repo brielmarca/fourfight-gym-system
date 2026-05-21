@@ -405,6 +405,25 @@ export const api = {
     },
   },
 
+  schedule: {
+    getPublic: () => request<PublicScheduleEntry[]>("/schedule"),
+    getAdmin: () => request<AdminScheduleEntry[]>("/admin/schedule"),
+    create: (data: CreateScheduleEntryRequest) =>
+      request<AdminScheduleEntry>("/admin/schedule", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    update: (id: string, data: UpdateScheduleEntryRequest) =>
+      request<AdminScheduleEntry>(`/admin/schedule/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    deactivate: (id: string) =>
+      request<AdminScheduleEntry>(`/admin/schedule/${id}/deactivate`, {
+        method: "PATCH",
+      }),
+  },
+
   classEnrollments: {
     getAll: async () => [] as ClassEnrollment[],
   },
@@ -508,4 +527,8 @@ export type {
   CheckoutResponse,
   GymClass,
   ClassEnrollment,
+  PublicScheduleEntry,
+  AdminScheduleEntry,
+  CreateScheduleEntryRequest,
+  UpdateScheduleEntryRequest,
 } from "@/types/api";

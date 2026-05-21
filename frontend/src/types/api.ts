@@ -109,6 +109,44 @@ export interface GymClass {
   isActive?: boolean;
 }
 
+export type ScheduleModality = "JIU_JITSU" | "BOXE_KICKBOXING" | "CAPOEIRA" | "MMA";
+export type ScheduleDayOfWeek =
+  | "MONDAY"
+  | "TUESDAY"
+  | "WEDNESDAY"
+  | "THURSDAY"
+  | "FRIDAY"
+  | "SATURDAY"
+  | "SUNDAY";
+export type ScheduleLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "ALL_LEVELS";
+
+export interface ScheduleEntryBase {
+  title: string;
+  modality: ScheduleModality;
+  dayOfWeek: ScheduleDayOfWeek;
+  startTime: string;
+  endTime: string;
+  instructorName: string;
+  level: ScheduleLevel;
+  location?: string | null;
+  capacity?: number | null;
+  active?: boolean;
+  notes?: string | null;
+}
+
+export interface PublicScheduleEntry extends ScheduleEntryBase {
+  id: string;
+}
+
+export interface AdminScheduleEntry extends ScheduleEntryBase {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CreateScheduleEntryRequest = ScheduleEntryBase;
+export type UpdateScheduleEntryRequest = Partial<ScheduleEntryBase>;
+
 export interface ClassEnrollment {
   id: string;
   studentId?: string;

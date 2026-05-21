@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/contexts/auth-context";
 import { isAuthenticated, getUser } from "@/lib/api";
@@ -8,6 +9,10 @@ import {
   usePendingReceptionRequests,
   usePlans,
   useRejectReceptionRequest,
+  useAdminSchedule,
+  useCreateScheduleEntry,
+  useDeactivateScheduleEntry,
+  useUpdateScheduleEntry,
 } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +27,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loader2, LogOut, Users, Shield, CreditCard, Clock } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import type { CreateScheduleEntryRequest } from "@/types";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: () => {
@@ -43,6 +52,25 @@ function AdminPage() {
     usePendingReceptionRequests(canManageReception);
   const approveReception = useApproveReceptionRequest();
   const rejectReception = useRejectReceptionRequest();
+  const { data: adminSchedule = [], isLoading: adminScheduleLoading } = useAdminSchedule(hasRole(["ADMIN"]));
+  const createSchedule = useCreateScheduleEntry();
+  const updateSchedule = useUpdateScheduleEntry();
+  const deactivateSchedule = useDeactivateScheduleEntry();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [form, setForm] = useState<CreateScheduleEntryRequest>({
+    title: "",
+    modality: "JIU_JITSU",
+    dayOfWeek: "MONDAY",
+    startTime: "19:00",
+    endTime: "20:00",
+    instructorName: "",
+    level: "ALL_LEVELS",
+    location: "",
+    capacity: null,
+    notes: "",
+    active: true,
+  });
 
   const loading = beltsLoading || membershipsLoading || plansLoading || pendingReceptionLoading;
 
@@ -143,6 +171,14 @@ function AdminPage() {
               </TabsTrigger>
               {canManageReception && (
                 <TabsTrigger
+                  value="schedule"
+                  className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white rounded-sm"
+                >
+                  Horários
+                </TabsTrigger>
+              )}
+              {canManageReception && (
+                <TabsTrigger
                   value="reception"
                   className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white rounded-sm"
                 >
@@ -222,6 +258,82 @@ function AdminPage() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="schedule">
+            <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>
+              <CardHeader>
+                <CardTitle className="text-xs tracking-[0.2em] uppercase">Gestão de horários</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-3">
+                  <Input placeholder="Nome da aula" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+                  <Input placeholder="Instrutor" value={form.instructorName} onChange={(e) => setForm({ ...form, instructorName: e.target.value })} />
+                  <Select value={form.modality} onValueChange={(value) => setForm({ ...form, modality: value as CreateScheduleEntryRequest["modality"] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="JIU_JITSU">Jiu-Jitsu</SelectItem><SelectItem value="BOXE_KICKBOXING">Boxe / Kickboxing</SelectItem><SelectItem value="CAPOEIRA">Capoeira</SelectItem><SelectItem value="MMA">MMA</SelectItem></SelectContent></Select>
+                  <Select value={form.dayOfWeek} onValueChange={(value) => setForm({ ...form, dayOfWeek: value as CreateScheduleEntryRequest["dayOfWeek"] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="MONDAY">Segunda</SelectItem><SelectItem value="TUESDAY">Terça</SelectItem><SelectItem value="WEDNESDAY">Quarta</SelectItem><SelectItem value="THURSDAY">Quinta</SelectItem><SelectItem value="FRIDAY">Sexta</SelectItem><SelectItem value="SATURDAY">Sábado</SelectItem><SelectItem value="SUNDAY">Domingo</SelectItem></SelectContent></Select>
+                  <Input type="time" value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} />
+                  <Input type="time" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} />
+                  <Select value={form.level} onValueChange={(value) => setForm({ ...form, level: value as CreateScheduleEntryRequest["level"] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="BEGINNER">Iniciante</SelectItem><SelectItem value="INTERMEDIATE">Intermédio</SelectItem><SelectItem value="ADVANCED">Avançado</SelectItem><SelectItem value="ALL_LEVELS">Todos os níveis</SelectItem></SelectContent></Select>
+                  <Input placeholder="Sala/Local" value={form.location ?? ""} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+                  <Input type="number" placeholder="Capacidade" value={form.capacity ?? ""} onChange={(e) => setForm({ ...form, capacity: e.target.value ? Number(e.target.value) : null })} />
+                  <div className="flex items-center gap-2"><Switch checked={!!form.active} onCheckedChange={(v) => setForm({ ...form, active: v })} /><span className="text-sm">Ativo</span></div>
+                </div>
+                <Textarea placeholder="Notas" value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+                {formError && <p className="text-destructive text-sm">{formError}</p>}
+                <Button
+                  disabled={createSchedule.isPending || updateSchedule.isPending}
+                  onClick={async () => {
+                    try {
+                      setFormError(null);
+                      if (!form.title.trim() || !form.instructorName.trim()) {
+                        setFormError("Nome da aula e instrutor são obrigatórios.");
+                        return;
+                      }
+                      if (editingId) {
+                        await updateSchedule.mutateAsync({ id: editingId, payload: form });
+                      } else {
+                        await createSchedule.mutateAsync(form);
+                      }
+                      setEditingId(null);
+                      setForm({ ...form, title: "", instructorName: "", notes: "", location: "", capacity: null });
+                    } catch (error) {
+                      setFormError(error instanceof Error ? error.message : "Erro ao guardar horário.");
+                    }
+                  }}
+                >
+                  {createSchedule.isPending || updateSchedule.isPending ? "A guardar..." : editingId ? "Atualizar" : "Adicionar"}
+                </Button>
+
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader><TableRow><TableHead>Dia</TableHead><TableHead>Hora</TableHead><TableHead>Aula</TableHead><TableHead>Instrutor</TableHead><TableHead>Ativo</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
+                    <TableBody>
+                      {adminScheduleLoading ? (
+                        <TableRow><TableCell colSpan={6}>A carregar horários...</TableCell></TableRow>
+                      ) : adminSchedule.length === 0 ? (
+                        <TableRow><TableCell colSpan={6}>Sem horários cadastrados.</TableCell></TableRow>
+                      ) : (
+                        adminSchedule.map((entry) => (
+                          <TableRow key={entry.id}>
+                            <TableCell>{entry.dayOfWeek}</TableCell>
+                            <TableCell>{entry.startTime.slice(0, 5)} - {entry.endTime.slice(0, 5)}</TableCell>
+                            <TableCell>{entry.title}</TableCell>
+                            <TableCell>{entry.instructorName}</TableCell>
+                            <TableCell>{entry.active ? "Sim" : "Não"}</TableCell>
+                            <TableCell className="text-right space-x-2">
+                              <Button size="sm" variant="outline" onClick={() => { setEditingId(entry.id); setForm({ ...entry, location: entry.location ?? "", notes: entry.notes ?? "" }); }}>Editar</Button>
+                              <Button size="sm" variant="destructive" disabled={deactivateSchedule.isPending} onClick={() => deactivateSchedule.mutate(entry.id)}>
+                                {deactivateSchedule.isPending ? "..." : "Desativar"}
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="students">

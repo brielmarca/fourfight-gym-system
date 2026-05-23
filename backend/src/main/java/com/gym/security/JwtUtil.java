@@ -31,6 +31,7 @@ public class JwtUtil {
     private final long expirationMs;
     private final long refreshExpirationMs;
     private final JWKSet jwkSet;
+    private final String activeProfiles;
 
     public JwtUtil(
             @Value("${jwt.private-key:DEFAULT}") String privateKeyPem,
@@ -38,7 +39,8 @@ public class JwtUtil {
             @Value("${jwt.private-key-path:#{null}}") String privateKeyPath,
             @Value("${jwt.public-key-path:#{null}}") String publicKeyPath,
             @Value("${jwt.expiration-ms}") long expirationMs,
-            @Value("${jwt.refresh-expiration-ms}") long refreshExpirationMs) {
+            @Value("${jwt.refresh-expiration-ms}") long refreshExpirationMs,
+            @Value("${spring.profiles.active:}") String activeProfiles) {
         
         log.info("[STARTUP] ========== START JwtUtil constructor ==========");
         boolean hasKeyStrings = !"DEFAULT".equals(privateKeyPem) && !"DEFAULT".equals(publicKeyPem) 
@@ -48,6 +50,8 @@ public class JwtUtil {
         boolean hasKeyPaths = privateKeyPath != null && !privateKeyPath.isBlank()
                 && publicKeyPath != null && !publicKeyPath.isBlank();
         
+        this.activeProfiles = activeProfiles;
+
         if (hasKeyPaths) {
             log.info("[STARTUP] Loading JWT keys from files: {} and {}", privateKeyPath, publicKeyPath);
             try {
@@ -61,6 +65,9 @@ public class JwtUtil {
             this.privateKey = parsePrivateKey(privateKeyPem);
             this.publicKey = parsePublicKey(publicKeyPem);
         } else {
+            if (isProductionProfile()) {
+                throw new IllegalStateException("JWT keys must be configured in production");
+            }
             log.info("[STARTUP] No JWT keys configured - generating development keys");
             try {
                 KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
@@ -309,6 +316,18 @@ public class JwtUtil {
         keys.put("publicKey", publicKeyPem);
         
         return keys;
+    }
+
+    private boolean isProductionProfile() {
+        if (activeProfiles == null || activeProfiles.isBlank()) {
+            return false;
+        }
+        for (String profile : activeProfiles.split(",")) {
+            if ("prod".equalsIgnoreCase(profile.trim()) || "production".equalsIgnoreCase(profile.trim())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @FunctionalInterface

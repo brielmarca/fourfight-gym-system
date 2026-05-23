@@ -30,6 +30,9 @@ public class RateLimitFilter implements Filter {
     
     @Value("${rate-limit.login.capacity:10}")
     private int loginCapacity;
+
+    @Value("${rate-limit.register.capacity:10}")
+    private int registerCapacity;
     
     @Value("${rate-limit.login.refill-tokens:5}")
     private int loginRefillTokens;
@@ -100,6 +103,7 @@ public class RateLimitFilter implements Filter {
     
     private String getEndpointType(String path) {
         if (path.equals("/api/auth/login")) return "login";
+        if (path.equals("/api/auth/register")) return "register";
         if (path.equals("/api/auth/refresh")) return "refresh";
         if (path.startsWith("/api/checkout")) return "checkout";
         if (path.startsWith("/api/admin")) return "admin";
@@ -110,6 +114,10 @@ public class RateLimitFilter implements Filter {
         return switch (endpoint) {
             case "login" -> Bucket.builder()
                     .addLimit(Bandwidth.simple(loginCapacity, 
+                        Duration.ofMinutes(loginRefillDurationMinutes)))
+                    .build();
+            case "register" -> Bucket.builder()
+                    .addLimit(Bandwidth.simple(registerCapacity,
                         Duration.ofMinutes(loginRefillDurationMinutes)))
                     .build();
             case "refresh" -> Bucket.builder()

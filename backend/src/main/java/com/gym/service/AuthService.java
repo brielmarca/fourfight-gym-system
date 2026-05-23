@@ -151,6 +151,15 @@ public class AuthService {
 
     @Transactional
     public TokenPairResponse refresh(String rawRefreshToken) {
+        if (!jwtUtil.validateToken(rawRefreshToken)) {
+            throw UnauthorizedException.tokenExpired();
+        }
+
+        String tokenType = jwtUtil.extractClaim(rawRefreshToken, claims -> claims.get("typ", String.class));
+        if (!"rt+jwt".equals(tokenType)) {
+            throw UnauthorizedException.tokenExpired();
+        }
+
         String tokenHash = hashToken(rawRefreshToken);
 
         RefreshToken refreshToken = refreshTokenRepository.findValidByTokenHash(tokenHash)

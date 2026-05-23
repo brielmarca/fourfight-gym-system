@@ -35,6 +35,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or #id == authentication.principal.id")
     public ResponseEntity<UserResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.getById(id));
     }

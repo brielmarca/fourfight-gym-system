@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Optional local env loading (.env.local takes precedence over .env)
 if [[ -f ".env" ]]; then
   set -a
   # shellcheck disable=SC1091
@@ -16,15 +15,15 @@ if [[ -f ".env.local" ]]; then
   set +a
 fi
 
-RUN_PROFILES="${APP_PROFILES:-password-reset}"
+RUN_PROFILES="${APP_PROFILES:-admin-promote}"
 
-if [[ "${LIST_ADMINS_ONLY:-}" == "true" ]]; then
+if [[ "${LIST_USERS_ONLY:-}" == "true" ]]; then
   mvn -q -DskipTests -Dspring-boot.run.profiles="$RUN_PROFILES" spring-boot:run
   exit 0
 fi
 
-if [[ -z "${ADMIN_EMAIL:-}" || -z "${ADMIN_NEW_PASSWORD:-}" ]]; then
-  echo "Required env vars: ADMIN_EMAIL and ADMIN_NEW_PASSWORD"
+if [[ -z "${PROMOTE_ADMIN_EMAIL:-}" || "${CONFIRM_PROMOTE_ADMIN:-}" != "true" ]]; then
+  echo "Required env vars: PROMOTE_ADMIN_EMAIL and CONFIRM_PROMOTE_ADMIN=true"
   exit 1
 fi
 

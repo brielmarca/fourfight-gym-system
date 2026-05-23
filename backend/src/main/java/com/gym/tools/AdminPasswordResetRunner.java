@@ -44,7 +44,7 @@ public class AdminPasswordResetRunner implements CommandLineRunner {
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
 
-        System.out.println("Password reset completed for ADMIN account: " + safeEmail(user.getEmail()));
+        System.out.println("Password reset completed for ADMIN account: " + user.getEmail());
         System.out.println("User id: " + user.getId());
         System.exit(0);
     }
@@ -64,7 +64,7 @@ public class AdminPasswordResetRunner implements CommandLineRunner {
             System.out.println(
                 "id=" + admin.getId()
                     + " name=" + admin.getName()
-                    + " email=" + safeEmail(admin.getEmail())
+                    + " email=" + admin.getEmail()
                     + " role=" + admin.getRole().name()
             );
         }
@@ -90,9 +90,4 @@ public class AdminPasswordResetRunner implements CommandLineRunner {
         }
     }
 
-    private String safeEmail(String email) {
-        int at = email.indexOf('@');
-        if (at <= 1) return "***";
-        return email.charAt(0) + "***" + email.substring(at);
-    }
 }

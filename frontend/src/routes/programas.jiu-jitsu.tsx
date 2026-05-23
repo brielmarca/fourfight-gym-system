@@ -24,6 +24,7 @@ import {
   Users,
   Heart,
   Zap,
+  X,
 } from "lucide-react";
 import jiuJitsu1 from "@/assets/gymlutas/jiu-jitsu-1.webp";
 import jiuJitsu3 from "@/assets/gymlutas/jiu-jitsu-3.webp";
@@ -118,11 +119,13 @@ const graduations = [
 function JiuJitsuPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
   const bookTrial = useBookTrial();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     try {
       await bookTrial.mutateAsync({ data: form, program: "JIU-JITSU" });
       setSuccess(true);
@@ -130,9 +133,10 @@ function JiuJitsuPage() {
       setTimeout(() => {
         setIsOpen(false);
         setSuccess(false);
+        setFormError(null);
       }, 2000);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao agendar. Tenta novamente.");
+      setFormError(err instanceof Error ? err.message : "Erro ao agendar. Tenta novamente.");
     }
   };
 
@@ -216,12 +220,26 @@ function JiuJitsuPage() {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-                    {bookTrial.error && (
-                      <p className="text-sm text-destructive bg-destructive/10 p-3 rounded">
-                        {bookTrial.error instanceof Error
-                          ? bookTrial.error.message
-                          : "Erro ao agendar"}
-                      </p>
+                    {(formError || bookTrial.error) && (
+                      <div className="p-3 rounded bg-destructive/10 text-destructive text-sm flex items-center gap-2">
+                        <X size={14} className="shrink-0" />
+                        <span className="flex-1">
+                          {formError ||
+                            (bookTrial.error instanceof Error
+                              ? bookTrial.error.message
+                              : "Erro ao agendar")}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormError(null);
+                            bookTrial.reset();
+                          }}
+                          className="shrink-0 opacity-70 hover:opacity-100"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
                     )}
                     <div className="space-y-2">
                       <label className="text-xs tracking-wider uppercase text-text-secondary">

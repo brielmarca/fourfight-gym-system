@@ -87,6 +87,8 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
   let response: Response;
 
+  const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
+
   try {
     const finalUrl = `${API_BASE}${endpoint}`;
     console.log("API REQUEST", { endpoint, API_BASE, finalUrl, method: options.method || "GET" });
@@ -94,7 +96,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
       ...options,
       credentials: "include",
       headers: {
-        "Content-Type": "application/json",
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       },
@@ -421,6 +423,48 @@ export const api = {
     },
   },
 
+  schedule: {
+    getPublic: () => request<PublicScheduleEntry[]>("/schedule"),
+    getAdmin: () => request<AdminScheduleEntry[]>("/admin/schedule"),
+    create: (data: CreateScheduleEntryRequest) =>
+      request<AdminScheduleEntry>("/admin/schedule", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    update: (id: string, data: UpdateScheduleEntryRequest) =>
+      request<AdminScheduleEntry>(`/admin/schedule/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    deactivate: (id: string) =>
+      request<AdminScheduleEntry>(`/admin/schedule/${id}/deactivate`, {
+        method: "PATCH",
+      }),
+  },
+
+  admin: {
+    listPreRegistrations: (page = 0, size = 50) =>
+      request<PageResponse<AdminPreRegistrationListItem>>(
+        `/admin/pre-registrations?page=${page}&size=${size}`,
+      ),
+    getPreRegistrationById: (id: string) =>
+      request<AdminPreRegistrationDetail>(`/admin/pre-registrations/${id}`),
+    importPreRegistrationsCsv: (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      return request<{
+        totalRows: number;
+        importedRows: number;
+        duplicateRows: number;
+        invalidRows: number;
+        issues: string[];
+      }>("/admin/pre-registrations/import", {
+        method: "POST",
+        body: formData,
+      });
+    },
+  },
+
   classEnrollments: {
     getAll: async () => [] as ClassEnrollment[],
   },
@@ -524,4 +568,10 @@ export type {
   CheckoutResponse,
   GymClass,
   ClassEnrollment,
+  PublicScheduleEntry,
+  AdminScheduleEntry,
+  CreateScheduleEntryRequest,
+  UpdateScheduleEntryRequest,
+  AdminPreRegistrationListItem,
+  AdminPreRegistrationDetail,
 } from "@/types/api";

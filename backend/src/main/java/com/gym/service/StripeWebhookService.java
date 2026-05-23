@@ -11,6 +11,8 @@ import com.gym.repository.PaymentRepository;
 import com.gym.repository.StripeWebhookEventRepository;
 import com.gym.repository.UserRepository;
 import com.stripe.exception.SignatureVerificationException;
+import com.stripe.exception.StripeException;
+import com.stripe.model.Customer;
 import com.stripe.model.Event;
 import com.stripe.model.EventDataObjectDeserializer;
 import com.stripe.model.Invoice;
@@ -122,6 +124,15 @@ public class StripeWebhookService {
         }
 
         membership.setStripeSubscriptionId(subscriptionId);
+
+        if (!isPortugalCustomer(session)) {
+            membership.setStatus(Membership.MembershipStatus.PENDING_APPROVAL);
+            membership.setAutoRenew(false);
+            membershipRepository.save(membership);
+            log.warn("Stripe checkout completed with non-PT billing country. Membership moved to pending approval: {}", membership.getId());
+            return;
+        }
+
         membership.setStatus(Membership.MembershipStatus.PENDING_PAYMENT);
         membership.setAutoRenew(true);
 
@@ -174,6 +185,11 @@ public class StripeWebhookService {
 
         if (membership == null) {
             log.warn("No membership found for subscription: {}", subscriptionId);
+            return;
+        }
+
+        if (membership.getStatus() == Membership.MembershipStatus.PENDING_APPROVAL) {
+            log.warn("Invoice paid for non-PT restricted membership; keeping pending approval: {}", membership.getId());
             return;
         }
 
@@ -314,5 +330,28 @@ public class StripeWebhookService {
 
         membershipRepository.save(membership);
         log.info("Membership subscription updated: {} (cancelAtPeriodEnd: {})", membership.getId(), subscription.getCancelAtPeriodEnd());
+    }
+
+    private boolean isPortugalCustomer(Session session) {
+        String country = null;
+
+        if (session.getCustomerDetails() != null
+                && session.getCustomerDetails().getAddress() != null
+                && session.getCustomerDetails().getAddress().getCountry() != null) {
+            country = session.getCustomerDetails().getAddress().getCountry();
+        }
+
+        if ((country == null || country.isBlank()) && session.getCustomer() != null) {
+            try {
+                Customer customer = Customer.retrieve(session.getCustomer());
+                if (customer.getAddress() != null) {
+                    country = customer.getAddress().getCountry();
+                }
+            } catch (StripeException e) {
+                log.warn("Unable to retrieve Stripe customer country for session {}", session.getId(), e);
+            }
+        }
+
+        return country != null && "PT".equalsIgnoreCase(country);
     }
 }

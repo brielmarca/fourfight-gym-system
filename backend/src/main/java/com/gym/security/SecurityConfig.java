@@ -60,6 +60,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/stripe/webhook").permitAll()
                 // Public read-only data
                 .requestMatchers("/api/plans/**", "/api/classes/**", "/api/programs/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/schedule").permitAll()
                 // Checkout session status
                 .requestMatchers("/api/checkout/**").authenticated()
                 // Actuator health (public)

@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EmptyState } from "@/components/ui/feedback";
 import {
   Loader2,
   LogOut,
@@ -247,7 +248,11 @@ function StudentAreaPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-text-secondary">Nenhuma aula agendada.</p>
+                  <EmptyState
+                    icon={Calendar}
+                    title="Nenhuma aula agendada"
+                    description="Agenda a tua primeira aula para comecar esta semana."
+                  />
                 )}
                 <div className="mt-4 pt-4 border-t border-border-subtle">
                   {membership ? (

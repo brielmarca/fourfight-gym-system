@@ -109,6 +109,44 @@ export interface GymClass {
   isActive?: boolean;
 }
 
+export type ScheduleModality = "JIU_JITSU" | "BOXE_KICKBOXING" | "CAPOEIRA" | "MMA";
+export type ScheduleDayOfWeek =
+  | "MONDAY"
+  | "TUESDAY"
+  | "WEDNESDAY"
+  | "THURSDAY"
+  | "FRIDAY"
+  | "SATURDAY"
+  | "SUNDAY";
+export type ScheduleLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "ALL_LEVELS";
+
+export interface ScheduleEntryBase {
+  title: string;
+  modality: ScheduleModality;
+  dayOfWeek: ScheduleDayOfWeek;
+  startTime: string;
+  endTime: string;
+  instructorName: string;
+  level: ScheduleLevel;
+  location?: string | null;
+  capacity?: number | null;
+  active?: boolean;
+  notes?: string | null;
+}
+
+export interface PublicScheduleEntry extends ScheduleEntryBase {
+  id: string;
+}
+
+export interface AdminScheduleEntry extends ScheduleEntryBase {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CreateScheduleEntryRequest = ScheduleEntryBase;
+export type UpdateScheduleEntryRequest = Partial<ScheduleEntryBase>;
+
 export interface ClassEnrollment {
   id: string;
   studentId?: string;
@@ -125,8 +163,68 @@ export interface RegisterRequest {
   name: string;
   email: string;
   password: string;
-  phone?: string;
+  phone: string;
   dateOfBirth?: string;
+  age: number;
+  parishOrArea: string;
+  hasMartialArtsExperience: boolean;
+  martialArtsExperienceDetails?: string;
+  trainingGoal: string;
+  preferredModality: PreferredModality;
+  preferredModalityOther?: string;
+  preferredTrainingTime: PreferredTrainingTime;
+  preferredTrainingTimeOther?: string;
+  preferredTrainingDays: PreferredTrainingDay[];
+  valuesMartialArtsPhilosophy: boolean;
+  preferredContactMethod: PreferredContactMethod;
+  preferredContactMethodOther?: string;
+}
+
+export type PreferredModality =
+  | "KICKBOXING"
+  | "JIU_JITSU"
+  | "CAPOEIRA"
+  | "BOXE"
+  | "MMA"
+  | "JIU_JITSU_KIDS"
+  | "CAPOEIRA_KIDS"
+  | "KICKBOXING_KIDS"
+  | "OTHER";
+
+export type PreferredTrainingTime =
+  | "MORNING_BEFORE_0830"
+  | "LUNCH_1230"
+  | "AFTERNOON_14_17"
+  | "NIGHT_AFTER_18"
+  | "OTHER";
+
+export type PreferredTrainingDay = "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY";
+
+export type PreferredContactMethod = "CALL" | "MESSAGE" | "OTHER";
+
+export interface AdminPreRegistrationListItem {
+  id: string;
+  fullName: string;
+  phone: string;
+  age: number | null;
+  parish: string | null;
+  preferredModalities: string | null;
+  preferredTrainingTimes: string | null;
+  preferredTrainingDays: string | null;
+  preferredContactMethod: string | null;
+  submittedAt: string;
+  status: string;
+}
+
+export interface AdminPreRegistrationDetail extends AdminPreRegistrationListItem {
+  hasMartialArtsExperience: boolean | null;
+  martialArtsExperienceDetails?: string;
+  trainingGoal?: string;
+  philosophyImportant: boolean | null;
+  source: string;
+  notes?: string;
+  updatedAt: string;
+  createdAt: string;
 }
 
 export interface UpdateUserRequest {

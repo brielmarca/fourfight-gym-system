@@ -23,6 +23,8 @@ rate-limit:
     capacity: 10
     refill-tokens: 5
     refill-duration: 1
+  register:
+    capacity: 10
   refresh:
     capacity: 20
     refill-tokens: 10

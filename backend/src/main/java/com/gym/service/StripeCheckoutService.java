@@ -90,6 +90,7 @@ public class StripeCheckoutService {
         SessionCreateParams.Builder sessionBuilder = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
                 .setCustomer(customerId)
+                .setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.REQUIRED)
                 .setSuccessUrl(frontendSuccessUrl + "?session_id={CHECKOUT_SESSION_ID}")
                 .setCancelUrl(frontendCancelUrl)
                 .addLineItem(
@@ -101,6 +102,7 @@ public class StripeCheckoutService {
                 .putMetadata("userId", user.getId().toString())
                 .putMetadata("planId", plan.getId().toString())
                 .putMetadata("membershipType", "new")
+                .putMetadata("countryRestriction", "PT")
                 .putExtraParam("adaptive_pricing", java.util.Map.of("enabled", false));
 
         Session session;

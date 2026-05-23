@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { DarkMap } from "@/components/site/DarkMap";
 import { useCreateContact } from "@/queries";
 import { MapPin, Phone, Mail, Clock, Send, Loader2, Check, X } from "lucide-react";
+import { Feedback } from "@/components/ui/feedback";
 
 export const Route = createFileRoute("/contact")({
   component: ContactPage,
@@ -28,6 +29,7 @@ const contactInfo = [
 function ContactPage() {
   const createContact = useCreateContact();
   const [success, setSuccess] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -39,6 +41,7 @@ function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (createContact.isPending) return;
+    setFormError(null);
     try {
       await createContact.mutateAsync(form);
       setSuccess(true);
@@ -46,11 +49,7 @@ function ContactPage() {
       setTimeout(() => setSuccess(false), 5000);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro ao enviar. Tente novamente.";
-      if (message.toLowerCase().includes("email")) {
-        alert("E-mail inválido. Verifique o formato.");
-      } else {
-        alert(message);
-      }
+      setFormError(message);
     }
   };
 
@@ -83,13 +82,23 @@ function ContactPage() {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-4">
-                    {createContact.error && (
-                      <div className="p-3 rounded bg-destructive/10 text-destructive text-sm flex items-center gap-2">
-                        <X size={14} />
-                        {createContact.error instanceof Error
-                          ? createContact.error.message
-                          : "Erro ao enviar"}
-                      </div>
+                    {formError && (
+                      <Feedback
+                        type="error"
+                        message={formError}
+                        action={{ label: "Fechar", onClick: () => setFormError(null) }}
+                      />
+                    )}
+                    {createContact.error && !formError && (
+                      <Feedback
+                        type="error"
+                        message={
+                          createContact.error instanceof Error
+                            ? createContact.error.message
+                            : "Erro ao enviar"
+                        }
+                        action={{ label: "Fechar", onClick: () => createContact.reset() }}
+                      />
                     )}
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
@@ -101,6 +110,7 @@ function ContactPage() {
                           value={form.name}
                           onChange={(e) => setForm({ ...form, name: e.target.value })}
                           required
+                          disabled={createContact.isPending}
                           className="bg-surface-2 border-border-subtle"
                         />
                       </div>
@@ -112,47 +122,55 @@ function ContactPage() {
                           placeholder="+351"
                           value={form.phone}
                           onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                          disabled={createContact.isPending}
                           className="bg-surface-2 border-border-subtle"
                         />
+                        <p className="text-[11px] text-text-muted">Opcional</p>
                       </div>
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs tracking-wider uppercase text-text-secondary">
                         Email *
                       </label>
-                      <Input
-                        type="email"
-                        placeholder="teu@email.com"
-                        value={form.email}
-                        onChange={(e) => setForm({ ...form, email: e.target.value })}
-                        required
-                        className="bg-surface-2 border-border-subtle"
-                      />
+                        <Input
+                          type="email"
+                          placeholder="teu@email.com"
+                          value={form.email}
+                          onChange={(e) => setForm({ ...form, email: e.target.value })}
+                          required
+                          disabled={createContact.isPending}
+                          className="bg-surface-2 border-border-subtle"
+                        />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs tracking-wider uppercase text-text-secondary">
                         Assunto *
                       </label>
-                      <Input
-                        placeholder="Assunto da mensagem"
-                        value={form.subject}
-                        onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                        required
-                        className="bg-surface-2 border-border-subtle"
-                      />
+                        <Input
+                          placeholder="Assunto da mensagem"
+                          value={form.subject}
+                          onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                          required
+                          disabled={createContact.isPending}
+                          className="bg-surface-2 border-border-subtle"
+                        />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs tracking-wider uppercase text-text-secondary">
                         Mensagem *
                       </label>
-                      <Textarea
-                        placeholder="O que queres saber?"
-                        value={form.message}
-                        onChange={(e) => setForm({ ...form, message: e.target.value })}
-                        required
-                        className="bg-surface-2 border-border-subtle min-h-[120px]"
-                      />
-                    </div>
+                        <Textarea
+                          placeholder="O que queres saber?"
+                          value={form.message}
+                          onChange={(e) => setForm({ ...form, message: e.target.value })}
+                          required
+                          disabled={createContact.isPending}
+                          className="bg-surface-2 border-border-subtle min-h-[120px]"
+                        />
+                        <p className="text-[11px] text-text-muted text-right">
+                          {form.message.length}/1000 caracteres
+                        </p>
+                      </div>
                     <Button
                       type="submit"
                       disabled={createContact.isPending}

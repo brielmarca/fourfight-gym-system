@@ -7,20 +7,14 @@ import {
   restoreAuthSession,
   isAuthenticated as checkIsAuthenticated,
 } from "@/lib/api";
-import type { User } from "@/types";
+import type { RegisterRequest, User } from "@/types";
 
 interface AuthContextValue {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (data: {
-    name: string;
-    email: string;
-    password: string;
-    phone?: string;
-    dateOfBirth?: string;
-  }) => Promise<void>;
+  register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
   hasRole: (roles: string[]) => boolean;
 }
@@ -60,12 +54,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(getUser());
   }, []);
 
-  const register = useCallback(
-    async (data: { name: string; email: string; password: string; phone?: string; dateOfBirth?: string }) => {
-      await api.auth.register(data);
-    },
-    [],
-  );
+  const register = useCallback(async (data: RegisterRequest) => {
+    await api.auth.register(data);
+  }, []);
 
   const logout = useCallback(() => {
     clearTokens();

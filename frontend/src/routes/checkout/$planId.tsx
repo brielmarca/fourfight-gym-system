@@ -241,15 +241,16 @@ function CheckoutPage() {
                     </Label>
                   </RadioGroup>
 
-                  {paymentMethod === "STRIPE" && (
-                    <div className="p-4 rounded-md bg-primary/5 border border-primary/20 flex gap-3 text-sm text-text-secondary">
-                      <CreditCard className="h-5 w-5 flex-shrink-0 text-primary mt-0.5" />
-                      <p>
-                        Será redirecionado para o Stripe para concluir o pagamento de forma segura.
-                        Aceitamos cartões, MB WAY, SEPA, Apple Pay e Google Pay.
-                      </p>
-                    </div>
-                  )}
+                   {paymentMethod === "STRIPE" && (
+                     <div className="p-4 rounded-md bg-primary/5 border border-primary/20 flex gap-3 text-sm text-text-secondary">
+                       <CreditCard className="h-5 w-5 flex-shrink-0 text-primary mt-0.5" />
+                       <p>
+                         Será redirecionado para o Stripe para concluir o pagamento de forma segura.
+                         Aceitamos cartões, MB WAY, SEPA, Apple Pay e Google Pay.
+                         Disponível apenas para Portugal. Pagamento em EUR.
+                       </p>
+                     </div>
+                   )}
 
                   {paymentMethod === "RECECAO" && (
                     <div className="p-4 rounded-md bg-primary/5 border border-primary/20 flex gap-3 text-sm text-text-secondary">

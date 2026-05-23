@@ -3,6 +3,7 @@ package com.gym.controller;
 import com.gym.dto.response.StripeCheckoutResponse;
 import com.gym.dto.response.StripeSubscriptionResponse;
 import com.gym.dto.response.ReceptionRequestResponse;
+import com.gym.dto.request.StripePlanSelectionRequest;
 import com.gym.entity.Membership;
 import com.gym.exception.BusinessRuleException;
 import com.gym.repository.MembershipRepository;
@@ -13,6 +14,7 @@ import com.gym.service.StripeWebhookService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Subscription;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -24,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.BufferedReader;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -53,26 +54,14 @@ public class StripeController {
     @PostMapping("/checkout")
     public ResponseEntity<?> createCheckoutSession(
             @AuthenticationPrincipal JwtUserPrincipal principal,
-            @RequestBody Map<String, String> body) {
+            @Valid @RequestBody StripePlanSelectionRequest request) {
 
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String planIdStr = body.get("planId");
-        if (planIdStr == null || planIdStr.isBlank()) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        UUID planId;
         try {
-            planId = UUID.fromString(planIdStr);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        try {
-            StripeCheckoutResponse response = stripeCheckoutService.createCheckoutSession(principal.id(), planId);
+            StripeCheckoutResponse response = stripeCheckoutService.createCheckoutSession(principal.id(), request.planId());
             return ResponseEntity.ok(response);
         } catch (BusinessRuleException e) {
             log.warn("Stripe checkout unavailable: {}", e.getMessage());
@@ -172,25 +161,13 @@ public class StripeController {
     @PostMapping("/reception-request")
     public ResponseEntity<?> createReceptionRequest(
             @AuthenticationPrincipal JwtUserPrincipal principal,
-            @RequestBody Map<String, String> body) {
+            @Valid @RequestBody StripePlanSelectionRequest request) {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String planIdStr = body.get("planId");
-        if (planIdStr == null || planIdStr.isBlank()) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        UUID planId;
         try {
-            planId = UUID.fromString(planIdStr);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        try {
-            ReceptionRequestResponse response = receptionCheckoutService.createReceptionRequest(principal.id(), planId);
+            ReceptionRequestResponse response = receptionCheckoutService.createReceptionRequest(principal.id(), request.planId());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (BusinessRuleException e) {
             ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());

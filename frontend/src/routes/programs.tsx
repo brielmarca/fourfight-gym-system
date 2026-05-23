@@ -60,7 +60,10 @@ function ProgramsPage() {
 
           <div className="mx-auto max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {programs.map((p, i) => (
-              <Card key={p.title} className="bg-surface border-border-subtle">
+              <Card
+                key={p.title}
+                className={`bg-surface border-border-subtle ${p.title === "MMA" ? "lg:col-start-2" : ""}`}
+              >
                 <CardHeader className="text-center pb-2">
                   <p.icon
                     size={48}

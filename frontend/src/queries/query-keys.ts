@@ -47,6 +47,16 @@ const queryKeys = {
     subscription: () => [...queryKeys.stripe.all, "subscription"] as const,
     receptionPending: () => [...queryKeys.stripe.all, "reception-pending"] as const,
   },
+  schedule: {
+    all: ["schedule"] as const,
+    public: () => [...queryKeys.schedule.all, "public"] as const,
+    admin: () => [...queryKeys.schedule.all, "admin"] as const,
+  },
+  preRegistrations: {
+    all: ["preRegistrations"] as const,
+    list: (page: number, size: number) => [...queryKeys.preRegistrations.all, "list", page, size] as const,
+    detail: (id: string) => [...queryKeys.preRegistrations.all, "detail", id] as const,
+  },
 };
 
 export default queryKeys;

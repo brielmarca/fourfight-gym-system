@@ -209,15 +209,31 @@ function getUser(): { id: string; email: string; role: string } | null {
   }
 }
 
+function isTokenValid(expiryTime: number | null): boolean {
+  if (!expiryTime) return false;
+  return expiryTime * 1000 > Date.now();
+}
+
 function isAuthenticated(): boolean {
   const token = getAccessToken();
   if (!token) return false;
   try {
     const payload = JSON.parse(atob(token.split(".")[1])) as TokenPayload;
-    return payload.exp * 1000 > Date.now();
+    return isTokenValid(payload.exp);
   } catch {
     return false;
   }
+}
+
+async function waitForAuthRestore(): Promise<boolean> {
+  // If already have valid token, no need to wait
+  if (memoryAccessToken && isAuthenticated()) {
+    return true;
+  }
+
+  // Wait for restore to complete (will be deduped by restoreAuthSession)
+  const restored = await restoreAuthSession();
+  return !!memoryAccessToken && isAuthenticated();
 }
 
 function hasRole(roles: string[]): boolean {
@@ -522,7 +538,7 @@ export const api = {
   isAuthenticated,
 };
 
-export { setTokens, clearTokens, getAccessToken, getUser, isAuthenticated, hasRole, restoreAuthSession };
+export { setTokens, clearTokens, getAccessToken, getUser, isAuthenticated, hasRole, restoreAuthSession, waitForAuthRestore };
 
 export type {
   TokenResponse,

@@ -2,7 +2,7 @@ import { Outlet, Link, createRootRoute, useLocation } from "@tanstack/react-rout
 
 import { HomeButton } from "../components/site/HomeButton";
 import { Footer } from "../components/site/Footer";
-import { AuthProvider } from "../contexts/auth-context";
+import { AuthProvider, useAuth } from "../contexts/auth-context";
 import { QueryProvider } from "../providers/query-provider";
 
 const publicFooterRoutes = new Set(["/", "/about", "/programs", "/schedule", "/plans", "/contact"]);
@@ -39,19 +39,36 @@ export const Route = createRootRoute({
   notFoundComponent: NotFoundComponent,
 });
 
-  function RootComponent() {
+  function RootLayoutContent() {
     const location = useLocation();
     const isHomePage = location.pathname === "/";
     const showFooter = shouldShowFooter(location.pathname);
+    const { isLoading } = useAuth();
 
+    // Block route rendering while auth is restoring
+    // Show minimal loading state (no navigation, no content)
+    if (isLoading) {
+      return (
+        <div className="flex h-screen items-center justify-center bg-neutral-950">
+          {/* Minimal loading UI - no navigation, no content */}
+        </div>
+      );
+    }
+
+    return (
+      <div className="overflow-x-hidden">
+        {!isHomePage && <HomeButton />}
+        <Outlet />
+        {showFooter && <Footer />}
+      </div>
+    );
+  }
+
+  function RootComponent() {
     return (
       <QueryProvider>
         <AuthProvider>
-          <div className="overflow-x-hidden">
-            {!isHomePage && <HomeButton />}
-            <Outlet />
-            {showFooter && <Footer />}
-          </div>
+          <RootLayoutContent />
         </AuthProvider>
       </QueryProvider>
     );

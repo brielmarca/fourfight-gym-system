@@ -1,5 +1,5 @@
 import { Link, createFileRoute, useNavigate, useSearch, redirect } from "@tanstack/react-router";
-import { api, isAuthenticated } from "@/lib/api";
+import { api, waitForAuthRestore } from "@/lib/api";
 import { useProcessPayment } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,8 +23,10 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string)
 }
 
 export const Route = createFileRoute("/membership/$membershipId/form")({
-  beforeLoad: ({ params }) => {
-    if (!isAuthenticated()) {
+  beforeLoad: async ({ params }) => {
+    // Wait for auth restore to complete
+    const isAuth = await waitForAuthRestore();
+    if (!isAuth) {
       throw redirect({
         to: "/login",
         search: { redirect: `/membership/${params.membershipId}/form` },

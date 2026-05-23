@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -24,7 +25,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Security regression tests for recent hardening changes.
  * Focuses on JWT validation and endpoint protection.
  */
-@SpringBootTest
+@SpringBootTest(properties = {
+        "rate-limit.login.capacity=100",
+        "rate-limit.login.refill-tokens=100",
+        "rate-limit.login.refill-duration=1"
+})
 @AutoConfigureMockMvc
 class SecurityRegressionTest {
 
@@ -206,6 +211,68 @@ class SecurityRegressionTest {
         String accessToken = extractField(body, "accessToken");
         Assertions.assertNotNull(accessToken, "accessToken must be present");
         Assertions.assertEquals("ADMIN", extractRole(accessToken));
+    }
+
+    @Test
+    @DisplayName("Admin login accepts space-padded uppercase email and keeps ADMIN role")
+    void adminLoginNormalizesEmailAndKeepsAdminRole() throws Exception {
+        String loginJson = "{\"email\":\"  " + ADMIN_EMAIL.toUpperCase() + "  \",\"password\":\"" + ADMIN_PASSWORD + "\"}";
+
+        MvcResult result = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String body = result.getResponse().getContentAsString();
+        String accessToken = extractField(body, "accessToken");
+        Assertions.assertNotNull(accessToken, "accessToken must be present");
+        Assertions.assertEquals("ADMIN", extractRole(accessToken));
+    }
+
+    @Test
+    @DisplayName("Inactive user cannot login")
+    void inactiveUserCannotLogin() throws Exception {
+        String email = "inactive@test.com";
+        userRepository.findByEmailIgnoreCase(email).ifPresent(userRepository::delete);
+
+        User user = new User();
+        user.setId(UUID.randomUUID());
+        user.setName("Inactive User");
+        user.setEmail(email);
+        user.setPasswordHash(passwordEncoder.encode("InactivePass123!"));
+        user.setRole(User.Role.CLIENT);
+        user.setIsActive(false);
+        userRepository.save(user);
+
+        String loginJson = "{\"email\":\"" + email + "\",\"password\":\"InactivePass123!\"}";
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Soft-deleted user cannot login")
+    void deletedUserCannotLogin() throws Exception {
+        String email = "deleted@test.com";
+        userRepository.findByEmailIgnoreCase(email).ifPresent(userRepository::delete);
+
+        User user = new User();
+        user.setId(UUID.randomUUID());
+        user.setName("Deleted User");
+        user.setEmail(email);
+        user.setPasswordHash(passwordEncoder.encode("DeletedPass123!"));
+        user.setRole(User.Role.CLIENT);
+        user.setIsActive(true);
+        user.setDeletedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        String loginJson = "{\"email\":\"" + email + "\",\"password\":\"DeletedPass123!\"}";
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

@@ -9,6 +9,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.*;
 import org.springframework.context.annotation.Primary;
+import java.util.Locale;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -32,7 +33,8 @@ public class GymUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
+        String normalizedEmail = normalizeEmail(email);
+        User user = userRepository.findByEmailIgnoreCase(normalizedEmail)
             .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
         return new JwtUserPrincipal(
@@ -46,8 +48,15 @@ public class GymUserDetailsService implements UserDetailsService {
     }
 
     public User loadUserEntityByEmail(String email) {
-        return userRepository.findByEmail(email)
+        return userRepository.findByEmailIgnoreCase(normalizeEmail(email))
             .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    }
+
+    private String normalizeEmail(String email) {
+        if (email == null) {
+            return null;
+        }
+        return email.trim().toLowerCase(Locale.ROOT);
     }
 
     public record JwtUserPrincipal(

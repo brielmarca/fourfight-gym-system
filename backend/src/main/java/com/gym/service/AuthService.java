@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,18 +53,23 @@ public class AuthService {
     @Value("${security.lockout.duration:PT15M}")
     private String lockoutDuration;
 
+    @Value("${AUTH_DIAGNOSTICS_ENABLED:false}")
+    private boolean authDiagnosticsEnabled;
+
     private static final Map<String, Integer> failedLoginAttempts = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, LocalDateTime> lockedAccounts = new java.util.concurrent.ConcurrentHashMap<>();
 
     @Transactional
     public UserResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
+        String normalizedEmail = normalizeEmail(request.email());
+
+        if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
             throw new DuplicateResourceException("User", "email", request.email());
         }
 
         User user = User.builder()
             .name(request.name())
-            .email(request.email())
+            .email(normalizedEmail)
             .passwordHash(passwordEncoder.encode(request.password()))
             .phone(request.phone())
             .dateOfBirth(request.dateOfBirth())
@@ -99,32 +105,88 @@ public class AuthService {
 
     @Transactional
     public TokenPairResponse login(LoginRequest request) {
+        String normalizedEmail = normalizeEmail(request.email());
         String clientIp = getClientIp();
+        String loginStatus = "UNAUTHORIZED";
+        String role = "N/A";
+        boolean userFound = false;
+        boolean userActive = false;
+        boolean deletedAtNull = false;
+        boolean passwordMatch = false;
         
-        if (isAccountLocked(request.email())) {
-            log.warn("Login attempt on locked account: {} from IP: {}", request.email(), clientIp);
+        if (isAccountLocked(normalizedEmail)) {
+            log.warn("Login attempt on locked account: {} from IP: {}", normalizedEmail, clientIp);
+            loginStatus = "LOCKED";
+            logAuthDiagnostics(normalizedEmail, userFound, userActive, deletedAtNull, role, passwordMatch, loginStatus);
             throw new UnauthorizedException("Account temporarily locked due to too many failed attempts");
         }
 
-        User user = userRepository.findByEmail(request.email())
-            .orElseThrow(UnauthorizedException::invalidCredentials);
+        User user = userRepository.findByEmailIgnoreCase(normalizedEmail)
+            .orElseGet(() -> userRepository.findByEmail(normalizedEmail).orElse(null));
+        if (user == null) {
+            logAuthDiagnostics(normalizedEmail, userFound, userActive, deletedAtNull, role, passwordMatch, loginStatus);
+            throw UnauthorizedException.invalidCredentials();
+        }
+        userFound = true;
+        userActive = Boolean.TRUE.equals(user.getIsActive());
+        deletedAtNull = user.getDeletedAt() == null;
+        role = user.getRole().name();
 
-        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            handleFailedLogin(request.email(), clientIp);
+        passwordMatch = passwordEncoder.matches(request.password(), user.getPasswordHash());
+        if (!passwordMatch) {
+            handleFailedLogin(normalizedEmail, clientIp);
+            logAuthDiagnostics(normalizedEmail, userFound, userActive, deletedAtNull, role, passwordMatch, loginStatus);
             throw UnauthorizedException.invalidCredentials();
         }
 
         if (!user.getIsActive()) {
+            loginStatus = "INACTIVE";
+            logAuthDiagnostics(normalizedEmail, userFound, userActive, deletedAtNull, role, passwordMatch, loginStatus);
             throw new UnauthorizedException("Account is disabled");
         }
 
-        clearFailedLoginAttempts(request.email());
+        clearFailedLoginAttempts(normalizedEmail);
         
         if (Boolean.TRUE.equals(user.getMfaEnabled())) {
+            loginStatus = "MFA_PREAUTH";
+            logAuthDiagnostics(normalizedEmail, userFound, userActive, deletedAtNull, role, passwordMatch, loginStatus);
             return generatePreAuthToken(user);
         }
         
+        loginStatus = "SUCCESS";
+        logAuthDiagnostics(normalizedEmail, userFound, userActive, deletedAtNull, role, passwordMatch, loginStatus);
         return generateTokenPair(user);
+    }
+
+    private String normalizeEmail(String email) {
+        if (email == null) {
+            return null;
+        }
+        return email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private void logAuthDiagnostics(
+        String normalizedEmail,
+        boolean userFound,
+        boolean userActive,
+        boolean deletedAtNull,
+        String role,
+        boolean passwordMatch,
+        String loginStatus
+    ) {
+        if (!authDiagnosticsEnabled) {
+            return;
+        }
+        log.info(
+            "AUTH_DIAG email={} userFound={} userActive={} deletedAtNull={} role={} passwordMatch={} loginStatus={}",
+            normalizedEmail,
+            userFound,
+            userActive,
+            deletedAtNull,
+            role,
+            passwordMatch,
+            loginStatus
+        );
     }
 
     public TokenPairResponse generatePreAuthToken(User user) {

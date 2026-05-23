@@ -55,6 +55,7 @@ public class SecurityConfig {
                     "/api/auth/reset-password",
                     "/api/auth/mfa/validate"
                 ).permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/health").permitAll()
                 // All other auth endpoints require authentication
                 .requestMatchers("/api/auth/**").authenticated()
                 // Stripe webhook (no auth header from Stripe)

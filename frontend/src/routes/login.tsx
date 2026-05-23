@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/contexts/auth-context";
 import { getUser, isAuthenticated } from "@/lib/api";
@@ -23,12 +23,22 @@ function LoginPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
   const redirect = getSafeRedirect(search);
-  const { login, isAuthenticated: isAuth } = useAuth();
+  const { login, isAuthenticated: isAuth, clearAuthState } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [sessionPrepared, setSessionPrepared] = useState(false);
+
+  useEffect(() => {
+    clearAuthState();
+    setSessionPrepared(true);
+  }, [clearAuthState]);
+
+  if (!sessionPrepared) {
+    return null;
+  }
 
   if (isAuth) {
     const user = getUser();
@@ -51,6 +61,7 @@ function LoginPage() {
     setLoading(true);
 
     try {
+      clearAuthState();
       await login(email, password);
 
       const user = getUser();
@@ -62,6 +73,7 @@ function LoginPage() {
         navigate({ to: "/student-area", replace: true });
       }
     } catch (err) {
+      clearAuthState();
       const message = err instanceof Error ? err.message : "Falha no login.";
       setError(message);
     } finally {

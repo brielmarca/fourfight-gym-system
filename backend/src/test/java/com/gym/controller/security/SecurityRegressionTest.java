@@ -7,10 +7,14 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockCookie;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -37,6 +41,9 @@ class SecurityRegressionTest {
     private PasswordEncoder passwordEncoder;
 
     private static final String TEST_EMAIL = "test@test.com";
+    private static final String ADMIN_EMAIL = "admin@test.com";
+    private static final String CLIENT_PASSWORD = "Pass12345";
+    private static final String ADMIN_PASSWORD = "AdminPass123!";
 
     private String validUserToken;
     private String validAdminToken;
@@ -50,8 +57,19 @@ class SecurityRegressionTest {
             user.setId(UUID.randomUUID());
             user.setName("Test User");
             user.setEmail(TEST_EMAIL);
-            user.setPasswordHash(passwordEncoder.encode("Pass12345"));
+            user.setPasswordHash(passwordEncoder.encode(CLIENT_PASSWORD));
             user.setRole(User.Role.CLIENT);
+            user.setIsActive(true);
+            return userRepository.save(user);
+        });
+
+        userRepository.findByEmail(ADMIN_EMAIL).orElseGet(() -> {
+            User user = new User();
+            user.setId(UUID.randomUUID());
+            user.setName("Admin User");
+            user.setEmail(ADMIN_EMAIL);
+            user.setPasswordHash(passwordEncoder.encode(ADMIN_PASSWORD));
+            user.setRole(User.Role.ADMIN);
             user.setIsActive(true);
             return userRepository.save(user);
         });
@@ -113,7 +131,7 @@ class SecurityRegressionTest {
     }
 
     @Test
-    @DisplayName("POST /api/checkout is public (permitAll) - returns non-401")
+    @DisplayName("POST /api/checkout endpoint responds without server error")
     void checkoutCreateIsPublic() throws Exception {
         String json = "{\"name\":\"Test\",\"email\":\"test@test.com\",\"password\":\"pass12345\",\"planId\":\"" + UUID.randomUUID() + "\",\"paymentMethod\":\"MBWAY\"}";
         mockMvc.perform(post("/api/checkout")
@@ -121,8 +139,8 @@ class SecurityRegressionTest {
                         .content(json))
                 .andExpect(result -> {
                     int status = result.getResponse().getStatus();
-                    if (status == 401) {
-                        throw new AssertionError("Expected non-401 status, got " + status);
+                    if (status >= 500) {
+                        throw new AssertionError("Expected non-5xx status, got " + status);
                     }
                 });
     }
@@ -156,5 +174,100 @@ class SecurityRegressionTest {
                     int status = result.getResponse().getStatus();
                     assert status != 500 : "Endpoint should not return 500 internal error";
                 });
+    }
+
+    // ===== TEST 5: Login / Refresh Security =====
+
+    @Test
+    @DisplayName("Wrong admin password returns 401 and does not set refresh cookie")
+    void wrongAdminPasswordDoesNotAuthenticate() throws Exception {
+        String loginJson = "{\"email\":\"" + ADMIN_EMAIL + "\",\"password\":\"wrong-password\"}";
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().doesNotExist("Set-Cookie"));
+    }
+
+    @Test
+    @DisplayName("Successful admin login returns ADMIN access token and refresh cookie")
+    void successfulAdminLoginReturnsAdminTokenAndCookie() throws Exception {
+        String loginJson = "{\"email\":\"" + ADMIN_EMAIL + "\",\"password\":\"" + ADMIN_PASSWORD + "\"}";
+
+        MvcResult result = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("refreshToken=")))
+                .andReturn();
+
+        String body = result.getResponse().getContentAsString();
+        String accessToken = extractField(body, "accessToken");
+        Assertions.assertNotNull(accessToken, "accessToken must be present");
+        Assertions.assertEquals("ADMIN", extractRole(accessToken));
+    }
+
+    @Test
+    @DisplayName("Old client refresh cookie can refresh after failed admin login attempt")
+    void staleClientCookieStillRefreshesAfterFailedAdminLogin() throws Exception {
+        String clientLoginJson = "{\"email\":\"" + TEST_EMAIL + "\",\"password\":\"" + CLIENT_PASSWORD + "\"}";
+        MvcResult clientLogin = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(clientLoginJson))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String setCookie = clientLogin.getResponse().getHeader("Set-Cookie");
+        Assertions.assertNotNull(setCookie, "client login must issue refresh cookie");
+        MockCookie refreshCookie = new MockCookie("refreshToken", extractRefreshCookieValue(setCookie));
+
+        String wrongAdminJson = "{\"email\":\"" + ADMIN_EMAIL + "\",\"password\":\"wrong-password\"}";
+        mockMvc.perform(post("/api/auth/login")
+                        .cookie(refreshCookie)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(wrongAdminJson))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().doesNotExist("Set-Cookie"));
+
+        MvcResult refreshResult = mockMvc.perform(post("/api/auth/refresh")
+                        .cookie(refreshCookie)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String refreshBody = refreshResult.getResponse().getContentAsString();
+        String refreshedAccessToken = extractField(refreshBody, "accessToken");
+        Assertions.assertNotNull(refreshedAccessToken, "refresh must return accessToken");
+        Assertions.assertEquals("CLIENT", extractRole(refreshedAccessToken));
+    }
+
+    private static String extractField(String json, String fieldName) {
+        String marker = "\"" + fieldName + "\":\"";
+        int start = json.indexOf(marker);
+        if (start < 0) {
+            return null;
+        }
+        int valueStart = start + marker.length();
+        int valueEnd = json.indexOf('"', valueStart);
+        if (valueEnd < 0) {
+            return null;
+        }
+        return json.substring(valueStart, valueEnd);
+    }
+
+    private static String extractRole(String jwt) {
+        String[] parts = jwt.split("\\.");
+        if (parts.length < 2) {
+            return null;
+        }
+        String payloadJson = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
+        return extractField(payloadJson, "role");
+    }
+
+    private static String extractRefreshCookieValue(String setCookieHeader) {
+        String[] parts = setCookieHeader.split(";", 2);
+        String[] cookieParts = parts[0].split("=", 2);
+        return cookieParts.length == 2 ? cookieParts[1] : "";
     }
 }

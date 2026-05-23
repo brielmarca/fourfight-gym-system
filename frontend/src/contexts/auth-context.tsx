@@ -1,4 +1,4 @@
-import { createContext, useContext, useCallback, useState, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useCallback, useRef, useState, useEffect, type ReactNode } from "react";
 import {
   api,
   setTokens,
@@ -16,6 +16,7 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
+  clearAuthState: () => void;
   hasRole: (roles: string[]) => boolean;
 }
 
@@ -24,15 +25,23 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const resetVersionRef = useRef(0);
 
   useEffect(() => {
     let mounted = true;
 
     const restore = async () => {
+      const restoreVersion = resetVersionRef.current;
       try {
         await restoreAuthSession();
       } finally {
         if (!mounted) return;
+        if (restoreVersion !== resetVersionRef.current) {
+          clearTokens();
+          setUser(null);
+          setIsLoading(false);
+          return;
+        }
         setUser(getUser());
         setIsLoading(false);
       }
@@ -46,12 +55,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const response = await api.auth.login(email, password);
-    if (!response.accessToken) {
-      throw new Error("Falha no login. Tente novamente.");
+    resetVersionRef.current += 1;
+    clearTokens();
+    setUser(null);
+
+    try {
+      const response = await api.auth.login(email, password);
+      if (!response.accessToken) {
+        throw new Error("Falha no login. Tente novamente.");
+      }
+      setTokens(response.accessToken);
+      setUser(getUser());
+    } catch (error) {
+      clearTokens();
+      setUser(null);
+      throw error;
     }
-    setTokens(response.accessToken);
-    setUser(getUser());
   }, []);
 
   const register = useCallback(async (data: RegisterRequest) => {
@@ -59,6 +78,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
+    resetVersionRef.current += 1;
+    clearTokens();
+    setUser(null);
+  }, []);
+
+  const clearAuthState = useCallback(() => {
+    resetVersionRef.current += 1;
     clearTokens();
     setUser(null);
   }, []);
@@ -80,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         logout,
+        clearAuthState,
         hasRole,
       }}
     >

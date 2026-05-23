@@ -65,4 +65,4 @@ export {
   useUpdateScheduleEntry,
   useDeactivateScheduleEntry,
 } from "./schedule";
-export { usePreRegistrations, usePreRegistrationDetail } from "./pre-registrations";
+export { usePreRegistrations, usePreRegistrationDetail, useImportPreRegistrationsCsv } from "./pre-registrations";

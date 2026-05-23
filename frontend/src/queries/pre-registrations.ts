@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import queryKeys from "./query-keys";
 
@@ -15,5 +15,15 @@ export function usePreRegistrationDetail(id: string, enabled = true) {
     queryKey: queryKeys.preRegistrations.detail(id),
     queryFn: () => api.admin.getPreRegistrationById(id),
     enabled: enabled && !!id,
+  });
+}
+
+export function useImportPreRegistrationsCsv() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (file: File) => api.admin.importPreRegistrationsCsv(file),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.preRegistrations.all });
+    },
   });
 }

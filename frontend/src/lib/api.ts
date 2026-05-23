@@ -87,6 +87,8 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
   let response: Response;
 
+  const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
+
   try {
     const finalUrl = `${API_BASE}${endpoint}`;
     console.log("API REQUEST", { endpoint, API_BASE, finalUrl, method: options.method || "GET" });
@@ -94,7 +96,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
       ...options,
       credentials: "include",
       headers: {
-        "Content-Type": "application/json",
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       },
@@ -431,6 +433,20 @@ export const api = {
       ),
     getPreRegistrationById: (id: string) =>
       request<AdminPreRegistrationDetail>(`/admin/pre-registrations/${id}`),
+    importPreRegistrationsCsv: (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      return request<{
+        totalRows: number;
+        importedRows: number;
+        duplicateRows: number;
+        invalidRows: number;
+        issues: string[];
+      }>("/admin/pre-registrations/import", {
+        method: "POST",
+        body: formData,
+      });
+    },
   },
 
   classEnrollments: {

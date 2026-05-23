@@ -28,6 +28,10 @@ Thumbs.db
 *.log
 logs/
 
+# Local data imports
+imports/
+*.csv
+
 # Secrets
 *.pem
 keys/

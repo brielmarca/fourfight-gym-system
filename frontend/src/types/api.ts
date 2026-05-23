@@ -204,29 +204,27 @@ export type PreferredContactMethod = "CALL" | "MESSAGE" | "OTHER";
 
 export interface AdminPreRegistrationListItem {
   id: string;
-  userId: string;
-  name: string;
-  email: string;
+  fullName: string;
   phone: string;
-  age: number;
-  preferredModality: PreferredModality;
-  preferredTrainingTime: PreferredTrainingTime;
-  preferredTrainingDays: PreferredTrainingDay[];
-  preferredContactMethod: PreferredContactMethod;
-  createdAt: string;
+  age: number | null;
+  parish: string | null;
+  preferredModalities: string | null;
+  preferredTrainingTimes: string | null;
+  preferredTrainingDays: string | null;
+  preferredContactMethod: string | null;
+  submittedAt: string;
+  status: string;
 }
 
 export interface AdminPreRegistrationDetail extends AdminPreRegistrationListItem {
-  accountCreatedAt: string;
-  parishOrArea: string;
-  hasMartialArtsExperience: boolean;
+  hasMartialArtsExperience: boolean | null;
   martialArtsExperienceDetails?: string;
-  trainingGoal: string;
-  preferredModalityOther?: string;
-  preferredTrainingTimeOther?: string;
-  valuesMartialArtsPhilosophy: boolean;
-  preferredContactMethodOther?: string;
+  trainingGoal?: string;
+  philosophyImportant: boolean | null;
+  source: string;
+  notes?: string;
   updatedAt: string;
+  createdAt: string;
 }
 
 export interface UpdateUserRequest {

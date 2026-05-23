@@ -208,6 +208,21 @@ public class AuthService {
         log.info("User logged out: {}", userId);
     }
 
+    @Transactional
+    public void logoutByRefreshToken(String rawRefreshToken) {
+        if (rawRefreshToken == null || rawRefreshToken.isBlank()) {
+            return;
+        }
+
+        String tokenHash = hashToken(rawRefreshToken);
+        refreshTokenRepository.findValidByTokenHash(tokenHash)
+            .ifPresent(token -> {
+                token.setRevoked(true);
+                refreshTokenRepository.save(token);
+                log.info("Refresh token revoked during logout fallback for userId={}", token.getUser().getId());
+            });
+    }
+
     public UserResponse getCurrentUser(UUID userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User", userId));

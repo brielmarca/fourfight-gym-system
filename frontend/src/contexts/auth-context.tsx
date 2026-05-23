@@ -1,4 +1,5 @@
 import { createContext, useContext, useCallback, useRef, useState, useEffect, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   api,
   setTokens,
@@ -15,7 +16,7 @@ interface AuthContextValue {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   clearAuthState: () => void;
   hasRole: (roles: string[]) => boolean;
 }
@@ -23,6 +24,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const resetVersionRef = useRef(0);
@@ -77,17 +79,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await api.auth.register(data);
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     resetVersionRef.current += 1;
-    clearTokens();
-    setUser(null);
-  }, []);
+    try {
+      await api.auth.logout();
+    } finally {
+      clearTokens();
+      setUser(null);
+      queryClient.clear();
+    }
+  }, [queryClient]);
 
   const clearAuthState = useCallback(() => {
     resetVersionRef.current += 1;
     clearTokens();
     setUser(null);
-  }, []);
+    queryClient.clear();
+  }, [queryClient]);
 
   const hasRole = useCallback(
     (roles: string[]) => {

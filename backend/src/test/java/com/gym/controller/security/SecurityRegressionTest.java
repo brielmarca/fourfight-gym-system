@@ -242,6 +242,54 @@ class SecurityRegressionTest {
         Assertions.assertEquals("CLIENT", extractRole(refreshedAccessToken));
     }
 
+    @Test
+    @DisplayName("Logout with valid auth revokes refresh token and refresh returns 401")
+    void logoutWithAuthRevokesRefreshToken() throws Exception {
+        String clientLoginJson = "{\"email\":\"" + TEST_EMAIL + "\",\"password\":\"" + CLIENT_PASSWORD + "\"}";
+        MvcResult clientLogin = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(clientLoginJson))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("refreshToken=")))
+                .andReturn();
+
+        String setCookie = clientLogin.getResponse().getHeader("Set-Cookie");
+        String body = clientLogin.getResponse().getContentAsString();
+        String accessToken = extractField(body, "accessToken");
+        Assertions.assertNotNull(setCookie, "client login must issue refresh cookie");
+        Assertions.assertNotNull(accessToken, "client login must return access token");
+        MockCookie refreshCookie = new MockCookie("refreshToken", extractRefreshCookieValue(setCookie));
+
+        mockMvc.perform(post("/api/auth/logout")
+                        .cookie(refreshCookie)
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent())
+                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("Max-Age=0")));
+
+        mockMvc.perform(post("/api/auth/refresh")
+                        .cookie(refreshCookie)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Logout without auth still clears cookie and returns safe response")
+    void logoutWithoutAuthStillClearsCookie() throws Exception {
+        MockCookie refreshCookie = new MockCookie("refreshToken", "stale-or-invalid-token");
+
+        mockMvc.perform(post("/api/auth/logout")
+                        .cookie(refreshCookie)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent())
+                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("Max-Age=0")));
+
+        mockMvc.perform(post("/api/auth/refresh")
+                        .cookie(refreshCookie)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
     private static String extractField(String json, String fieldName) {
         String marker = "\"" + fieldName + "\":\"";
         int start = json.indexOf(marker);

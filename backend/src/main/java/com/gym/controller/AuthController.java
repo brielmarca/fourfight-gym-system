@@ -60,9 +60,16 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@AuthenticationPrincipal JwtUserPrincipal principal, HttpServletResponse response) {
+    public ResponseEntity<Void> logout(
+            @AuthenticationPrincipal JwtUserPrincipal principal,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
         if (principal != null) {
             authService.logout(principal.id());
+        } else {
+            String refreshToken = extractRefreshTokenFromCookie(request);
+            authService.logoutByRefreshToken(refreshToken);
         }
         clearRefreshTokenCookie(response);
         return ResponseEntity.noContent().build();

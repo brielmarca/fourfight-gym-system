@@ -185,11 +185,6 @@ function setTokens(accessToken: string, refreshToken?: string | null) {
 function clearTokens() {
   if (typeof window !== "undefined") {
     memoryAccessToken = null;
-    // Clear HttpOnly cookie via backend endpoint
-    fetch(`${API_BASE}/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    }).catch(() => {});
   }
 }
 

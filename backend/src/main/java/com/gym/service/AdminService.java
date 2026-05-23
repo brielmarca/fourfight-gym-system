@@ -2,14 +2,19 @@ package com.gym.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import com.gym.dto.response.AdminPreRegistrationDetailResponse;
+import com.gym.dto.response.AdminPreRegistrationListItemResponse;
 import com.gym.dto.response.AuditLogResponse;
 import com.gym.dto.response.DashboardResponse;
 import com.gym.dto.response.RevenueReportResponse.MonthlyRevenue;
 import com.gym.dto.response.RevenueReportResponse;
+import com.gym.exception.ResourceNotFoundException;
 import com.gym.repository.AuditLogRepository;
+import com.gym.repository.PreRegistrationProfileRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -22,6 +27,7 @@ public class AdminService {
     private final ClassService classService;
     private final PaymentService paymentService;
     private final AuditLogRepository auditLogRepository;
+    private final PreRegistrationProfileRepository preRegistrationProfileRepository;
 
     public DashboardResponse getDashboard() {
         long activeMembers = membershipService.countActive();
@@ -59,5 +65,16 @@ public class AdminService {
             total != null ? total : java.math.BigDecimal.ZERO,
             total != null ? total : java.math.BigDecimal.ZERO
         );
+    }
+
+    public Page<AdminPreRegistrationListItemResponse> getPreRegistrations(Pageable pageable) {
+        return preRegistrationProfileRepository.findAllByOrderByCreatedAtDesc(pageable)
+            .map(AdminPreRegistrationListItemResponse::from);
+    }
+
+    public AdminPreRegistrationDetailResponse getPreRegistrationById(UUID id) {
+        return preRegistrationProfileRepository.findById(id)
+            .map(AdminPreRegistrationDetailResponse::from)
+            .orElseThrow(() -> new ResourceNotFoundException("PreRegistrationProfile", id));
     }
 }

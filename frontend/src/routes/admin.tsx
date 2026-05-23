@@ -13,6 +13,8 @@ import {
   useCreateScheduleEntry,
   useDeactivateScheduleEntry,
   useUpdateScheduleEntry,
+  usePreRegistrations,
+  usePreRegistrationDetail,
 } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +33,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import type { CreateScheduleEntryRequest } from "@/types";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: () => {
@@ -57,6 +60,7 @@ function AdminPage() {
   const updateSchedule = useUpdateScheduleEntry();
   const deactivateSchedule = useDeactivateScheduleEntry();
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedPreRegistrationId, setSelectedPreRegistrationId] = useState<string>("");
   const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState<CreateScheduleEntryRequest>({
     title: "",
@@ -73,6 +77,8 @@ function AdminPage() {
   });
 
   const loading = beltsLoading || membershipsLoading || plansLoading || pendingReceptionLoading;
+  const { data: preRegistrationsData, isLoading: preRegistrationsLoading } = usePreRegistrations(0, 100, canManageReception);
+  const { data: preRegistrationDetail } = usePreRegistrationDetail(selectedPreRegistrationId, canManageReception && !!selectedPreRegistrationId);
 
   if (user && !hasRole(["ADMIN", "MANAGER"])) {
     void navigate({ to: "/student-area", replace: true });
@@ -175,6 +181,14 @@ function AdminPage() {
                   className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white rounded-sm"
                 >
                   Horários
+                </TabsTrigger>
+              )}
+              {canManageReception && (
+                <TabsTrigger
+                  value="pre-registrations"
+                  className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white rounded-sm"
+                >
+                  Pré-inscrições
                 </TabsTrigger>
               )}
               {canManageReception && (
@@ -398,6 +412,65 @@ function AdminPage() {
                     </TableBody>
                   </Table>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="pre-registrations">
+            <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>
+              <CardHeader>
+                <CardTitle className="text-xs tracking-[0.2em] uppercase">Clientes / Pré-inscrições</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-border-subtle hover:bg-transparent">
+                        <TableHead>Nome</TableHead><TableHead>Email</TableHead><TableHead>Telefone</TableHead><TableHead>Modalidade</TableHead><TableHead>Horário</TableHead><TableHead>Dias</TableHead><TableHead>Contacto</TableHead><TableHead>Data</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {preRegistrationsLoading ? (
+                        <TableRow><TableCell colSpan={8}>A carregar pré-inscrições...</TableCell></TableRow>
+                      ) : (preRegistrationsData?.content?.length ?? 0) === 0 ? (
+                        <TableRow><TableCell colSpan={8}>Sem pré-inscrições registadas.</TableCell></TableRow>
+                      ) : (
+                        preRegistrationsData?.content?.map((item) => (
+                          <TableRow key={item.id} className="cursor-pointer" onClick={() => setSelectedPreRegistrationId(item.id)}>
+                            <TableCell>{item.name}</TableCell><TableCell>{item.email}</TableCell><TableCell>{item.phone}</TableCell><TableCell>{item.preferredModality}</TableCell><TableCell>{item.preferredTrainingTime}</TableCell><TableCell>{item.preferredTrainingDays.join(", ")}</TableCell><TableCell>{item.preferredContactMethod}</TableCell><TableCell>{new Date(item.createdAt).toLocaleDateString("pt-PT")}</TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {preRegistrationDetail && (
+                  <Card className="bg-surface-2 border-border-subtle">
+                    <CardHeader>
+                      <CardTitle className="text-sm tracking-[0.1em] uppercase">Detalhes completos do cliente</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                      <div><strong>Nome:</strong> {preRegistrationDetail.name}</div>
+                      <div><strong>Email:</strong> {preRegistrationDetail.email}</div>
+                      <div><strong>Telefone:</strong> {preRegistrationDetail.phone}</div>
+                      <div><strong>Idade:</strong> {preRegistrationDetail.age}</div>
+                      <div><strong>Criado em:</strong> {new Date(preRegistrationDetail.accountCreatedAt).toLocaleString("pt-PT")}</div>
+                      <div><strong>Morada/Freguesia:</strong> {preRegistrationDetail.parishOrArea}</div>
+                      <div><strong>Experiência prévia:</strong> {preRegistrationDetail.hasMartialArtsExperience ? "Sim" : "Não"}</div>
+                      <div><strong>Detalhes experiência:</strong> {preRegistrationDetail.martialArtsExperienceDetails || "-"}</div>
+                      <div className="md:col-span-2"><strong>Objetivo:</strong> {preRegistrationDetail.trainingGoal}</div>
+                      <div><strong>Modalidade:</strong> {preRegistrationDetail.preferredModality}</div>
+                      <div><strong>Modalidade (outro):</strong> {preRegistrationDetail.preferredModalityOther || "-"}</div>
+                      <div><strong>Horário:</strong> {preRegistrationDetail.preferredTrainingTime}</div>
+                      <div><strong>Horário (outro):</strong> {preRegistrationDetail.preferredTrainingTimeOther || "-"}</div>
+                      <div><strong>Dias:</strong> {preRegistrationDetail.preferredTrainingDays.join(", ")}</div>
+                      <div><strong>Filosofia importante:</strong> {preRegistrationDetail.valuesMartialArtsPhilosophy ? "Sim" : "Não"}</div>
+                      <div><strong>Contacto preferido:</strong> {preRegistrationDetail.preferredContactMethod}</div>
+                      <div><strong>Contacto (outro):</strong> {preRegistrationDetail.preferredContactMethodOther || "-"}</div>
+                    </CardContent>
+                  </Card>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

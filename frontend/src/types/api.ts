@@ -163,8 +163,70 @@ export interface RegisterRequest {
   name: string;
   email: string;
   password: string;
-  phone?: string;
+  phone: string;
   dateOfBirth?: string;
+  age: number;
+  parishOrArea: string;
+  hasMartialArtsExperience: boolean;
+  martialArtsExperienceDetails?: string;
+  trainingGoal: string;
+  preferredModality: PreferredModality;
+  preferredModalityOther?: string;
+  preferredTrainingTime: PreferredTrainingTime;
+  preferredTrainingTimeOther?: string;
+  preferredTrainingDays: PreferredTrainingDay[];
+  valuesMartialArtsPhilosophy: boolean;
+  preferredContactMethod: PreferredContactMethod;
+  preferredContactMethodOther?: string;
+}
+
+export type PreferredModality =
+  | "KICKBOXING"
+  | "JIU_JITSU"
+  | "CAPOEIRA"
+  | "BOXE"
+  | "MMA"
+  | "JIU_JITSU_KIDS"
+  | "CAPOEIRA_KIDS"
+  | "KICKBOXING_KIDS"
+  | "OTHER";
+
+export type PreferredTrainingTime =
+  | "MORNING_BEFORE_0830"
+  | "LUNCH_1230"
+  | "AFTERNOON_14_17"
+  | "NIGHT_AFTER_18"
+  | "OTHER";
+
+export type PreferredTrainingDay = "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY";
+
+export type PreferredContactMethod = "CALL" | "MESSAGE" | "OTHER";
+
+export interface AdminPreRegistrationListItem {
+  id: string;
+  userId: string;
+  name: string;
+  email: string;
+  phone: string;
+  age: number;
+  preferredModality: PreferredModality;
+  preferredTrainingTime: PreferredTrainingTime;
+  preferredTrainingDays: PreferredTrainingDay[];
+  preferredContactMethod: PreferredContactMethod;
+  createdAt: string;
+}
+
+export interface AdminPreRegistrationDetail extends AdminPreRegistrationListItem {
+  accountCreatedAt: string;
+  parishOrArea: string;
+  hasMartialArtsExperience: boolean;
+  martialArtsExperienceDetails?: string;
+  trainingGoal: string;
+  preferredModalityOther?: string;
+  preferredTrainingTimeOther?: string;
+  valuesMartialArtsPhilosophy: boolean;
+  preferredContactMethodOther?: string;
+  updatedAt: string;
 }
 
 export interface UpdateUserRequest {

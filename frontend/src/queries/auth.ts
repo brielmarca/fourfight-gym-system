@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, setTokens, clearTokens, getUser } from "@/lib/api";
 import queryKeys from "./query-keys";
-import type { User } from "@/types";
+import type { RegisterRequest, User } from "@/types";
 
 export function useCurrentUser() {
   return useQuery({
@@ -29,8 +29,7 @@ export function useLoginMutation() {
 
 export function useRegisterMutation() {
   return useMutation({
-    mutationFn: (data: { name: string; email: string; password: string; phone?: string; dateOfBirth?: string }) =>
-      api.auth.register(data),
+    mutationFn: (data: RegisterRequest) => api.auth.register(data),
   });
 }
 

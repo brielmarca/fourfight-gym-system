@@ -13,9 +13,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.gym.dto.request.LoginRequest;
+import com.gym.dto.request.PreferredContactMethod;
+import com.gym.dto.request.PreferredModality;
+import com.gym.dto.request.PreferredTrainingDay;
+import com.gym.dto.request.PreferredTrainingTime;
 import com.gym.dto.request.RegisterRequest;
 import com.gym.dto.response.TokenPairResponse;
 import com.gym.dto.response.UserResponse;
+import com.gym.entity.PreRegistrationProfile;
 import com.gym.entity.RefreshToken;
 import com.gym.entity.User.Role;
 import com.gym.entity.User;
@@ -23,6 +28,7 @@ import com.gym.exception.DuplicateResourceException;
 import com.gym.exception.ResourceNotFoundException;
 import com.gym.exception.UnauthorizedException;
 import com.gym.repository.RefreshTokenRepository;
+import com.gym.repository.PreRegistrationProfileRepository;
 import com.gym.repository.UserRepository;
 import com.gym.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +41,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final PreRegistrationProfileRepository preRegistrationProfileRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final ApplicationEventPublisher eventPublisher;
@@ -65,6 +72,26 @@ public class AuthService {
             .build();
 
         user = userRepository.save(user);
+
+        PreRegistrationProfile profile = PreRegistrationProfile.builder()
+            .user(user)
+            .age(request.age())
+            .phone(request.phone())
+            .parishOrArea(request.parishOrArea())
+            .hasMartialArtsExperience(request.hasMartialArtsExperience())
+            .martialArtsExperienceDetails(request.martialArtsExperienceDetails())
+            .trainingGoal(request.trainingGoal())
+            .preferredModality(mapPreferredModality(request.preferredModality()))
+            .preferredModalityOther(request.preferredModalityOther())
+            .preferredTrainingTime(mapPreferredTrainingTime(request.preferredTrainingTime()))
+            .preferredTrainingTimeOther(request.preferredTrainingTimeOther())
+            .preferredTrainingDays(mapPreferredTrainingDays(request.preferredTrainingDays()))
+            .valuesMartialArtsPhilosophy(request.valuesMartialArtsPhilosophy())
+            .preferredContactMethod(mapPreferredContactMethod(request.preferredContactMethod()))
+            .preferredContactMethodOther(request.preferredContactMethodOther())
+            .build();
+
+        preRegistrationProfileRepository.save(profile);
         log.info("New user registered: {}", user.getEmail());
 
         return UserResponse.from(user);
@@ -232,5 +259,23 @@ public class AuthService {
 
     private String getClientIp() {
         return "127.0.0.1";
+    }
+
+    private PreRegistrationProfile.PreferredModality mapPreferredModality(PreferredModality value) {
+        return PreRegistrationProfile.PreferredModality.valueOf(value.name());
+    }
+
+    private PreRegistrationProfile.PreferredTrainingTime mapPreferredTrainingTime(PreferredTrainingTime value) {
+        return PreRegistrationProfile.PreferredTrainingTime.valueOf(value.name());
+    }
+
+    private java.util.Set<PreRegistrationProfile.PreferredTrainingDay> mapPreferredTrainingDays(java.util.List<PreferredTrainingDay> values) {
+        return values.stream()
+            .map(value -> PreRegistrationProfile.PreferredTrainingDay.valueOf(value.name()))
+            .collect(java.util.stream.Collectors.toSet());
+    }
+
+    private PreRegistrationProfile.PreferredContactMethod mapPreferredContactMethod(PreferredContactMethod value) {
+        return PreRegistrationProfile.PreferredContactMethod.valueOf(value.name());
     }
 }

@@ -424,6 +424,15 @@ export const api = {
       }),
   },
 
+  admin: {
+    listPreRegistrations: (page = 0, size = 50) =>
+      request<PageResponse<AdminPreRegistrationListItem>>(
+        `/admin/pre-registrations?page=${page}&size=${size}`,
+      ),
+    getPreRegistrationById: (id: string) =>
+      request<AdminPreRegistrationDetail>(`/admin/pre-registrations/${id}`),
+  },
+
   classEnrollments: {
     getAll: async () => [] as ClassEnrollment[],
   },
@@ -531,4 +540,6 @@ export type {
   AdminScheduleEntry,
   CreateScheduleEntryRequest,
   UpdateScheduleEntryRequest,
+  AdminPreRegistrationListItem,
+  AdminPreRegistrationDetail,
 } from "@/types/api";

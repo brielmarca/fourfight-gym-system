@@ -61,6 +61,7 @@ function AdminPage() {
   const updateSchedule = useUpdateScheduleEntry();
   const deactivateSchedule = useDeactivateScheduleEntry();
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [studentsFilter, setStudentsFilter] = useState<"ACTIVE" | "CANCELLED" | "BASIC" | "STANDARD" | "PREMIUM">("ACTIVE");
   const [selectedPreRegistrationId, setSelectedPreRegistrationId] = useState<string>("");
   const [selectedCsvFile, setSelectedCsvFile] = useState<File | null>(null);
   const [importFeedback, setImportFeedback] = useState<string>("");
@@ -105,19 +106,25 @@ function AdminPage() {
     );
   }
 
+  type MembershipItem = {
+    id: string;
+    userName: string;
+    userEmail: string;
+    planName: string;
+    startDate: string;
+    endDate: string;
+    status: string;
+  };
+
   const memberships = membershipsData as {
-    content?: Array<{
-      id: string;
-      userName: string;
-      userEmail: string;
-      planName: string;
-      startDate: string;
-      endDate: string;
-      status: string;
-    }>;
+    content?: MembershipItem[];
     totalElements?: number;
   } | null;
-  const visibleStudentStatuses = ["ACTIVE", "CANCELLED", "EXPIRED"] as const;
+
+  const includedStudentStatuses = ["ACTIVE", "CANCELLED", "EXPIRED"] as const;
+  const excludedStudentStatuses = ["PENDING_PAYMENT", "REJECTED"] as const;
+
+  const normalizeText = (value?: string) => value?.trim().toLowerCase() ?? "";
 
   const isTestMembership = (membership: { userName: string; userEmail: string }) => {
     const searchableText = `${membership.userName} ${membership.userEmail}`.toLowerCase();
@@ -137,14 +144,87 @@ function AdminPage() {
     return testMarkers.some((marker) => searchableText.includes(marker));
   };
 
-  const visibleStudents =
+  const getMembershipPriority = (status: string) => {
+    if (status === "ACTIVE") return 3;
+    if (status === "EXPIRED") return 2;
+    if (status === "CANCELLED") return 1;
+    return 0;
+  };
+
+  const getBestMembershipPerUser = (items: MembershipItem[]) => {
+    const grouped = new Map<string, MembershipItem>();
+
+    for (const membership of items) {
+      const keyByEmail = normalizeText(membership.userEmail);
+      const keyByName = normalizeText(membership.userName);
+      const groupKey = keyByEmail || keyByName;
+
+      if (!groupKey) continue;
+
+      const currentBest = grouped.get(groupKey);
+      if (!currentBest) {
+        grouped.set(groupKey, membership);
+        continue;
+      }
+
+      const currentPriority = getMembershipPriority(currentBest.status);
+      const nextPriority = getMembershipPriority(membership.status);
+
+      if (nextPriority > currentPriority) {
+        grouped.set(groupKey, membership);
+        continue;
+      }
+
+      if (nextPriority === currentPriority) {
+        const currentStart = currentBest.startDate ? Date.parse(currentBest.startDate) : Number.NaN;
+        const nextStart = membership.startDate ? Date.parse(membership.startDate) : Number.NaN;
+
+        if (!Number.isNaN(nextStart) && (Number.isNaN(currentStart) || nextStart > currentStart)) {
+          grouped.set(groupKey, membership);
+        }
+      }
+    }
+
+    return Array.from(grouped.values());
+  };
+
+  const realMemberships =
     memberships?.content?.filter(
       (membership) =>
-        visibleStudentStatuses.includes(membership.status as (typeof visibleStudentStatuses)[number]) &&
+        includedStudentStatuses.includes(membership.status as (typeof includedStudentStatuses)[number]) &&
+        !excludedStudentStatuses.includes(membership.status as (typeof excludedStudentStatuses)[number]) &&
         !isTestMembership(membership),
     ) ?? [];
-  const activeCount = visibleStudents.filter((m) => m.status === "ACTIVE").length;
-  const expiredCount = visibleStudents.filter((m) => m.status === "EXPIRED").length;
+
+  const dedupedStudents = getBestMembershipPerUser(realMemberships);
+  const activeStudents = dedupedStudents.filter((m) => m.status === "ACTIVE");
+  const expiredStudents = dedupedStudents.filter((m) => m.status === "EXPIRED");
+  const cancelledStudents = dedupedStudents.filter((m) => m.status === "CANCELLED");
+  const basicStudents = activeStudents.filter((m) => normalizeText(m.planName) === "basic");
+  const standardStudents = activeStudents.filter((m) => normalizeText(m.planName) === "standard");
+  const premiumStudents = activeStudents.filter((m) => normalizeText(m.planName) === "premium");
+
+  const studentsByFilter =
+    studentsFilter === "ACTIVE"
+      ? activeStudents
+      : studentsFilter === "CANCELLED"
+        ? cancelledStudents
+        : studentsFilter === "BASIC"
+          ? basicStudents
+          : studentsFilter === "STANDARD"
+            ? standardStudents
+            : premiumStudents;
+
+  const studentsEmptyMessage =
+    studentsFilter === "ACTIVE"
+      ? "Nenhum aluno ativo encontrado."
+      : studentsFilter === "CANCELLED"
+        ? "Nenhum aluno cancelado encontrado."
+        : studentsFilter === "BASIC"
+          ? "Nenhum aluno ativo no plano Basic."
+          : studentsFilter === "STANDARD"
+            ? "Nenhum aluno ativo no plano Standard."
+            : "Nenhum aluno ativo no plano Premium.";
 
   const handleImportCsv = async () => {
     if (!selectedCsvFile) {
@@ -263,7 +343,7 @@ function AdminPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="font-display text-4xl tracking-wider" style={{ color: "#F5F5F5" }}>
-                    {visibleStudents.length}
+                    {activeStudents.length}
                   </p>
                 </CardContent>
               </Card>
@@ -280,7 +360,7 @@ function AdminPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="font-display text-4xl tracking-wider" style={{ color: "#22C55E" }}>
-                    {activeCount}
+                    {activeStudents.length}
                   </p>
                 </CardContent>
               </Card>
@@ -297,7 +377,7 @@ function AdminPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="font-display text-4xl tracking-wider" style={{ color: "#C1121F" }}>
-                    {expiredCount}
+                    {expiredStudents.length}
                   </p>
                 </CardContent>
               </Card>
@@ -404,13 +484,20 @@ function AdminPage() {
             >
               <CardHeader>
                 <CardTitle className="text-xs tracking-[0.2em] uppercase">
-                  Todos os Alunos
+                  Alunos
                 </CardTitle>
                 <p className="text-xs text-text-secondary">
-                  Esta lista mostra apenas matrículas reais ativas, expiradas ou canceladas. Pedidos pendentes ficam na aba Receção.
+                  Esta área mostra alunos reais organizados por estado e plano. Pedidos pendentes ficam em Receção e pré-inscrições ficam na aba Pré-inscrições.
                 </p>
               </CardHeader>
               <CardContent>
+                <div className="mb-4 flex flex-wrap gap-2">
+                  <Button size="sm" variant={studentsFilter === "ACTIVE" ? "default" : "outline"} onClick={() => setStudentsFilter("ACTIVE")}>Ativos</Button>
+                  <Button size="sm" variant={studentsFilter === "CANCELLED" ? "default" : "outline"} onClick={() => setStudentsFilter("CANCELLED")}>Cancelados</Button>
+                  <Button size="sm" variant={studentsFilter === "BASIC" ? "default" : "outline"} onClick={() => setStudentsFilter("BASIC")}>Basic</Button>
+                  <Button size="sm" variant={studentsFilter === "STANDARD" ? "default" : "outline"} onClick={() => setStudentsFilter("STANDARD")}>Standard</Button>
+                  <Button size="sm" variant={studentsFilter === "PREMIUM" ? "default" : "outline"} onClick={() => setStudentsFilter("PREMIUM")}>Premium</Button>
+                </div>
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
@@ -429,8 +516,8 @@ function AdminPage() {
                             Falha ao carregar alunos. {(membershipsError as Error).message}
                           </TableCell>
                         </TableRow>
-                      ) : visibleStudents.length > 0 ? (
-                        visibleStudents.map((m) => (
+                      ) : studentsByFilter.length > 0 ? (
+                        studentsByFilter.map((m) => (
                           <TableRow key={m.id} className="border-border-subtle">
                             <TableCell className="font-medium">
                               <div>{m.userName || "-"}</div>
@@ -452,13 +539,7 @@ function AdminPage() {
                                       : "border-border-subtle bg-surface-2 text-text-secondary"
                                 }
                               >
-                                {m.status === "ACTIVE"
-                                  ? "Ativo"
-                                  : m.status === "EXPIRED"
-                                    ? "Expirado"
-                                    : m.status === "CANCELLED"
-                                      ? "Cancelado"
-                                      : m.status}
+                                {m.status === "ACTIVE" ? "Ativo" : m.status === "EXPIRED" ? "Expirado" : "Cancelado"}
                               </Badge>
                             </TableCell>
                           </TableRow>
@@ -466,7 +547,7 @@ function AdminPage() {
                       ) : (
                         <TableRow className="hover:bg-transparent">
                           <TableCell colSpan={5} className="text-center py-12 text-text-secondary">
-                            Nenhum aluno real encontrado.
+                            {studentsEmptyMessage}
                           </TableCell>
                         </TableRow>
                       )}

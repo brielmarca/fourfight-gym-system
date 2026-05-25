@@ -3,6 +3,7 @@ package com.gym.controller.security;
 import com.gym.entity.User;
 import com.gym.repository.UserRepository;
 import com.gym.security.JwtUtil;
+import com.gym.service.AuthService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -45,6 +46,9 @@ class SecurityRegressionTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private AuthService authService;
+
     private static final String TEST_EMAIL = "test@test.com";
     private static final String ADMIN_EMAIL = "admin@test.com";
     private static final String CLIENT_PASSWORD = "Pass12345";
@@ -57,6 +61,8 @@ class SecurityRegressionTest {
 
     @BeforeEach
     void setUp() {
+        authService.unlockAccountLockout(ADMIN_EMAIL);
+
         userRepository.findByEmail(TEST_EMAIL).orElseGet(() -> {
             User user = new User();
             user.setId(UUID.randomUUID());
@@ -193,6 +199,56 @@ class SecurityRegressionTest {
                         .content(loginJson))
                 .andExpect(status().isUnauthorized())
                 .andExpect(header().doesNotExist("Set-Cookie"));
+    }
+
+    @Test
+    @DisplayName("Locked account returns lockout message")
+    void lockedAccountReturnsLockoutMessage() throws Exception {
+        for (int i = 0; i < 5; i++) {
+            String wrongPasswordJson = "{\"email\":\"" + ADMIN_EMAIL + "\",\"password\":\"wrong-password\"}";
+            mockMvc.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(wrongPasswordJson))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        String correctPasswordJson = "{\"email\":\"" + ADMIN_EMAIL + "\",\"password\":\"" + ADMIN_PASSWORD + "\"}";
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(correctPasswordJson))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Account temporarily locked due to too many failed attempts")));
+    }
+
+    @Test
+    @DisplayName("Unlock utility clears only lockout state")
+    void unlockUtilityClearsOnlyLockoutState() throws Exception {
+        for (int i = 0; i < 5; i++) {
+            String wrongPasswordJson = "{\"email\":\"" + ADMIN_EMAIL + "\",\"password\":\"wrong-password\"}";
+            mockMvc.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(wrongPasswordJson))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        String correctPasswordJson = "{\"email\":\"" + ADMIN_EMAIL + "\",\"password\":\"" + ADMIN_PASSWORD + "\"}";
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(correctPasswordJson))
+                .andExpect(status().isUnauthorized());
+
+        Assertions.assertTrue(authService.unlockAccountLockout("  " + ADMIN_EMAIL.toUpperCase() + "  "));
+
+        MvcResult result = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(correctPasswordJson))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String body = result.getResponse().getContentAsString();
+        String accessToken = extractField(body, "accessToken");
+        Assertions.assertNotNull(accessToken, "accessToken must be present");
+        Assertions.assertEquals("ADMIN", extractRole(accessToken));
     }
 
     @Test

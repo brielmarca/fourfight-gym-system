@@ -106,6 +106,9 @@ public class AuthService {
     @Transactional
     public TokenPairResponse login(LoginRequest request) {
         String normalizedEmail = normalizeEmail(request.email());
+        if (normalizedEmail == null || normalizedEmail.isBlank()) {
+            throw UnauthorizedException.invalidCredentials();
+        }
         String clientIp = getClientIp();
         String loginStatus = "UNAUTHORIZED";
         String role = "N/A";
@@ -236,6 +239,18 @@ public class AuthService {
 
     private void clearFailedLoginAttempts(String email) {
         failedLoginAttempts.remove(email);
+        lockedAccounts.remove(email);
+    }
+
+    public boolean unlockAccountLockout(String email) {
+        String normalizedEmail = normalizeEmail(email);
+        if (normalizedEmail == null || normalizedEmail.isBlank()) {
+            return false;
+        }
+
+        boolean hadFailedAttempts = failedLoginAttempts.remove(normalizedEmail) != null;
+        boolean hadLock = lockedAccounts.remove(normalizedEmail) != null;
+        return hadFailedAttempts || hadLock;
     }
 
     @Transactional

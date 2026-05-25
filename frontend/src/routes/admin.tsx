@@ -231,6 +231,34 @@ function AdminPage() {
   const premiumStudents = activeStudents.filter((m) => normalizeText(m.planName) === "premium");
   const preRegistrationsCount =
     preRegistrationsData?.totalElements ?? preRegistrationsData?.content?.length ?? 0;
+  const pendingRequestsCount = pendingReception.length;
+
+  const plansByName = new Map(plans.map((plan) => [normalizeText(plan.name), plan]));
+
+  const estimatedMonthlyRevenue = activeStudents.reduce((total, membership) => {
+    const plan = plansByName.get(normalizeText(membership.planName));
+    return total + (plan?.price ?? 0);
+  }, 0);
+
+  const estimatedMonthlyRevenueLabel = new Intl.NumberFormat("pt-PT", {
+    style: "currency",
+    currency: "EUR",
+  }).format(estimatedMonthlyRevenue);
+
+  const activePlanCounts = activeStudents.reduce((counts, membership) => {
+    const planName = membership.planName?.trim();
+    if (!planName) {
+      return counts;
+    }
+
+    counts.set(planName, (counts.get(planName) ?? 0) + 1);
+    return counts;
+  }, new Map<string, number>());
+
+  const topPlan =
+    activePlanCounts.size > 0
+      ? Array.from(activePlanCounts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "Sem dados"
+      : "Sem dados";
 
   const studentsByFilter =
     studentsFilter === "ACTIVE"
@@ -444,7 +472,7 @@ function AdminPage() {
           </div>
 
           <TabsContent value="dashboard">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               <Card
                 className="bg-surface border-border-subtle"
                 style={{ borderTop: "2px solid #22C55E" }}
@@ -503,18 +531,55 @@ function AdminPage() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs tracking-[0.2em] uppercase text-text-secondary flex items-center gap-2">
                     <CreditCard size={14} />
-                    Pedidos na Receção
+                    Pedidos Pendentes
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="font-display text-4xl tracking-wider" style={{ color: "#F5F5F5" }}>
-                    {pendingReception.length}
+                    {pendingRequestsCount}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card
+                className="bg-surface border-border-subtle"
+                style={{ borderTop: "2px solid #EAB308" }}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs tracking-[0.2em] uppercase text-text-secondary flex items-center gap-2">
+                    <CreditCard size={14} />
+                    Receita Mensal Estimada
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="font-display text-3xl tracking-wider" style={{ color: "#EAB308" }}>
+                    {estimatedMonthlyRevenueLabel}
+                  </p>
+                  <p className="mt-2 text-xs text-text-secondary">
+                    Estimativa baseada nas matrículas ativas e nos preços dos planos.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card
+                className="bg-surface border-border-subtle"
+                style={{ borderTop: "2px solid #3B82F6" }}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs tracking-[0.2em] uppercase text-text-secondary flex items-center gap-2">
+                    <Users size={14} />
+                    Plano Mais Vendido
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="font-display text-2xl tracking-wider" style={{ color: "#3B82F6" }}>
+                    {topPlan}
                   </p>
                 </CardContent>
               </Card>
             </div>
             <p className="mt-4 text-sm text-text-secondary">
-              Pré-inscrições são contactos/leads ainda não convertidos em alunos. Pedidos na receção são matrículas pendentes de aprovação.
+              Os valores financeiros são estimativas operacionais, não substituem faturação ou contabilidade.
             </p>
           </TabsContent>
 

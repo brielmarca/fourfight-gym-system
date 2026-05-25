@@ -71,26 +71,28 @@ function Navbar() {
               {user.role === "ADMIN" || user.role === "MANAGER" ? (
                 <Link
                   to="/admin"
-                  className="text-[11px] tracking-[0.15em] uppercase text-text-secondary hover:text-foreground transition-colors"
+                  className="flex items-center gap-2 text-[11px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors"
                 >
-                  Admin
+                  <User size={16} />
+                  ADMIN
                 </Link>
-              ) : null}
-              {user.role === "PROFESSOR" ? (
+              ) : user.role === "PROFESSOR" ? (
                 <Link
                   to="/professor"
-                  className="text-[11px] tracking-[0.15em] uppercase text-text-secondary hover:text-foreground transition-colors"
+                  className="flex items-center gap-2 text-[11px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors"
                 >
-                  Professor
+                  <User size={16} />
+                  PROFESSOR
                 </Link>
-              ) : null}
-              <Link
-                to={user.role === "PROFESSOR" ? "/professor" : "/student-area"}
-                className="flex items-center gap-2 text-[11px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors"
-              >
-                <User size={16} />
-                Minha Área
-              </Link>
+              ) : (
+                <Link
+                  to="/student-area"
+                  className="flex items-center gap-2 text-[11px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors"
+                >
+                  <User size={16} />
+                  Minha Área
+                </Link>
+              )}
               <button
                 onClick={handleLogout}
                 className="text-[11px] tracking-[0.15em] uppercase text-text-secondary hover:text-destructive transition-colors"
@@ -153,7 +155,7 @@ function Navbar() {
           ))}
           {isLoading ? null : isAuthenticated && user ? (
             <>
-              {(user.role === "ADMIN" || user.role === "MANAGER") && (
+              {user.role === "ADMIN" || user.role === "MANAGER" ? (
                 <Link
                   to="/admin"
                   onClick={() => setOpen(false)}
@@ -161,8 +163,7 @@ function Navbar() {
                 >
                   ADMIN
                 </Link>
-              )}
-              {user.role === "PROFESSOR" && (
+              ) : user.role === "PROFESSOR" ? (
                 <Link
                   to="/professor"
                   onClick={() => setOpen(false)}
@@ -170,14 +171,15 @@ function Navbar() {
                 >
                   PROFESSOR
                 </Link>
+              ) : (
+                <Link
+                  to="/student-area"
+                  onClick={() => setOpen(false)}
+                  className="font-display text-[28px] sm:text-[40px] leading-none tracking-wider text-center"
+                >
+                  MINHA ÁREA
+                </Link>
               )}
-              <Link
-                to={user.role === "PROFESSOR" ? "/professor" : "/student-area"}
-                onClick={() => setOpen(false)}
-                className="font-display text-[28px] sm:text-[40px] leading-none tracking-wider text-center"
-              >
-                MINHA ÁREA
-              </Link>
               <button
                 onClick={() => {
                   handleLogout();

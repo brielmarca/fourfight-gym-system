@@ -40,6 +40,7 @@ public class MembershipService {
         return membershipRepository.findByUserId(userId, pageable).map(MembershipResponse::from);
     }
 
+    @Transactional(readOnly = true)
     public MembershipResponse getByUserId(UUID userId) {
         List<Membership> memberships = membershipRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
         if (memberships.isEmpty()) {

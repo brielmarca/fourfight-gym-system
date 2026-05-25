@@ -8,6 +8,7 @@ const navigationLinks = [
   { label: "Horários", to: "/schedule" },
   { label: "Planos", to: "/plans" },
   { label: "Contacto", to: "/contact" },
+  { label: "Política de Privacidade", to: "/politica-privacidade" },
   { label: "Política de Cookies", to: "/politica-cookies" },
 ];
 

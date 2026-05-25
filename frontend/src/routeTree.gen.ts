@@ -13,6 +13,7 @@ import { Route as StudentAreaRouteImport } from './routes/student-area'
 import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProgramsRouteImport } from './routes/programs'
+import { Route as PoliticaPrivacidadeRouteImport } from './routes/politica-privacidade'
 import { Route as PoliticaCookiesRouteImport } from './routes/politica-cookies'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as LoginRouteImport } from './routes/login'
@@ -47,6 +48,11 @@ const RegisterRoute = RegisterRouteImport.update({
 const ProgramsRoute = ProgramsRouteImport.update({
   id: '/programs',
   path: '/programs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PoliticaPrivacidadeRoute = PoliticaPrivacidadeRouteImport.update({
+  id: '/politica-privacidade',
+  path: '/politica-privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PoliticaCookiesRoute = PoliticaCookiesRouteImport.update({
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/plans': typeof PlansRoute
   '/politica-cookies': typeof PoliticaCookiesRoute
+  '/politica-privacidade': typeof PoliticaPrivacidadeRoute
   '/programs': typeof ProgramsRoute
   '/register': typeof RegisterRoute
   '/schedule': typeof ScheduleRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/plans': typeof PlansRoute
   '/politica-cookies': typeof PoliticaCookiesRoute
+  '/politica-privacidade': typeof PoliticaPrivacidadeRoute
   '/programs': typeof ProgramsRoute
   '/register': typeof RegisterRoute
   '/schedule': typeof ScheduleRoute
@@ -177,6 +185,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/plans': typeof PlansRoute
   '/politica-cookies': typeof PoliticaCookiesRoute
+  '/politica-privacidade': typeof PoliticaPrivacidadeRoute
   '/programs': typeof ProgramsRoute
   '/register': typeof RegisterRoute
   '/schedule': typeof ScheduleRoute
@@ -200,6 +209,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/plans'
     | '/politica-cookies'
+    | '/politica-privacidade'
     | '/programs'
     | '/register'
     | '/schedule'
@@ -221,6 +231,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/plans'
     | '/politica-cookies'
+    | '/politica-privacidade'
     | '/programs'
     | '/register'
     | '/schedule'
@@ -242,6 +253,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/plans'
     | '/politica-cookies'
+    | '/politica-privacidade'
     | '/programs'
     | '/register'
     | '/schedule'
@@ -264,6 +276,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PlansRoute: typeof PlansRoute
   PoliticaCookiesRoute: typeof PoliticaCookiesRoute
+  PoliticaPrivacidadeRoute: typeof PoliticaPrivacidadeRoute
   ProgramsRoute: typeof ProgramsRoute
   RegisterRoute: typeof RegisterRoute
   ScheduleRoute: typeof ScheduleRoute
@@ -305,6 +318,13 @@ declare module '@tanstack/react-router' {
       path: '/programs'
       fullPath: '/programs'
       preLoaderRoute: typeof ProgramsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/politica-privacidade': {
+      id: '/politica-privacidade'
+      path: '/politica-privacidade'
+      fullPath: '/politica-privacidade'
+      preLoaderRoute: typeof PoliticaPrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/politica-cookies': {
@@ -437,6 +457,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PlansRoute: PlansRoute,
   PoliticaCookiesRoute: PoliticaCookiesRoute,
+  PoliticaPrivacidadeRoute: PoliticaPrivacidadeRoute,
   ProgramsRoute: ProgramsRoute,
   RegisterRoute: RegisterRoute,
   ScheduleRoute: ScheduleRoute,

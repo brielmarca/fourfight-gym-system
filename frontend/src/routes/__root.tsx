@@ -6,7 +6,16 @@ import { CookieConsentBanner } from "../components/privacy/CookieConsentBanner";
 import { AuthProvider } from "../contexts/auth-context";
 import { QueryProvider } from "../providers/query-provider";
 
-const publicFooterRoutes = new Set(["/", "/about", "/programs", "/schedule", "/plans", "/contact", "/politica-cookies"]);
+const publicFooterRoutes = new Set([
+  "/",
+  "/about",
+  "/programs",
+  "/schedule",
+  "/plans",
+  "/contact",
+  "/politica-cookies",
+  "/politica-privacidade",
+]);
 
 function shouldShowFooter(pathname: string) {
   const normalizedPath = pathname.length > 1 ? pathname.replace(/\/$/, "") : pathname;

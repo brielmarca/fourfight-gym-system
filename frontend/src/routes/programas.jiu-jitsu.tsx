@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -91,6 +91,10 @@ function JiuJitsuPage() {
     [schedule],
   );
 
+  useEffect(() => {
+    setIsOpen(false);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
@@ -110,6 +114,28 @@ function JiuJitsuPage() {
 
   return (
     <main className="bg-background text-foreground min-h-screen">
+      <nav className="sticky top-0 z-40 border-b border-border-subtle bg-background/95 backdrop-blur">
+        <div className="mx-auto max-w-6xl px-4 py-3">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+            <Button asChild variant="outline" size="sm" className="border-border-subtle">
+              <Link to="/">Início</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="border-border-subtle">
+              <Link to="/programs">Programas</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="border-border-subtle">
+              <Link to="/schedule">Horários</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="border-border-subtle">
+              <Link to="/plans">Planos</Link>
+            </Button>
+            <Button asChild className="btn-red" size="sm">
+              <Link to="/login">Login</Link>
+            </Button>
+          </div>
+        </div>
+      </nav>
+
       <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img

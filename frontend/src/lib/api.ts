@@ -475,6 +475,26 @@ export const api = {
     getMyProfessorStudents: () => request<AssignedProfessorStudent[]>("/professor/students"),
   },
 
+  videoLessons: {
+    getManage: () => request<VideoLesson[]>("/video-lessons/manage"),
+    create: (payload: UpsertVideoLessonRequest) =>
+      request<VideoLesson>("/video-lessons", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    update: (id: string, payload: UpsertVideoLessonRequest) =>
+      request<VideoLesson>(`/video-lessons/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      }),
+    deactivate: (id: string) =>
+      request<VideoLesson>(`/video-lessons/${id}/deactivate`, {
+        method: "PATCH",
+      }),
+    getMy: () => request<VideoLesson[]>("/video-lessons/my"),
+    getMyById: (id: string) => request<VideoLesson>(`/video-lessons/my/${id}`),
+  },
+
   classEnrollments: {
     getAll: async () => [] as ClassEnrollment[],
   },
@@ -592,4 +612,6 @@ export type {
   PromoteProfessorRequest,
   UpdateProfessorModalitiesRequest,
   CreateProfessorAssignmentRequest,
+  VideoLesson,
+  UpsertVideoLessonRequest,
 } from "@/types/api";

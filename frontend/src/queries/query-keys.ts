@@ -67,6 +67,12 @@ const queryKeys = {
     assignments: () => [...queryKeys.professors.all, "assignments"] as const,
     myStudents: () => [...queryKeys.professors.all, "my-students"] as const,
   },
+  videoLessons: {
+    all: ["videoLessons"] as const,
+    manage: () => [...queryKeys.videoLessons.all, "manage"] as const,
+    my: () => [...queryKeys.videoLessons.all, "my"] as const,
+    detail: (id: string) => [...queryKeys.videoLessons.all, "detail", id] as const,
+  },
 };
 
 export default queryKeys;

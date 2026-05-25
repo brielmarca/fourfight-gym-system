@@ -2,9 +2,13 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Loader2, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { isAuthenticated } from "@/lib/api";
-import { useMyProfessorStudents } from "@/queries";
+import { useMyProfessorStudents, useManageVideoLessons, useCreateVideoLesson, useDeactivateVideoLesson } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -34,6 +38,11 @@ function ProfessorPage() {
   const navigate = Route.useNavigate();
   const { user, hasRole, logout } = useAuth();
   const { data: students = [], isLoading } = useMyProfessorStudents(hasRole(["PROFESSOR"]));
+  const { data: lessons = [], isLoading: lessonsLoading } = useManageVideoLessons(hasRole(["PROFESSOR"]));
+  const createVideoLesson = useCreateVideoLesson();
+  const deactivateVideoLesson = useDeactivateVideoLesson();
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [form, setForm] = useState({ title: "", description: "", modality: "JIU_JITSU" as const, videoUrl: "", minimumPlanRank: 1 as 1 | 2 | 3 });
 
   if (user && hasRole(["ADMIN", "MANAGER"])) {
     void navigate({ to: "/admin", replace: true });
@@ -118,6 +127,65 @@ function ProfessorPage() {
             )}
           </CardContent>
         </Card>
+
+        <div className="mt-6 grid gap-4">
+          <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>
+            <CardHeader>
+              <CardTitle className="text-xs tracking-[0.2em] uppercase">Videoaulas</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid md:grid-cols-2 gap-3">
+                <Input placeholder="Titulo" value={form.title} onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))} />
+                <Select value={form.modality} onValueChange={(value) => setForm((prev) => ({ ...prev, modality: value as typeof form.modality }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="JIU_JITSU">Jiu-Jitsu</SelectItem>
+                    <SelectItem value="BOXE_KICKBOXING">Boxe/Kickboxing</SelectItem>
+                    <SelectItem value="CAPOEIRA">Capoeira</SelectItem>
+                    <SelectItem value="MMA">MMA</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Input placeholder="Link do video" value={form.videoUrl} onChange={(event) => setForm((prev) => ({ ...prev, videoUrl: event.target.value }))} className="md:col-span-2" />
+                <Select value={String(form.minimumPlanRank)} onValueChange={(value) => setForm((prev) => ({ ...prev, minimumPlanRank: Number(value) as 1 | 2 | 3 }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="1">Basic</SelectItem><SelectItem value="2">Standard</SelectItem><SelectItem value="3">Premium</SelectItem></SelectContent>
+                </Select>
+              </div>
+              <Textarea placeholder="Descricao" value={form.description} onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))} />
+              <Button
+                onClick={async () => {
+                  setFeedback(null);
+                  try {
+                    await createVideoLesson.mutateAsync(form);
+                    setForm({ title: "", description: "", modality: "JIU_JITSU", videoUrl: "", minimumPlanRank: 1 });
+                    setFeedback("Videoaula guardada com sucesso.");
+                  } catch (error) {
+                    setFeedback(error instanceof Error ? error.message : "Erro ao guardar videoaula.");
+                  }
+                }}
+                disabled={createVideoLesson.isPending}
+              >
+                {createVideoLesson.isPending ? "A guardar..." : "Guardar"}
+              </Button>
+              {feedback && <p className="text-sm text-text-secondary">{feedback}</p>}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>
+            <CardHeader><CardTitle className="text-xs tracking-[0.2em] uppercase">Minhas videoaulas</CardTitle></CardHeader>
+            <CardContent className="space-y-2">
+              {lessonsLoading ? <p className="text-text-secondary">A carregar videoaulas...</p> : lessons.length === 0 ? <p className="text-text-secondary">Ainda nao tens videoaulas.</p> : lessons.map((lesson) => (
+                <div key={lesson.id} className="flex items-center justify-between gap-3 border border-border-subtle rounded-md p-3">
+                  <div>
+                    <p className="font-semibold">{lesson.title}</p>
+                    <p className="text-xs text-text-secondary">{modalityLabels[lesson.modality]} - Plano minimo {lesson.minimumPlanRank}</p>
+                  </div>
+                  {lesson.active && <Button size="sm" variant="destructive" onClick={() => deactivateVideoLesson.mutate(lesson.id)} disabled={deactivateVideoLesson.isPending}>Desativar</Button>}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       </main>
     </div>
   );

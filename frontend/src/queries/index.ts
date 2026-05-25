@@ -76,3 +76,11 @@ export {
   useDeactivateProfessorAssignment,
   useMyProfessorStudents,
 } from "./professors";
+export {
+  useManageVideoLessons,
+  useCreateVideoLesson,
+  useUpdateVideoLesson,
+  useDeactivateVideoLesson,
+  useMyVideoLessons,
+  useMyVideoLesson,
+} from "./video-lessons";

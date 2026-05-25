@@ -6,6 +6,7 @@ import {
   useMyMembership,
   useMyMonthlyAttendance,
   useMyEnrollments,
+  useMyVideoLessons,
 } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,6 +43,7 @@ function StudentAreaPage() {
   const { data: membership, isLoading: membershipLoading } = useMyMembership();
   const { data: monthlyAttendance = 0, isLoading: attendanceLoading } = useMyMonthlyAttendance();
   const { data: enrollments = [], isLoading: enrollmentsLoading } = useMyEnrollments();
+  const { data: videoLessons = [], isLoading: videoLessonsLoading } = useMyVideoLessons(true);
 
   const loading = profileLoading || membershipLoading || attendanceLoading || enrollmentsLoading;
 
@@ -217,6 +219,12 @@ function StudentAreaPage() {
                 className="tracking-[0.15em] uppercase text-xs rounded-sm"
               >
                 Minha Mensalidade
+              </TabsTrigger>
+              <TabsTrigger
+                value="video-lessons"
+                className="tracking-[0.15em] uppercase text-xs rounded-sm"
+              >
+                Videoaulas
               </TabsTrigger>
             </TabsList>
           </div>
@@ -410,6 +418,54 @@ function StudentAreaPage() {
                     <Link to="/plans">
                       <Button className="btn-red tracking-[0.2em] uppercase">Ver Planos</Button>
                     </Link>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="video-lessons">
+            <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>
+              <CardHeader>
+                <CardTitle className="text-xs tracking-[0.2em] uppercase">Videoaulas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {videoLessonsLoading ? (
+                  <p className="text-text-secondary">A carregar videoaulas...</p>
+                ) : videoLessons.length === 0 ? (
+                  <EmptyState icon={Target} title="Sem videoaulas disponíveis" description="Quando houver conteúdo para o teu plano ele aparece aqui." />
+                ) : (
+                  <div className="space-y-6">
+                    {(["JIU_JITSU", "BOXE_KICKBOXING", "CAPOEIRA", "MMA"] as const).map((modality) => {
+                      const byModality = videoLessons.filter((lesson) => lesson.modality === modality);
+                      if (byModality.length === 0) return null;
+                      const label = modality === "JIU_JITSU" ? "Jiu-Jitsu" : modality === "BOXE_KICKBOXING" ? "Boxe/Kickboxing" : modality === "CAPOEIRA" ? "Capoeira" : "MMA";
+                      return (
+                        <div key={modality} className="space-y-3">
+                          <h3 className="text-sm tracking-[0.15em] uppercase text-text-secondary">{label}</h3>
+                          <div className="grid md:grid-cols-2 gap-4">
+                            {byModality.map((lesson) => (
+                              <Card key={lesson.id} className="bg-surface-2 border-border-subtle">
+                                <CardHeader>
+                                  <CardTitle className="text-base">{lesson.title}</CardTitle>
+                                  <p className="text-xs text-text-secondary">Plano mínimo: {lesson.minimumPlanRank === 1 ? "Basic" : lesson.minimumPlanRank === 2 ? "Standard" : "Premium"}</p>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                  {lesson.description && <p className="text-sm text-text-secondary">{lesson.description}</p>}
+                                  {lesson.embedUrl ? (
+                                    <div className="aspect-video rounded-md overflow-hidden border border-border-subtle">
+                                      <iframe title={lesson.title} src={lesson.embedUrl} className="w-full h-full" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
+                                    </div>
+                                  ) : (
+                                    <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="text-primary underline text-sm">Abrir vídeo</a>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>

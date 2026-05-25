@@ -23,6 +23,10 @@ import {
   useProfessorAssignments,
   useCreateProfessorAssignment,
   useDeactivateProfessorAssignment,
+  useManageVideoLessons,
+  useCreateVideoLesson,
+  useUpdateVideoLesson,
+  useDeactivateVideoLesson,
 } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -74,6 +78,10 @@ function AdminPage() {
   const createProfessorAssignment = useCreateProfessorAssignment();
   const deactivateProfessorAssignment = useDeactivateProfessorAssignment();
   const createSchedule = useCreateScheduleEntry();
+  const { data: manageVideoLessons = [], isLoading: videoLessonsLoading } = useManageVideoLessons(canManageProfessors);
+  const createVideoLesson = useCreateVideoLesson();
+  const updateVideoLesson = useUpdateVideoLesson();
+  const deactivateVideoLesson = useDeactivateVideoLesson();
   const updateSchedule = useUpdateScheduleEntry();
   const deactivateSchedule = useDeactivateScheduleEntry();
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -92,6 +100,16 @@ function AdminPage() {
   const [assignmentNotes, setAssignmentNotes] = useState("");
   const [professorFeedback, setProfessorFeedback] = useState<string | null>(null);
   const [assignmentFeedback, setAssignmentFeedback] = useState<string | null>(null);
+  const [editingVideoLessonId, setEditingVideoLessonId] = useState<string | null>(null);
+  const [videoLessonFeedback, setVideoLessonFeedback] = useState<string | null>(null);
+  const [videoForm, setVideoForm] = useState({
+    title: "",
+    description: "",
+    modality: "JIU_JITSU" as Modality,
+    videoUrl: "",
+    minimumPlanRank: 1 as 1 | 2 | 3,
+    active: true,
+  });
   const importPreRegistrations = useImportPreRegistrationsCsv();
   const [form, setForm] = useState<CreateScheduleEntryRequest>({
     title: "",
@@ -450,6 +468,14 @@ function AdminPage() {
                   Professores
                 </TabsTrigger>
               )}
+              {canManageProfessors && (
+                <TabsTrigger
+                  value="video-lessons"
+                  className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white rounded-sm"
+                >
+                  Videoaulas
+                </TabsTrigger>
+              )}
               <TabsTrigger
                 value="plans"
                 className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white rounded-sm"
@@ -764,6 +790,102 @@ function AdminPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {canManageProfessors && (
+            <TabsContent value="video-lessons">
+              <div className="space-y-4">
+                <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>
+                  <CardHeader>
+                    <CardTitle className="text-xs tracking-[0.2em] uppercase">Nova videoaula</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <Input placeholder="Titulo" value={videoForm.title} onChange={(event) => setVideoForm((prev) => ({ ...prev, title: event.target.value }))} />
+                      <Select value={videoForm.modality} onValueChange={(value) => setVideoForm((prev) => ({ ...prev, modality: value as Modality }))}>
+                        <SelectTrigger><SelectValue placeholder="Modalidade" /></SelectTrigger>
+                        <SelectContent>{modalityOptions.map((modality) => <SelectItem key={modality} value={modality}>{modalityLabels[modality]}</SelectItem>)}</SelectContent>
+                      </Select>
+                      <Input placeholder="Link do video" value={videoForm.videoUrl} onChange={(event) => setVideoForm((prev) => ({ ...prev, videoUrl: event.target.value }))} className="md:col-span-2" />
+                      <Select value={String(videoForm.minimumPlanRank)} onValueChange={(value) => setVideoForm((prev) => ({ ...prev, minimumPlanRank: Number(value) as 1 | 2 | 3 }))}>
+                        <SelectTrigger><SelectValue placeholder="Plano minimo" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">Basic</SelectItem>
+                          <SelectItem value="2">Standard</SelectItem>
+                          <SelectItem value="3">Premium</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <div className="flex items-center gap-2"><Switch checked={videoForm.active} onCheckedChange={(value) => setVideoForm((prev) => ({ ...prev, active: value }))} /><span className="text-sm">Ativo</span></div>
+                    </div>
+                    <Textarea placeholder="Descricao" value={videoForm.description} onChange={(event) => setVideoForm((prev) => ({ ...prev, description: event.target.value }))} />
+                    <Button
+                      onClick={async () => {
+                        setVideoLessonFeedback(null);
+                        try {
+                          const payload = {
+                            title: videoForm.title,
+                            description: videoForm.description,
+                            modality: videoForm.modality,
+                            videoUrl: videoForm.videoUrl,
+                            minimumPlanRank: videoForm.minimumPlanRank,
+                            active: videoForm.active,
+                          };
+                          if (editingVideoLessonId) {
+                            await updateVideoLesson.mutateAsync({ id: editingVideoLessonId, payload });
+                            setVideoLessonFeedback("Videoaula atualizada com sucesso.");
+                          } else {
+                            await createVideoLesson.mutateAsync(payload);
+                            setVideoLessonFeedback("Videoaula criada com sucesso.");
+                          }
+                          setEditingVideoLessonId(null);
+                          setVideoForm({ title: "", description: "", modality: "JIU_JITSU", videoUrl: "", minimumPlanRank: 1, active: true });
+                        } catch (error) {
+                          setVideoLessonFeedback(error instanceof Error ? error.message : "Erro ao guardar videoaula.");
+                        }
+                      }}
+                      disabled={createVideoLesson.isPending || updateVideoLesson.isPending}
+                    >
+                      {createVideoLesson.isPending || updateVideoLesson.isPending ? "A guardar..." : "Guardar"}
+                    </Button>
+                    {videoLessonFeedback && <p className="text-sm text-text-secondary">{videoLessonFeedback}</p>}
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>
+                  <CardHeader>
+                    <CardTitle className="text-xs tracking-[0.2em] uppercase">Videoaulas</CardTitle>
+                  </CardHeader>
+                  <CardContent className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow><TableHead>Titulo</TableHead><TableHead>Modalidade</TableHead><TableHead>Plano minimo</TableHead><TableHead>Professor</TableHead><TableHead>Ativo</TableHead><TableHead>Acoes</TableHead></TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {videoLessonsLoading ? (
+                          <TableRow><TableCell colSpan={6}>A carregar videoaulas...</TableCell></TableRow>
+                        ) : manageVideoLessons.length === 0 ? (
+                          <TableRow><TableCell colSpan={6}>Sem videoaulas.</TableCell></TableRow>
+                        ) : (
+                          manageVideoLessons.map((lesson) => (
+                            <TableRow key={lesson.id}>
+                              <TableCell>{lesson.title}</TableCell>
+                              <TableCell>{modalityLabels[lesson.modality] ?? lesson.modality}</TableCell>
+                              <TableCell>{lesson.minimumPlanRank === 1 ? "Basic" : lesson.minimumPlanRank === 2 ? "Standard" : "Premium"}</TableCell>
+                              <TableCell>{lesson.professorName || lesson.createdByName}</TableCell>
+                              <TableCell>{lesson.active ? "Sim" : "Nao"}</TableCell>
+                              <TableCell className="space-x-2">
+                                <Button size="sm" variant="outline" onClick={() => { setEditingVideoLessonId(lesson.id); setVideoForm({ title: lesson.title, description: lesson.description ?? "", modality: lesson.modality, videoUrl: lesson.videoUrl, minimumPlanRank: lesson.minimumPlanRank, active: lesson.active }); }}>Editar</Button>
+                                {lesson.active && <Button size="sm" variant="destructive" onClick={() => deactivateVideoLesson.mutate(lesson.id)} disabled={deactivateVideoLesson.isPending}>Desativar</Button>}
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          )}
 
           {canManageProfessors && (
             <TabsContent value="professors">

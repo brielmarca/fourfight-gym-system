@@ -50,6 +50,11 @@ function StudentAreaPage() {
     return null;
   }
 
+  if (user && hasRole(["PROFESSOR"])) {
+    void navigate({ to: "/professor", replace: true });
+    return null;
+  }
+
   const handleLogout = () => {
     logout();
     void navigate({ to: "/", replace: true });

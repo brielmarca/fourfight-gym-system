@@ -49,6 +49,8 @@ function LoginPage() {
 
     if (user?.role === "ADMIN" || user?.role === "MANAGER") {
       navigate({ to: "/admin", replace: true });
+    } else if (user?.role === "PROFESSOR") {
+      navigate({ to: "/professor", replace: true });
     } else {
       navigate({ to: "/student-area", replace: true });
     }
@@ -69,6 +71,8 @@ function LoginPage() {
         navigate({ to: redirect, replace: true });
       } else if (user?.role === "ADMIN" || user?.role === "MANAGER") {
         navigate({ to: "/admin", replace: true });
+      } else if (user?.role === "PROFESSOR") {
+        navigate({ to: "/professor", replace: true });
       } else {
         navigate({ to: "/student-area", replace: true });
       }

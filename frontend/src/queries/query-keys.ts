@@ -61,6 +61,12 @@ const queryKeys = {
     all: ["graduations"] as const,
     list: () => [...queryKeys.graduations.all, "list"] as const,
   },
+  professors: {
+    all: ["professors"] as const,
+    list: () => [...queryKeys.professors.all, "list"] as const,
+    assignments: () => [...queryKeys.professors.all, "assignments"] as const,
+    myStudents: () => [...queryKeys.professors.all, "my-students"] as const,
+  },
 };
 
 export default queryKeys;

@@ -17,6 +17,12 @@ import {
   usePreRegistrationDetail,
   useImportPreRegistrationsCsv,
   useUpdateAdminGraduation,
+  useProfessors,
+  usePromoteProfessor,
+  useUpdateProfessorModalities,
+  useProfessorAssignments,
+  useCreateProfessorAssignment,
+  useDeactivateProfessorAssignment,
 } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,8 +40,9 @@ import { Loader2, LogOut, Users, Shield, CreditCard, Clock } from "lucide-react"
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import type { CreateScheduleEntryRequest } from "@/types";
+import type { CreateScheduleEntryRequest, Modality } from "@/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: () => {
@@ -54,11 +61,18 @@ function AdminPage() {
   const { data: membershipsData, isLoading: membershipsLoading, error: membershipsError } = useMemberships(0, 50);
   const { data: plans = [], isLoading: plansLoading } = usePlans();
   const canManageReception = hasRole(["ADMIN"]);
+  const canManageProfessors = hasRole(["ADMIN", "MANAGER"]);
   const { data: pendingReception = [], isLoading: pendingReceptionLoading } =
     usePendingReceptionRequests(canManageReception);
   const approveReception = useApproveReceptionRequest();
   const rejectReception = useRejectReceptionRequest();
   const { data: adminSchedule = [], isLoading: adminScheduleLoading } = useAdminSchedule(hasRole(["ADMIN"]));
+  const { data: professors = [], isLoading: professorsLoading } = useProfessors(canManageProfessors);
+  const { data: professorAssignments = [], isLoading: assignmentsLoading } = useProfessorAssignments(canManageProfessors);
+  const promoteProfessor = usePromoteProfessor();
+  const updateProfessorModalities = useUpdateProfessorModalities();
+  const createProfessorAssignment = useCreateProfessorAssignment();
+  const deactivateProfessorAssignment = useDeactivateProfessorAssignment();
   const createSchedule = useCreateScheduleEntry();
   const updateSchedule = useUpdateScheduleEntry();
   const deactivateSchedule = useDeactivateScheduleEntry();
@@ -70,6 +84,14 @@ function AdminPage() {
   const [selectedLevels, setSelectedLevels] = useState<Record<string, string>>({});
   const [importFeedback, setImportFeedback] = useState<string>("");
   const [formError, setFormError] = useState<string | null>(null);
+  const [professorEmail, setProfessorEmail] = useState("");
+  const [selectedProfessorModalities, setSelectedProfessorModalities] = useState<Modality[]>([]);
+  const [assignmentProfessorId, setAssignmentProfessorId] = useState<string>("");
+  const [assignmentStudentId, setAssignmentStudentId] = useState<string>("");
+  const [assignmentModality, setAssignmentModality] = useState<Modality>("JIU_JITSU");
+  const [assignmentNotes, setAssignmentNotes] = useState("");
+  const [professorFeedback, setProfessorFeedback] = useState<string | null>(null);
+  const [assignmentFeedback, setAssignmentFeedback] = useState<string | null>(null);
   const importPreRegistrations = useImportPreRegistrationsCsv();
   const [form, setForm] = useState<CreateScheduleEntryRequest>({
     title: "",
@@ -112,6 +134,7 @@ function AdminPage() {
 
   type MembershipItem = {
     id: string;
+    userId: string;
     userName: string;
     userEmail: string;
     planName: string;
@@ -233,6 +256,16 @@ function AdminPage() {
     CAPOEIRA: "Capoeira",
     MMA: "MMA",
   };
+  const modalityOptions: Modality[] = ["JIU_JITSU", "BOXE_KICKBOXING", "CAPOEIRA", "MMA"];
+
+  const toggleProfessorModality = (modality: Modality, checked: boolean) => {
+    setSelectedProfessorModalities((prev) => {
+      if (checked && !prev.includes(modality)) {
+        return [...prev, modality];
+      }
+      return prev.filter((item) => item !== modality);
+    });
+  };
 
   const visibleGraduations = graduations.filter((item) =>
     graduationFilter === "ALL" ? true : item.modality === graduationFilter,
@@ -274,6 +307,44 @@ function AdminPage() {
     } catch (error) {
       const message = error instanceof Error ? error.message : "Falha ao importar CSV.";
       setImportFeedback(message);
+    }
+  };
+
+  const handlePromoteProfessor = async () => {
+    if (!professorEmail.trim() || selectedProfessorModalities.length === 0) {
+      return;
+    }
+    setProfessorFeedback(null);
+    try {
+      await promoteProfessor.mutateAsync({
+        email: professorEmail.trim(),
+        modalities: selectedProfessorModalities,
+      });
+      setProfessorEmail("");
+      setSelectedProfessorModalities([]);
+      setProfessorFeedback("Professor guardado com sucesso.");
+    } catch (error) {
+      setProfessorFeedback(error instanceof Error ? error.message : "Erro ao guardar professor.");
+    }
+  };
+
+  const handleCreateAssignment = async () => {
+    if (!assignmentProfessorId || !assignmentStudentId) {
+      return;
+    }
+    setAssignmentFeedback(null);
+    try {
+      await createProfessorAssignment.mutateAsync({
+        professorId: assignmentProfessorId,
+        studentId: assignmentStudentId,
+        modality: assignmentModality,
+        notes: assignmentNotes.trim() || undefined,
+      });
+      setAssignmentStudentId("");
+      setAssignmentNotes("");
+      setAssignmentFeedback("Atribuicao criada com sucesso.");
+    } catch (error) {
+      setAssignmentFeedback(error instanceof Error ? error.message : "Erro ao atribuir aluno.");
     }
   };
 
@@ -331,6 +402,14 @@ function AdminPage() {
               >
                 Graduação
               </TabsTrigger>
+              {canManageProfessors && (
+                <TabsTrigger
+                  value="professors"
+                  className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white rounded-sm"
+                >
+                  Professores
+                </TabsTrigger>
+              )}
               <TabsTrigger
                 value="plans"
                 className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white rounded-sm"
@@ -595,6 +674,170 @@ function AdminPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {canManageProfessors && (
+            <TabsContent value="professors">
+              <div className="space-y-4">
+                <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>
+                  <CardHeader>
+                    <CardTitle className="text-xs tracking-[0.2em] uppercase">Guardar professor</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Input
+                      placeholder="email@exemplo.com"
+                      value={professorEmail}
+                      onChange={(event) => setProfessorEmail(event.target.value)}
+                    />
+                    <div className="grid sm:grid-cols-2 gap-2">
+                      {modalityOptions.map((modality) => (
+                        <label key={modality} className="flex items-center gap-2 text-sm">
+                          <Checkbox
+                            checked={selectedProfessorModalities.includes(modality)}
+                            onCheckedChange={(checked) => toggleProfessorModality(modality, checked === true)}
+                          />
+                          {modalityLabels[modality]}
+                        </label>
+                      ))}
+                    </div>
+                    <Button
+                      onClick={() => void handlePromoteProfessor()}
+                      disabled={promoteProfessor.isPending || !professorEmail.trim() || selectedProfessorModalities.length === 0}
+                    >
+                      {promoteProfessor.isPending ? "A guardar..." : "Guardar professor"}
+                    </Button>
+                    {professorFeedback && <p className="text-sm text-text-secondary">{professorFeedback}</p>}
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>
+                  <CardHeader>
+                    <CardTitle className="text-xs tracking-[0.2em] uppercase">Professores</CardTitle>
+                  </CardHeader>
+                  <CardContent className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow><TableHead>Nome</TableHead><TableHead>Email</TableHead><TableHead>Modalidades</TableHead><TableHead>Ações</TableHead></TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {professorsLoading ? (
+                          <TableRow><TableCell colSpan={4}>A carregar professores...</TableCell></TableRow>
+                        ) : professors.length === 0 ? (
+                          <TableRow><TableCell colSpan={4}>Sem professores.</TableCell></TableRow>
+                        ) : (
+                          professors.map((professor) => (
+                            <TableRow key={professor.id}>
+                              <TableCell>{professor.name}</TableCell>
+                              <TableCell>{professor.email}</TableCell>
+                              <TableCell>{professor.modalities.map((item) => modalityLabels[item] ?? item).join(", ")}</TableCell>
+                              <TableCell>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={updateProfessorModalities.isPending}
+                                  onClick={() =>
+                                    updateProfessorModalities.mutate({
+                                      professorId: professor.id,
+                                      payload: { modalities: professor.modalities.length > 0 ? professor.modalities : ["JIU_JITSU"] },
+                                    })
+                                  }
+                                >
+                                  Atualizar modalidades
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>
+                  <CardHeader>
+                    <CardTitle className="text-xs tracking-[0.2em] uppercase">Atribuir aluno</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <Select value={assignmentProfessorId} onValueChange={setAssignmentProfessorId}>
+                        <SelectTrigger><SelectValue placeholder="Professor" /></SelectTrigger>
+                        <SelectContent>
+                          {professors.map((professor) => (
+                            <SelectItem key={professor.id} value={professor.id}>{professor.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Select value={assignmentStudentId} onValueChange={setAssignmentStudentId}>
+                        <SelectTrigger><SelectValue placeholder="Aluno" /></SelectTrigger>
+                        <SelectContent>
+                          {activeStudents.map((student) => (
+                            <SelectItem key={student.userId} value={student.userId}>{student.userName} ({student.userEmail})</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Select value={assignmentModality} onValueChange={(value) => setAssignmentModality(value as Modality)}>
+                        <SelectTrigger><SelectValue placeholder="Modalidade" /></SelectTrigger>
+                        <SelectContent>
+                          {modalityOptions.map((modality) => (
+                            <SelectItem key={modality} value={modality}>{modalityLabels[modality]}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Textarea placeholder="Notas (opcional)" value={assignmentNotes} onChange={(event) => setAssignmentNotes(event.target.value)} />
+                    <Button
+                      onClick={() => void handleCreateAssignment()}
+                      disabled={createProfessorAssignment.isPending || !assignmentProfessorId || !assignmentStudentId}
+                    >
+                      {createProfessorAssignment.isPending ? "A atribuir..." : "Atribuir aluno"}
+                    </Button>
+                    {assignmentFeedback && <p className="text-sm text-text-secondary">{assignmentFeedback}</p>}
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>
+                  <CardHeader>
+                    <CardTitle className="text-xs tracking-[0.2em] uppercase">Atribuições</CardTitle>
+                  </CardHeader>
+                  <CardContent className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow><TableHead>Professor</TableHead><TableHead>Aluno</TableHead><TableHead>Modalidade</TableHead><TableHead>Notas</TableHead><TableHead>Estado</TableHead><TableHead>Ações</TableHead></TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {assignmentsLoading ? (
+                          <TableRow><TableCell colSpan={6}>A carregar atribuições...</TableCell></TableRow>
+                        ) : professorAssignments.length === 0 ? (
+                          <TableRow><TableCell colSpan={6}>Sem atribuições.</TableCell></TableRow>
+                        ) : (
+                          professorAssignments.map((assignment) => (
+                            <TableRow key={assignment.id}>
+                              <TableCell>{assignment.professorName}</TableCell>
+                              <TableCell>{assignment.studentName}</TableCell>
+                              <TableCell>{modalityLabels[assignment.modality] ?? assignment.modality}</TableCell>
+                              <TableCell>{assignment.notes || "-"}</TableCell>
+                              <TableCell>{assignment.active ? "Ativa" : "Desativada"}</TableCell>
+                              <TableCell>
+                                {assignment.active && (
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    disabled={deactivateProfessorAssignment.isPending}
+                                    onClick={() => deactivateProfessorAssignment.mutate(assignment.id)}
+                                  >
+                                    Desativar atribuição
+                                  </Button>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          )}
 
           <TabsContent value="pre-registrations">
             <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>

@@ -448,6 +448,31 @@ export const api = {
         method: "PUT",
         body: JSON.stringify(data),
       }),
+    getProfessors: () => request<ProfessorSummary[]>("/admin/professors"),
+    promoteProfessor: (payload: PromoteProfessorRequest) =>
+      request<ProfessorSummary>("/admin/professors", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    updateProfessorModalities: (professorId: string, payload: UpdateProfessorModalitiesRequest) =>
+      request<ProfessorSummary>(`/admin/professors/${professorId}/modalities`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      }),
+    getProfessorAssignments: () => request<ProfessorAssignment[]>("/admin/professor-assignments"),
+    createProfessorAssignment: (payload: CreateProfessorAssignmentRequest) =>
+      request<ProfessorAssignment>("/admin/professor-assignments", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    deactivateProfessorAssignment: (assignmentId: string) =>
+      request<void>(`/admin/professor-assignments/${assignmentId}/deactivate`, {
+        method: "PATCH",
+      }),
+  },
+
+  professor: {
+    getMyProfessorStudents: () => request<AssignedProfessorStudent[]>("/professor/students"),
   },
 
   classEnrollments: {
@@ -559,4 +584,12 @@ export type {
   UpdateScheduleEntryRequest,
   AdminPreRegistrationListItem,
   AdminPreRegistrationDetail,
+  UserRole,
+  Modality,
+  ProfessorSummary,
+  ProfessorAssignment,
+  AssignedProfessorStudent,
+  PromoteProfessorRequest,
+  UpdateProfessorModalitiesRequest,
+  CreateProfessorAssignmentRequest,
 } from "@/types/api";

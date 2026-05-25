@@ -76,8 +76,16 @@ function Navbar() {
                   Admin
                 </Link>
               ) : null}
+              {user.role === "PROFESSOR" ? (
+                <Link
+                  to="/professor"
+                  className="text-[11px] tracking-[0.15em] uppercase text-text-secondary hover:text-foreground transition-colors"
+                >
+                  Professor
+                </Link>
+              ) : null}
               <Link
-                to="/student-area"
+                to={user.role === "PROFESSOR" ? "/professor" : "/student-area"}
                 className="flex items-center gap-2 text-[11px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors"
               >
                 <User size={16} />
@@ -154,8 +162,17 @@ function Navbar() {
                   ADMIN
                 </Link>
               )}
+              {user.role === "PROFESSOR" && (
+                <Link
+                  to="/professor"
+                  onClick={() => setOpen(false)}
+                  className="font-display text-[28px] sm:text-[40px] leading-none tracking-wider text-primary text-center"
+                >
+                  PROFESSOR
+                </Link>
+              )}
               <Link
-                to="/student-area"
+                to={user.role === "PROFESSOR" ? "/professor" : "/student-area"}
                 onClick={() => setOpen(false)}
                 className="font-display text-[28px] sm:text-[40px] leading-none tracking-wider text-center"
               >

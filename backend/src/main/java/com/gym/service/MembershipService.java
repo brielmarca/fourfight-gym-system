@@ -1,6 +1,8 @@
 package com.gym.service;
 
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,11 +41,21 @@ public class MembershipService {
     }
 
     public MembershipResponse getByUserId(UUID userId) {
-        return membershipRepository.findByUserIdAndStatus(userId, Membership.MembershipStatus.ACTIVE)
-                .stream()
+        List<Membership> memberships = membershipRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
+        if (memberships.isEmpty()) {
+            throw new ResourceNotFoundException("Membership", userId);
+        }
+        return memberships.stream()
+                .sorted(Comparator.comparingInt((Membership m) -> {
+                    Membership.MembershipStatus s = m.getStatus();
+                    if (s == Membership.MembershipStatus.ACTIVE) return 0;
+                    if (s == Membership.MembershipStatus.EXPIRED) return 1;
+                    if (s == Membership.MembershipStatus.CANCELLED) return 2;
+                    return 3;
+                }).thenComparing(Membership::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
                 .findFirst()
                 .map(MembershipResponse::from)
-                .orElseThrow(() -> new ResourceNotFoundException("Active Membership", userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Membership", userId));
     }
 
     public MembershipResponse getById(UUID id) {

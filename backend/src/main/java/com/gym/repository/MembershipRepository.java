@@ -43,4 +43,6 @@ public interface MembershipRepository extends JpaRepository<Membership, UUID> {
     Optional<Membership> findByStripeSubscriptionId(String stripeSubscriptionId);
 
     Optional<Membership> findTopByUserIdAndStatusOrderByCreatedAtDesc(UUID userId, Membership.MembershipStatus status);
+
+    List<Membership> findAllByUserIdOrderByCreatedAtDesc(UUID userId);
 }

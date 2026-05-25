@@ -12,10 +12,14 @@ public record MembershipResponse(
     String userEmail,
     UUID planId,
     String planName,
+    PlanResponse plan,
     LocalDate startDate,
     LocalDate endDate,
     Membership.MembershipStatus status,
     Boolean autoRenew,
+    String stripeSubscriptionId,
+    LocalDate currentPeriodEnd,
+    Boolean cancelAtPeriodEnd,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {
@@ -27,10 +31,14 @@ public record MembershipResponse(
             membership.getUser().getEmail(),
             membership.getPlan().getId(),
             membership.getPlan().getName(),
+            PlanResponse.from(membership.getPlan()),
             membership.getStartDate(),
             membership.getEndDate(),
             membership.getStatus(),
             membership.getAutoRenew(),
+            membership.getStripeSubscriptionId(),
+            membership.getCurrentPeriodEnd(),
+            membership.getCancelAtPeriodEnd(),
             membership.getCreatedAt(),
             membership.getUpdatedAt()
         );

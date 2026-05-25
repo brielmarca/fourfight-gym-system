@@ -147,8 +147,11 @@ export interface Membership {
   plan?: Plan | null;
   startDate: string;
   endDate: string;
-  status: "ACTIVE" | "EXPIRED" | "CANCELLED" | "SUSPENDED";
+  status: "ACTIVE" | "EXPIRED" | "CANCELLED" | "SUSPENDED" | "PENDING_PAYMENT" | "PENDING_APPROVAL" | "REJECTED";
   autoRenew: boolean;
+  stripeSubscriptionId?: string | null;
+  currentPeriodEnd?: string | null;
+  cancelAtPeriodEnd?: boolean | null;
 }
 
 export interface Plan {

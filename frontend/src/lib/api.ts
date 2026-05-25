@@ -95,6 +95,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     response = await fetch(finalUrl, {
       ...options,
       credentials: "include",
+      signal: options.signal ?? AbortSignal.timeout(30000),
       headers: {
         ...(isFormData ? {} : { "Content-Type": "application/json" }),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -114,6 +115,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
+          signal: AbortSignal.timeout(10000),
         });
 
         if (!res.ok) throw new Error("Refresh failed");
@@ -232,6 +234,7 @@ async function restoreAuthSession(): Promise<boolean> {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
+          signal: AbortSignal.timeout(10000),
         });
 
         if (!response.ok) {

@@ -49,7 +49,7 @@ function AdminPage() {
   const navigate = useNavigate();
   const { user, hasRole, logout } = useAuth();
   const { data: belts = [], isLoading: beltsLoading } = useBelts();
-  const { data: membershipsData, isLoading: membershipsLoading } = useMemberships(0, 50);
+  const { data: membershipsData, isLoading: membershipsLoading, error: membershipsError } = useMemberships(0, 50);
   const { data: plans = [], isLoading: plansLoading } = usePlans();
   const canManageReception = hasRole(["ADMIN"]);
   const { data: pendingReception = [], isLoading: pendingReceptionLoading } =
@@ -109,6 +109,7 @@ function AdminPage() {
     content?: Array<{
       id: string;
       userName: string;
+      userEmail: string;
       planName: string;
       startDate: string;
       endDate: string;
@@ -393,10 +394,19 @@ function AdminPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {memberships?.content?.length > 0 ? (
+                      {membershipsError ? (
+                        <TableRow className="hover:bg-transparent">
+                          <TableCell colSpan={5} className="text-center py-12 text-destructive">
+                            Falha ao carregar alunos. {(membershipsError as Error).message}
+                          </TableCell>
+                        </TableRow>
+                      ) : memberships?.content?.length > 0 ? (
                         memberships.content.map((m) => (
                           <TableRow key={m.id} className="border-border-subtle">
-                            <TableCell className="font-medium">{m.userName}</TableCell>
+                            <TableCell className="font-medium">
+                              <div>{m.userName || "-"}</div>
+                              <div className="text-xs text-text-secondary">{m.userEmail || "-"}</div>
+                            </TableCell>
                             <TableCell>{m.planName}</TableCell>
                             <TableCell>
                               {new Date(m.startDate).toLocaleDateString("pt-PT")}

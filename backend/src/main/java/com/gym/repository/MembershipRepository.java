@@ -1,6 +1,7 @@
 package com.gym.repository;
 
 import com.gym.entity.Membership;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +15,10 @@ import java.util.UUID;
 
 @Repository
 public interface MembershipRepository extends JpaRepository<Membership, UUID> {
+
+    @Override
+    @EntityGraph(attributePaths = {"user", "plan"})
+    Page<Membership> findAll(Pageable pageable);
 
     Page<Membership> findByUserId(UUID userId, Pageable pageable);
 

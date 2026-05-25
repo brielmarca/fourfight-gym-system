@@ -58,6 +58,7 @@ export interface Membership {
   id: string;
   userId: string;
   userName: string;
+  userEmail: string;
   planId: string;
   planName: string;
   plan?: Plan | null;

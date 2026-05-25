@@ -8,6 +8,8 @@ import com.gym.entity.Membership;
 public record MembershipResponse(
     UUID id,
     UUID userId,
+    String userName,
+    String userEmail,
     UUID planId,
     String planName,
     LocalDate startDate,
@@ -21,6 +23,8 @@ public record MembershipResponse(
         return new MembershipResponse(
             membership.getId(),
             membership.getUser().getId(),
+            membership.getUser().getName(),
+            membership.getUser().getEmail(),
             membership.getPlan().getId(),
             membership.getPlan().getName(),
             membership.getStartDate(),

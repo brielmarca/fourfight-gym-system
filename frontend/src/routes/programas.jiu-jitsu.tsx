@@ -17,22 +17,22 @@ const benefits = [
   {
     icon: Target,
     title: "Técnica e controlo",
-    desc: "Aprende alavancas, posições e transições com treino estruturado e progressão consistente.",
+    desc: "Aprende a usar alavancas, posicionamento e estratégia para controlar situações com eficiência.",
   },
   {
     icon: Shield,
     title: "Defesa pessoal",
-    desc: "Desenvolve respostas práticas para situações reais com foco em controlo e segurança.",
+    desc: "Desenvolve confiança e capacidade de reação através de técnicas aplicáveis em cenários reais.",
   },
   {
     icon: Heart,
     title: "Condicionamento físico",
-    desc: "Melhora resistência, mobilidade e capacidade cardiovascular sem perder qualidade técnica.",
+    desc: "Melhora força, mobilidade, resistência e coordenação com treinos progressivos e intensos.",
   },
   {
     icon: Users,
     title: "Disciplina e confiança",
-    desc: "Evolui num ambiente de respeito onde a disciplina do tatame reforça a confiança diária.",
+    desc: "Constrói foco, consistência e autocontrolo dentro e fora do tatame.",
   },
 ];
 
@@ -286,16 +286,20 @@ function JiuJitsuPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="font-display" style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}>
-              BENEFÍCIOS
+              BENEFÍCIOS DO JIU-JITSU
             </h2>
+            <p className="mt-4 text-text-secondary text-lg max-w-3xl mx-auto">
+              Mais do que uma arte marcial, o Jiu-Jitsu desenvolve técnica, confiança, disciplina e
+              preparação física.
+            </p>
             <div className="mx-auto mt-6" style={{ width: "48px", height: "2px", background: "#C1121F" }} />
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
             {benefits.map((benefit, idx) => (
               <Card
                 key={benefit.title}
-                className="reveal bg-surface border-border-subtle transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_20px_rgba(193,18,31,0.18)]"
+                className="bg-surface border-border-subtle transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_20px_rgba(193,18,31,0.18)]"
                 style={{ transitionDelay: `${idx * 100}ms` }}
               >
                 <CardContent className="pt-8">

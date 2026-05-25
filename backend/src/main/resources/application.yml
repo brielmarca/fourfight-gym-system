@@ -14,6 +14,10 @@ spring:
   profiles:
     active: default
 
+startup:
+  diagnostics:
+    enabled: ${STARTUP_DIAGNOSTICS_ENABLED:true}
+
 jwt:
   expiration-ms: 900000
   refresh-expiration-ms: 604800000

@@ -1,6 +1,7 @@
 package com.gym.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(prefix = "startup.diagnostics", name = "enabled", havingValue = "true")
 public class BeanStartupLogger implements BeanPostProcessor {
 
     private final Set<String> loggedBeans = new HashSet<>();

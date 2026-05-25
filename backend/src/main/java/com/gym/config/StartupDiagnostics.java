@@ -1,6 +1,7 @@
 package com.gym.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(prefix = "startup.diagnostics", name = "enabled", havingValue = "true")
 public class StartupDiagnostics {
 
     private final long startTime = System.currentTimeMillis();

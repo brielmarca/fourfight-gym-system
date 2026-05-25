@@ -31,6 +31,10 @@ spring:
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
       - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
 
+startup:
+  diagnostics:
+    enabled: ${STARTUP_DIAGNOSTICS_ENABLED:false}
+
 management:
   health:
     redis:

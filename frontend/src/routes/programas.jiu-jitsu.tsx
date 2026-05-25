@@ -1,11 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useBookTrial, useSchedule } from "@/queries";
-import { Shield, Target, Check, Loader2, Users, Heart, X } from "lucide-react";
+import { useSchedule } from "@/queries";
+import { useAuth } from "@/contexts/auth-context";
+import { Shield, Target, Users, Heart } from "lucide-react";
 import jiuJitsuHero from "@/assets/gymlutas/jiu-jitsu-1.webp";
 import jiuJitsuAbout from "@/assets/gymlutas/jiu-jitsu-3.webp";
 
@@ -75,11 +74,8 @@ function formatScheduleLevel(level: string) {
 }
 
 function JiuJitsuPage() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", email: "", phone: "" });
-  const bookTrial = useBookTrial();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const { data: schedule = [], isLoading: isScheduleLoading } = useSchedule();
 
   const jiuJitsuSchedule = useMemo(
@@ -91,25 +87,13 @@ function JiuJitsuPage() {
     [schedule],
   );
 
-  useEffect(() => {
-    setIsOpen(false);
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError(null);
-    try {
-      await bookTrial.mutateAsync({ data: form, program: "JIU-JITSU" });
-      setSuccess(true);
-      setForm({ name: "", email: "", phone: "" });
-      setTimeout(() => {
-        setIsOpen(false);
-        setSuccess(false);
-        setFormError(null);
-      }, 2000);
-    } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Erro ao agendar. Tenta novamente.");
+  const handleTrialCtaClick = () => {
+    if (isAuthenticated) {
+      void navigate({ to: "/plans" });
+      return;
     }
+
+    void navigate({ to: "/login" });
   };
 
   return (
@@ -179,92 +163,12 @@ function JiuJitsuPage() {
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 hero-word">
-            <Dialog open={isOpen} onOpenChange={setIsOpen}>
-              <DialogTrigger asChild>
-                <Button className="btn-red w-full sm:w-auto px-10 py-5 text-[12px] tracking-[0.25em] uppercase font-semibold rounded-[2px]">
-                  Agendar aula experimental
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-surface border-border-subtle max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="font-display text-2xl tracking-wider text-center">
-                    AULA EXPERIMENTAL
-                  </DialogTitle>
-                </DialogHeader>
-                {success ? (
-                  <div className="text-center py-8">
-                    <Check size={48} strokeWidth={1.5} style={{ color: "#C1121F", margin: "0 auto 16px" }} />
-                    <p className="text-lg text-foreground">Aula agendada!</p>
-                    <p className="text-sm text-text-secondary mt-2">Vamos contactar-te em breve.</p>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-                    {(formError || bookTrial.error) && (
-                      <div className="p-3 rounded bg-destructive/10 text-destructive text-sm flex items-center gap-2">
-                        <X size={14} className="shrink-0" />
-                        <span className="flex-1">
-                          {formError ||
-                            (bookTrial.error instanceof Error ? bookTrial.error.message : "Erro ao agendar")}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setFormError(null);
-                            bookTrial.reset();
-                          }}
-                          className="shrink-0 opacity-70 hover:opacity-100"
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-                    )}
-                    <div className="space-y-2">
-                      <label className="text-xs tracking-wider uppercase text-text-secondary">Nome *</label>
-                      <Input
-                        placeholder="O teu nome"
-                        value={form.name}
-                        onChange={(e) => setForm({ ...form, name: e.target.value })}
-                        required
-                        className="bg-surface-2 border-border-subtle"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs tracking-wider uppercase text-text-secondary">Email *</label>
-                      <Input
-                        type="email"
-                        placeholder="teu@email.com"
-                        value={form.email}
-                        onChange={(e) => setForm({ ...form, email: e.target.value })}
-                        required
-                        className="bg-surface-2 border-border-subtle"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs tracking-wider uppercase text-text-secondary">Telefone</label>
-                      <Input
-                        placeholder="+351"
-                        value={form.phone}
-                        onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                        className="bg-surface-2 border-border-subtle"
-                      />
-                    </div>
-                    <Button
-                      type="submit"
-                      disabled={bookTrial.isPending}
-                      className="w-full btn-red tracking-[0.2em] uppercase mt-4"
-                    >
-                      {bookTrial.isPending ? (
-                        <>
-                          <Loader2 size={16} className="mr-2 animate-spin" />A enviar...
-                        </>
-                      ) : (
-                        "Agendar aula"
-                      )}
-                    </Button>
-                  </form>
-                )}
-              </DialogContent>
-            </Dialog>
+            <Button
+              onClick={handleTrialCtaClick}
+              className="btn-red w-full sm:w-auto px-10 py-5 text-[12px] tracking-[0.25em] uppercase font-semibold rounded-[2px]"
+            >
+              Agendar aula experimental
+            </Button>
             <Button
               asChild
               variant="outline"
@@ -445,7 +349,7 @@ function JiuJitsuPage() {
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button
-                  onClick={() => setIsOpen(true)}
+                  onClick={handleTrialCtaClick}
                   className="btn-red w-full sm:w-auto px-10 py-4 text-[12px] tracking-[0.25em] uppercase font-semibold rounded-[2px]"
                 >
                   Reservar aula experimental

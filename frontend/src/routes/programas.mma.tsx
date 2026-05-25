@@ -1,268 +1,184 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Card, CardContent } from "@/components/ui/card";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-
-import {
-  Target,
-  Check,
-  Clock,
-  Zap,
-  Shield,
-  Trophy,
-  Users,
-  Dumbbell,
-  Activity,
-  Swords,
-} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/contexts/auth-context";
+import { Activity, ArrowRight, Clock3, Dumbbell, Shield, Swords, Target, Zap } from "lucide-react";
 import mmaHero from "@/assets/gymlutas/jiu-jitsu-3.webp";
-import mmaGallery1 from "@/assets/gymlutas/jiu-jitsu-1.webp";
-import mmaGallery2 from "@/assets/gymlutas/jiu-jitsu-2.webp";
-import mmaVideoWebm from "@/assets/gymlutas/jiu-jitsu-video.webm";
-import mmaVideoMp4 from "@/assets/gymlutas/jiu-jitsu-video.mp4";
 
 export const Route = createFileRoute("/programas/mma")({
   component: MMAPage,
 });
 
-const trainingContent = [
+const trainingCards = [
   {
     icon: Target,
     title: "Striking",
     items: [
-      "Boxe e Kickboxing base",
-      "Cotoveladas e joelhadas",
-      "Combinações e distância",
-      "Defesa e contra-ataque",
+      "Boxe e Kickboxing como base",
+      "Combinações, ângulos e distância",
+      "Defesa, contra-ataque e timing",
+      "Entradas para clinch a partir do combate em pé",
     ],
   },
   {
     icon: Swords,
-    title: "Wrestling",
+    title: "Wrestling e Clinch",
     items: [
-      "Quedas (takedowns)",
-      "Defesa de quedas",
-      "Controlo de clinch",
-      "Trabalho de parede (wall work)",
+      "Quedas e defesa de quedas",
+      "Controlo de clinch e pressão",
+      "Trabalho de parede",
+      "Transições para posições dominantes",
     ],
   },
   {
     icon: Activity,
-    title: "Grappling",
+    title: "Grappling para MMA",
     items: [
-      "Jiu-Jitsu no MMA",
-      "Posições dominantes",
-      "Defesa de submissão",
-      "Transições e escapes",
+      "Jiu-Jitsu adaptado ao MMA",
+      "Controlo no solo e ground game",
+      "Escapes, reversões e submissões",
+      "Transições entre striking e chão",
     ],
   },
   {
     icon: Dumbbell,
-    title: "Condicionamento de Luta",
+    title: "Condicionamento",
     items: [
+      "Força, explosão e resistência",
+      "Rounds técnicos e recuperação",
       "Preparação física específica",
-      "Rounds e recuperação",
-      "Força e explosão",
-      "Mentalidade competitiva",
+      "Disciplina e consistência de treino",
     ],
   },
 ];
 
-const progressionLevels = [
-  { name: "Fundamentos", order: 1 },
-  { name: "Intermédio", order: 2 },
-  { name: "Avançado", order: 3 },
-  { name: "Sparring", order: 4 },
-  { name: "Competição", order: 5 },
-];
-
 const benefits = [
   {
-    icon: Zap,
-    title: "Técnica Completa",
-    desc: "Domina striking, grappling e transições entre todas as fases do combate.",
-  },
-  {
     icon: Shield,
-    title: "Defesa Real",
-    desc: "Prepara para situações reais com ferramentas de todas as artes marciais.",
+    title: "Versatilidade completa",
+    desc: "Desenvolve ferramentas para responder em pé, no clinch e no solo com mais confiança.",
   },
   {
-    icon: Activity,
-    title: "Condicionamento",
-    desc: "Desenvolve fôlego, resistência e explosão para sustentar intensidade total.",
+    icon: Zap,
+    title: "Potência e resistência",
+    desc: "Treina força, explosão, coordenação e capacidade cardiovascular com progressão segura.",
   },
   {
     icon: Target,
-    title: "Estratégia",
-    desc: "Aprende a ler o adversário e aplicar a técnica certa no momento certo.",
+    title: "Estratégia e timing",
+    desc: "Aprende a ler distâncias, escolher entradas e tomar decisões com mais controlo.",
   },
   {
-    icon: Users,
-    title: "Ambiente de Elite",
-    desc: "Treina com atletas focados e preparados para alto rendimento.",
-  },
-  {
-    icon: Trophy,
-    title: "Competição",
-    desc: "Preparação técnica e física orientada para o combate competitivo.",
+    icon: Activity,
+    title: "Disciplina competitiva",
+    desc: "Constrói foco, consistência e mentalidade para evoluir dentro e fora do treino.",
   },
 ];
 
+const progressionLevels = [
+  { name: "Fundamentos", desc: "Base técnica, postura, deslocamento e segurança." },
+  { name: "Técnica", desc: "Combinações, quedas, defesa e controlo." },
+  { name: "Transições", desc: "Ligação entre striking, clinch, wrestling e chão." },
+  { name: "Sparring Controlado", desc: "Aplicação progressiva com foco em leitura e proteção." },
+  { name: "Performance", desc: "Estratégia, intensidade e preparação completa." },
+];
+
 function MMAPage() {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
+  const handleMainCta = () => {
+    if (isAuthenticated) {
+      void navigate({ to: "/plans" });
+      return;
+    }
+
+    void navigate({ to: "/login" });
+  };
+
   return (
-    <main className="bg-background text-foreground min-h-screen">
-      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src={mmaHero}
-            alt="Treino de MMA na 4Four Fight Academy"
-            loading="eager"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        </div>
+    <main className="min-h-screen bg-background text-foreground">
+      <section className="relative flex min-h-[78vh] items-center overflow-hidden border-b border-border-subtle">
+        <img
+          src={mmaHero}
+          alt="Treino de MMA na 4Four Fight Academy"
+          loading="eager"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(11,11,11,0.8) 58%, #0B0B0B 100%)",
+              "radial-gradient(circle at 18% 20%, rgba(193,18,31,0.28), transparent 42%), linear-gradient(to bottom, rgba(7,7,7,0.45), rgba(7,7,7,0.82) 52%, #0B0B0B 100%)",
           }}
         />
-        <div
-          className="absolute inset-x-0 top-1/2 h-px"
-          style={{ background: "rgba(193,18,31,0.35)" }}
-        />
 
-        <div
-          className="relative px-4 text-center max-w-[980px] mx-auto pt-24"
-          style={{ zIndex: 10 }}
-        >
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <span className="block w-12 h-px" style={{ background: "#C1121F" }} />
-            <p className="text-[10px] tracking-[0.4em] uppercase" style={{ color: "#888" }}>
-              4FOUR FIGHT ACADEMY
-            </p>
-            <span className="block w-12 h-px" style={{ background: "#C1121F" }} />
-          </div>
-
+        <div className="relative mx-auto w-full max-w-6xl px-4 py-24 text-center">
           <h1
-            className="font-display hero-word"
-            style={{
-              lineHeight: 0.9,
-              fontSize: "clamp(52px, 11vw, 128px)",
-              letterSpacing: "0.02em",
-              color: "#F5F5F5",
-            }}
+            className="font-display"
+            style={{ fontSize: "clamp(58px, 12vw, 136px)", lineHeight: 0.9, letterSpacing: "0.04em", color: "#F5F5F5" }}
           >
             MMA
           </h1>
-
-          <p
-            className="mt-6 mx-auto hero-word"
-            style={{
-              color: "#888",
-              fontSize: "18px",
-              maxWidth: "620px",
-            }}
-          >
-            Combinação completa de striking, wrestling, grappling e condicionamento.
+          <p className="mx-auto mt-6 max-w-3xl text-lg text-text-secondary">
+            Combina striking, wrestling, grappling e condicionamento num treino completo, estruturado e focado na evolução real.
           </p>
-
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 hero-word">
+          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Button
+              onClick={handleMainCta}
+              className="btn-red w-full rounded-[2px] px-10 py-5 text-[12px] font-semibold uppercase tracking-[0.2em] sm:w-auto"
+            >
+              Começar treino
+            </Button>
             <Button
               asChild
-              className="btn-red w-full sm:w-auto px-10 py-5 text-[12px] tracking-[0.25em] uppercase font-semibold rounded-[2px]"
+              variant="outline"
+              className="w-full border-red-600/60 bg-black/40 px-8 py-5 text-[12px] font-semibold uppercase tracking-[0.2em] text-foreground hover:bg-red-950/30 sm:w-auto"
             >
-              <Link to="/plans">Ver Planos</Link>
+              <Link to="/schedule">Ver horários</Link>
             </Button>
           </div>
         </div>
-
-        <div
-          className="absolute bottom-0 left-0 right-0"
-          style={{
-            background: "linear-gradient(to top, #0B0B0B, transparent)",
-            height: "120px",
-          }}
-        />
       </section>
 
       <section className="section-pad px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2
-              className="font-display"
-              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
-            >
-              SOBRE O PROGRAMA
+        <div className="mx-auto grid max-w-6xl items-center gap-8 rounded-lg border border-border-subtle bg-surface/80 p-8 md:grid-cols-[1.2fr_0.8fr] md:p-10">
+          <div>
+            <h2 className="font-display text-4xl" style={{ color: "#F5F5F5" }}>
+              A ciência da eficácia
             </h2>
-            <div
-              className="mx-auto mt-6"
-              style={{ width: "48px", height: "2px", background: "#C1121F" }}
-            />
+            <p className="mt-5 text-lg leading-relaxed text-text-secondary">
+              O MMA na 4Four Fight Academy integra combate em pé, wrestling, grappling e preparação física específica num sistema progressivo e seguro. Cada aula desenvolve distância, controlo, timing e transições para que o aluno evolua em todas as fases do combate.
+            </p>
           </div>
-          <div className="space-y-6 text-text-secondary leading-relaxed">
-            <p className="text-lg">
-              O programa de MMA da 4Four Fight Academy oferece treino completo para combate,
-              integrando striking, wrestling, grappling e condicionamento numa única metodologia.
-            </p>
-            <p>
-              As aulas são estruturadas para desenvolver todas as fases do combate: stand-up,
-              clinch, takedowns e ground game. Cada sessão trabalha técnica específica com
-              progressão adequada ao nível do atleta.
-            </p>
-            <p>
-              No MMA, a versatilidade é a chave. Vais aprender a transitar entre todas as distâncias
-              de combate com confiança, técnica e preparação física de elite.
+          <div className="rounded-md border border-red-700/40 bg-black/40 p-6">
+            <p className="text-[11px] uppercase tracking-[0.24em] text-red-400">Metodologia</p>
+            <p className="mt-4 text-sm leading-relaxed text-text-secondary">
+              Progressão técnica com intensidade controlada, foco em segurança e evolução prática em todas as distâncias de combate.
             </p>
           </div>
         </div>
       </section>
 
       <section className="section-pad px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2
-              className="font-display"
-              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
-            >
-              O QUE VAIS TREINAR
-            </h2>
-            <div
-              className="mx-auto mt-6"
-              style={{ width: "48px", height: "2px", background: "#C1121F" }}
-            />
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {trainingContent.map((section, idx) => (
-              <Card
-                key={section.title}
-                className="reveal bg-surface border-border-subtle transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_20px_rgba(193,18,31,0.2)]"
-                style={{ transitionDelay: `${idx * 100}ms` }}
-              >
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-center font-display text-5xl" style={{ color: "#F5F5F5" }}>
+            O que vais treinar
+          </h2>
+          <div className="mx-auto mt-5 h-[2px] w-14" style={{ background: "#C1121F" }} />
+          <div className="mt-12 grid gap-6 md:grid-cols-2">
+            {trainingCards.map((card) => (
+              <Card key={card.title} className="border-border-subtle bg-surface transition-all duration-300 hover:border-red-600/70 hover:shadow-[0_0_24px_rgba(193,18,31,0.15)]">
                 <CardContent className="pt-8">
-                  <section.icon
-                    size={32}
-                    strokeWidth={1.5}
-                    style={{ color: "#C1121F", marginBottom: "20px" }}
-                  />
-                  <h3
-                    className="font-display text-2xl mb-6"
-                    style={{ color: "#F5F5F5", letterSpacing: "0.05em" }}
-                  >
-                    {section.title}
+                  <card.icon size={30} strokeWidth={1.7} style={{ color: "#C1121F" }} />
+                  <h3 className="mt-4 font-display text-2xl" style={{ color: "#F5F5F5" }}>
+                    {card.title}
                   </h3>
-                  <ul className="space-y-3">
-                    {section.items.map((item) => (
-                      <li key={item} className="flex items-start gap-3">
-                        <Check
-                          size={16}
-                          strokeWidth={2}
-                          style={{ color: "#C1121F", marginTop: "4px" }}
-                        />
-                        <span className="text-sm" style={{ color: "#888", lineHeight: 1.6 }}>
-                          {item}
-                        </span>
+                  <ul className="mt-5 space-y-3">
+                    {card.items.map((item) => (
+                      <li key={item} className="flex gap-3 text-sm text-text-secondary">
+                        <ArrowRight size={16} className="mt-1 shrink-0 text-red-500" />
+                        <span>{item}</span>
                       </li>
                     ))}
                   </ul>
@@ -274,173 +190,91 @@ function MMAPage() {
       </section>
 
       <section className="section-pad px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2
-              className="font-display"
-              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
-            >
-              BENEFÍCIOS
-            </h2>
-            <p className="mt-4 text-text-secondary text-lg max-w-2xl mx-auto">
-              Treino completo para alto desempenho em combate.
-            </p>
-            <div
-              className="mx-auto mt-6"
-              style={{ width: "48px", height: "2px", background: "#C1121F" }}
-            />
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {benefits.map((benefit, idx) => (
-              <div
-                key={benefit.title}
-                className="reveal text-center py-8 px-6 transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_20px_rgba(193,18,31,0.18)]"
-                style={{
-                  background: "#111111",
-                  border: "1px solid #1E1E1E",
-                  borderRadius: "4px",
-                  transitionDelay: `${idx * 100}ms`,
-                }}
-              >
-                <benefit.icon
-                  size={32}
-                  strokeWidth={1.5}
-                  style={{ color: "#C1121F", marginBottom: "16px" }}
-                />
-                <h3
-                  className="font-display text-xl mb-3"
-                  style={{ color: "#F5F5F5", letterSpacing: "0.05em" }}
-                >
-                  {benefit.title}
-                </h3>
-                <p className="text-sm" style={{ color: "#666", lineHeight: 1.8 }}>
-                  {benefit.desc}
-                </p>
-              </div>
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-center font-display text-5xl" style={{ color: "#F5F5F5" }}>
+            BENEFÍCIOS DO MMA
+          </h2>
+          <p className="mx-auto mt-4 max-w-3xl text-center text-lg text-text-secondary">
+            Mais do que combate, o treino desenvolve versatilidade, disciplina e capacidade física.
+          </p>
+          <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {benefits.map((benefit) => (
+              <Card key={benefit.title} className="h-full border-border-subtle bg-[#111111]">
+                <CardContent className="pt-8">
+                  <benefit.icon size={28} strokeWidth={1.6} className="text-red-500" />
+                  <h3 className="mt-4 font-display text-2xl" style={{ color: "#F5F5F5" }}>
+                    {benefit.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-text-secondary">{benefit.desc}</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
       </section>
 
-      <section
-        className="px-4 py-20"
-        style={{ background: "#0B0B0B", borderTop: "1px solid #1E1E1E" }}
-      >
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2
-              className="font-display"
-              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
-            >
-              NÍVEIS DE PROGRESSÃO
-            </h2>
-            <p className="mt-4 text-text-secondary text-lg max-w-2xl mx-auto">
-              Evolução contínua através de níveis estruturados.
-            </p>
-            <div
-              className="mx-auto mt-6"
-              style={{ width: "48px", height: "2px", background: "#C1121F" }}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-4xl mx-auto">
-            {progressionLevels.map((level) => (
-              <div
-                key={level.name}
-                className="text-center py-6 px-3"
-                style={{
-                  background: "#111111",
-                  border: "1px solid #1E1E1E",
-                  borderRadius: "4px",
-                }}
-              >
-                <div className="font-display text-3xl mb-2" style={{ color: "#F5F5F5" }}>
-                  {level.order}
-                </div>
-                <h3
-                  className="font-display text-sm mb-2"
-                  style={{ color: "#F5F5F5", letterSpacing: "0.1em" }}
-                >
-                  {level.name.toUpperCase()}
-                </h3>
-                <div
-                  style={{
-                    borderTop: "1px solid #1E1E1E",
-                    paddingTop: "8px",
-                  }}
-                >
-                  <span className="text-xs tracking-widest uppercase" style={{ color: "#555" }}>
-                    Nível {level.order}
-                  </span>
-                </div>
-              </div>
+      <section className="border-y border-border-subtle bg-[#0B0B0B] px-4 py-20">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-center font-display text-5xl" style={{ color: "#F5F5F5" }}>
+            Progressão MMA
+          </h2>
+          <p className="mx-auto mt-4 max-w-3xl text-center text-lg text-text-secondary">
+            Evolução técnica por etapas, do primeiro contacto à performance avançada.
+          </p>
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {progressionLevels.map((level, index) => (
+              <Card key={level.name} className="border-border-subtle bg-[#111111]">
+                <CardContent className="pt-7 text-center">
+                  <p className="font-display text-4xl text-red-500">{index + 1}</p>
+                  <h3 className="mt-3 font-display text-lg" style={{ color: "#F5F5F5" }}>
+                    {level.name}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-text-secondary">{level.desc}</p>
+                </CardContent>
+              </Card>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="px-4 py-12">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="group md:col-span-2 rounded-lg overflow-hidden border border-border-subtle transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_24px_rgba(193,18,31,0.22)]">
-              <img
-                src={mmaGallery1}
-                alt="Treino de MMA na 4Four Fight Academy"
-                loading="lazy"
-                className="w-full h-full min-h-[280px] object-cover transition-transform duration-500 group-hover:scale-[1.01]"
-              />
-            </div>
-            <div className="group rounded-lg overflow-hidden border border-border-subtle transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_24px_rgba(193,18,31,0.22)]">
-              <img
-                src={mmaGallery2}
-                alt="Ambiente de treino MMA na 4Four Fight Academy"
-                loading="lazy"
-                className="w-full h-full min-h-[280px] object-cover transition-transform duration-500 group-hover:scale-[1.01]"
-              />
-            </div>
-          </div>
-          <div className="group mt-6 rounded-lg overflow-hidden border border-border-subtle transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_24px_rgba(193,18,31,0.22)]">
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full max-h-[620px] object-cover transition-transform duration-500 group-hover:scale-[1.01]"
-            >
-              <source src={mmaVideoWebm} type="video/webm" />
-              <source src={mmaVideoMp4} type="video/mp4" />
-            </video>
           </div>
         </div>
       </section>
 
       <section className="section-pad px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <Card className="bg-surface border-border-subtle" style={{ padding: "60px 40px" }}>
-            <CardContent>
-              <Target
-                size={40}
-                strokeWidth={1.5}
-                style={{ color: "#C1121F", marginBottom: "24px" }}
-              />
-              <h2 className="font-display text-4xl mb-4" style={{ color: "#F5F5F5" }}>
-                PRONTO PARA COMBATER?
+        <div className="mx-auto max-w-4xl text-center">
+          <Card className="border-border-subtle bg-surface">
+            <CardContent className="px-6 py-12 sm:px-10">
+              <Clock3 size={34} strokeWidth={1.7} className="mx-auto text-red-500" />
+              <h2 className="mt-4 font-display text-4xl" style={{ color: "#F5F5F5" }}>
+                Horários MMA
               </h2>
-              <p
-                className="text-lg mb-8 mx-auto max-w-md"
-                style={{ color: "#666", lineHeight: 1.8 }}
-              >
-                Escolhe um plano e começa a tua jornada no MMA com preparação de elite.
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-text-secondary">
+                Consulta os horários atualizados e escolhe a sessão mais adequada ao teu nível.
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button
-                  asChild
-                  className="btn-red w-full sm:w-auto px-10 py-4 text-[12px] tracking-[0.25em] uppercase font-semibold rounded-[2px]"
-                >
-                  <Link to="/plans">Ver Planos</Link>
-                </Button>
-              </div>
+              <Button
+                asChild
+                className="btn-red mt-8 rounded-[2px] px-10 py-4 text-[12px] font-semibold uppercase tracking-[0.2em]"
+              >
+                <Link to="/schedule">Ver horários</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <section className="px-4 pb-20">
+        <div className="mx-auto max-w-4xl text-center">
+          <Card className="border-red-700/40 bg-gradient-to-b from-[#14070a] to-[#0b0b0b]">
+            <CardContent className="px-6 py-14 sm:px-10">
+              <h2 className="font-display text-4xl" style={{ color: "#F5F5F5" }}>
+                Começa o teu treino de MMA
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-text-secondary">
+                Escolhe um plano e começa a treinar com acompanhamento estruturado.
+              </p>
+              <Button
+                onClick={handleMainCta}
+                className="btn-red mt-8 rounded-[2px] px-10 py-4 text-[12px] font-semibold uppercase tracking-[0.2em]"
+              >
+                Ver planos
+              </Button>
             </CardContent>
           </Card>
         </div>

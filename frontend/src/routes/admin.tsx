@@ -61,13 +61,14 @@ function AdminPage() {
   const { data: membershipsData, isLoading: membershipsLoading, error: membershipsError } = useMemberships(0, 50);
   const { data: plans = [], isLoading: plansLoading } = usePlans();
   const canManageReception = hasRole(["ADMIN"]);
+  const canManageProfessors = hasRole(["ADMIN", "MANAGER"]);
   const { data: pendingReception = [], isLoading: pendingReceptionLoading } =
     usePendingReceptionRequests(canManageReception);
   const approveReception = useApproveReceptionRequest();
   const rejectReception = useRejectReceptionRequest();
   const { data: adminSchedule = [], isLoading: adminScheduleLoading } = useAdminSchedule(hasRole(["ADMIN"]));
-  const { data: professors = [], isLoading: professorsLoading } = useProfessors(canManageReception);
-  const { data: professorAssignments = [], isLoading: assignmentsLoading } = useProfessorAssignments(canManageReception);
+  const { data: professors = [], isLoading: professorsLoading } = useProfessors(canManageProfessors);
+  const { data: professorAssignments = [], isLoading: assignmentsLoading } = useProfessorAssignments(canManageProfessors);
   const promoteProfessor = usePromoteProfessor();
   const updateProfessorModalities = useUpdateProfessorModalities();
   const createProfessorAssignment = useCreateProfessorAssignment();
@@ -89,6 +90,8 @@ function AdminPage() {
   const [assignmentStudentId, setAssignmentStudentId] = useState<string>("");
   const [assignmentModality, setAssignmentModality] = useState<Modality>("JIU_JITSU");
   const [assignmentNotes, setAssignmentNotes] = useState("");
+  const [professorFeedback, setProfessorFeedback] = useState<string | null>(null);
+  const [assignmentFeedback, setAssignmentFeedback] = useState<string | null>(null);
   const importPreRegistrations = useImportPreRegistrationsCsv();
   const [form, setForm] = useState<CreateScheduleEntryRequest>({
     title: "",
@@ -131,6 +134,7 @@ function AdminPage() {
 
   type MembershipItem = {
     id: string;
+    userId: string;
     userName: string;
     userEmail: string;
     planName: string;
@@ -310,26 +314,38 @@ function AdminPage() {
     if (!professorEmail.trim() || selectedProfessorModalities.length === 0) {
       return;
     }
-    await promoteProfessor.mutateAsync({
-      email: professorEmail.trim(),
-      modalities: selectedProfessorModalities,
-    });
-    setProfessorEmail("");
-    setSelectedProfessorModalities([]);
+    setProfessorFeedback(null);
+    try {
+      await promoteProfessor.mutateAsync({
+        email: professorEmail.trim(),
+        modalities: selectedProfessorModalities,
+      });
+      setProfessorEmail("");
+      setSelectedProfessorModalities([]);
+      setProfessorFeedback("Professor guardado com sucesso.");
+    } catch (error) {
+      setProfessorFeedback(error instanceof Error ? error.message : "Erro ao guardar professor.");
+    }
   };
 
   const handleCreateAssignment = async () => {
     if (!assignmentProfessorId || !assignmentStudentId) {
       return;
     }
-    await createProfessorAssignment.mutateAsync({
-      professorId: assignmentProfessorId,
-      studentId: assignmentStudentId,
-      modality: assignmentModality,
-      notes: assignmentNotes.trim() || undefined,
-    });
-    setAssignmentStudentId("");
-    setAssignmentNotes("");
+    setAssignmentFeedback(null);
+    try {
+      await createProfessorAssignment.mutateAsync({
+        professorId: assignmentProfessorId,
+        studentId: assignmentStudentId,
+        modality: assignmentModality,
+        notes: assignmentNotes.trim() || undefined,
+      });
+      setAssignmentStudentId("");
+      setAssignmentNotes("");
+      setAssignmentFeedback("Atribuicao criada com sucesso.");
+    } catch (error) {
+      setAssignmentFeedback(error instanceof Error ? error.message : "Erro ao atribuir aluno.");
+    }
   };
 
   return (
@@ -386,7 +402,7 @@ function AdminPage() {
               >
                 Graduação
               </TabsTrigger>
-              {canManageReception && (
+              {canManageProfessors && (
                 <TabsTrigger
                   value="professors"
                   className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white rounded-sm"
@@ -659,7 +675,7 @@ function AdminPage() {
             </Card>
           </TabsContent>
 
-          {canManageReception && (
+          {canManageProfessors && (
             <TabsContent value="professors">
               <div className="space-y-4">
                 <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>
@@ -668,7 +684,7 @@ function AdminPage() {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <Input
-                      placeholder="E-mail do professor"
+                      placeholder="email@exemplo.com"
                       value={professorEmail}
                       onChange={(event) => setProfessorEmail(event.target.value)}
                     />
@@ -689,6 +705,7 @@ function AdminPage() {
                     >
                       {promoteProfessor.isPending ? "A guardar..." : "Guardar professor"}
                     </Button>
+                    {professorFeedback && <p className="text-sm text-text-secondary">{professorFeedback}</p>}
                   </CardContent>
                 </Card>
 
@@ -753,7 +770,7 @@ function AdminPage() {
                         <SelectTrigger><SelectValue placeholder="Aluno" /></SelectTrigger>
                         <SelectContent>
                           {activeStudents.map((student) => (
-                            <SelectItem key={student.id} value={student.id}>{student.userName}</SelectItem>
+                            <SelectItem key={student.userId} value={student.userId}>{student.userName} ({student.userEmail})</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -773,6 +790,7 @@ function AdminPage() {
                     >
                       {createProfessorAssignment.isPending ? "A atribuir..." : "Atribuir aluno"}
                     </Button>
+                    {assignmentFeedback && <p className="text-sm text-text-secondary">{assignmentFeedback}</p>}
                   </CardContent>
                 </Card>
 

@@ -1,120 +1,78 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { useBookTrial } from "@/queries";
-import { useState } from "react";
-import {
-  Swords,
-  Hand,
-  Shield,
-  Trophy,
-  Target,
-  Check,
-  Loader2,
-  Clock,
-  Users,
-  Heart,
-  Zap,
-  X,
-} from "lucide-react";
-import jiuJitsu1 from "@/assets/gymlutas/jiu-jitsu-1.webp";
-import jiuJitsu3 from "@/assets/gymlutas/jiu-jitsu-3.webp";
-import jiuJitsuVideoWebm from "@/assets/gymlutas/jiu-jitsu-video.webm";
-import jiuJitsuVideoMp4 from "@/assets/gymlutas/jiu-jitsu-video.mp4";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useBookTrial, useSchedule } from "@/queries";
+import { Shield, Target, Check, Loader2, Users, Heart, X } from "lucide-react";
+import jiuJitsuHero from "@/assets/gymlutas/jiu-jitsu-1.webp";
+import jiuJitsuAbout from "@/assets/gymlutas/jiu-jitsu-3.webp";
 
 export const Route = createFileRoute("/programas/jiu-jitsu")({
   component: JiuJitsuPage,
 });
 
-const trainingContent = [
+const benefits = [
   {
-    icon: Swords,
-    title: "Técnicas de Finalização",
-    items: [
-      "Mata Leão e variações",
-      "Triângulos e chaves de Tornozelo",
-      "Armbars e Omoplatas",
-      "Chokes e Estrangulamentos",
-      "Kimura e Americana",
-      "Rear Naked Choke",
-    ],
-  },
-  {
-    icon: Hand,
-    title: "Posições de Controlo",
-    items: [
-      "Side Control e variações",
-      "Mount e Back Mount",
-      "Half Guard e Deep Half",
-      "Spider Guard",
-      "De La Riva Guard",
-      "Torrei e X Guard",
-    ],
+    icon: Target,
+    title: "Técnica e controlo",
+    desc: "Aprende alavancas, posições e transições com treino estruturado e progressão consistente.",
   },
   {
     icon: Shield,
-    title: "Defesa Pessoal",
-    items: [
-      "Quedas e Rolamentos",
-      "Posições de Segurança",
-      "Defesa contra Grabbing",
-      "Defesa contra Takedowns",
-      "Escapes de Posições",
-      "Controlo de Distância",
-    ],
+    title: "Defesa pessoal",
+    desc: "Desenvolve respostas práticas para situações reais com foco em controlo e segurança.",
   },
   {
-    icon: Trophy,
-    title: "Preparação para Competição",
-    items: [
-      "Estratégia de Competição",
-      "Treino Específico de Ronda",
-      "Preparação Física",
-      "Gestão de Energia",
-      "Análise de Oponente",
-      "Rotina de Competição",
-    ],
+    icon: Heart,
+    title: "Condicionamento físico",
+    desc: "Melhora resistência, mobilidade e capacidade cardiovascular sem perder qualidade técnica.",
+  },
+  {
+    icon: Users,
+    title: "Disciplina e confiança",
+    desc: "Evolui num ambiente de respeito onde a disciplina do tatame reforça a confiança diária.",
   },
 ];
 
-const levels = [
-  {
-    title: "Iniciante",
-    desc: "Sem experiência prévia. Aprende os fundamentos e desenvolve coordenação.",
-    duration: "3-6 meses",
-  },
-  {
-    title: "Intermédio",
-    desc: "Já domina os fundamentos. Desenvolve técnicas mais complexas e aplica em sparring.",
-    duration: "6-18 meses",
-  },
-  {
-    title: "Avançado",
-    desc: "Pratica há mais de 1 ano. Foco em 세부alhes, competição e liderança.",
-    duration: "18+ meses",
-  },
+const belts = [
+  { name: "Branca", order: "1", stripeClass: "bg-zinc-100 border-zinc-300", detailClass: "text-zinc-300" },
+  { name: "Azul", order: "2", stripeClass: "bg-blue-500 border-blue-400", detailClass: "text-blue-300" },
+  { name: "Roxa", order: "3", stripeClass: "bg-violet-500 border-violet-400", detailClass: "text-violet-300" },
+  { name: "Castanha", order: "4", stripeClass: "bg-amber-700 border-amber-600", detailClass: "text-amber-400" },
+  { name: "Preta", order: "5", stripeClass: "bg-zinc-900 border-red-700", detailClass: "text-red-400" },
 ];
 
-const graduations = [
-  { name: "Branca", order: 1 },
-  { name: "Cinzenta", order: 2 },
-  { name: "Amarela", order: 3 },
-  { name: "Laranja", order: 4 },
-  { name: "Verde", order: 5 },
-  { name: "Azul", order: 6 },
-  { name: "Roxa", order: 7 },
-  { name: "Castanha", order: 8 },
-  { name: "Preta", order: 9 },
-];
+const dayLabels: Record<string, string> = {
+  MONDAY: "Segunda",
+  TUESDAY: "Terça",
+  WEDNESDAY: "Quarta",
+  THURSDAY: "Quinta",
+  FRIDAY: "Sexta",
+  SATURDAY: "Sábado",
+  SUNDAY: "Domingo",
+};
+
+function formatScheduleLevel(level: string) {
+  const knownLevels: Record<string, string> = {
+    ALL_LEVELS: "Todos os níveis",
+    BEGINNER: "Iniciação",
+    INTERMEDIATE: "Intermédio",
+    ADVANCED: "Avançado",
+    COMPETITION: "Competição",
+  };
+
+  if (knownLevels[level]) {
+    return knownLevels[level];
+  }
+
+  return level
+    .toLowerCase()
+    .split("_")
+    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+    .join(" ");
+}
 
 function JiuJitsuPage() {
   const [isOpen, setIsOpen] = useState(false);
@@ -122,6 +80,16 @@ function JiuJitsuPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
   const bookTrial = useBookTrial();
+  const { data: schedule = [], isLoading: isScheduleLoading } = useSchedule();
+
+  const jiuJitsuSchedule = useMemo(
+    () =>
+      schedule
+        .filter((entry) => entry.modality === "JIU_JITSU")
+        .sort((a, b) => a.dayOfWeek.localeCompare(b.dayOfWeek) || a.startTime.localeCompare(b.startTime))
+        .slice(0, 6),
+    [schedule],
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,7 +113,7 @@ function JiuJitsuPage() {
       <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src={jiuJitsu1}
+            src={jiuJitsuHero}
             alt="Jiu-Jitsu treino na 4Four Fight Academy"
             loading="eager"
             className="absolute inset-0 w-full h-full object-cover"
@@ -153,16 +121,12 @@ function JiuJitsuPage() {
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(to bottom, transparent 40%, #0B0B0B 100%)",
+              background: "linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(11,11,11,0.78) 58%, #0B0B0B 100%)",
             }}
           />
         </div>
-        <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.5)" }} />
 
-        <div
-          className="relative px-4 text-center max-w-[900px] mx-auto pt-24"
-          style={{ zIndex: 10 }}
-        >
+        <div className="relative px-4 text-center max-w-[980px] mx-auto pt-24" style={{ zIndex: 10 }}>
           <div className="flex items-center justify-center gap-4 mb-8">
             <span className="block w-12 h-px" style={{ background: "#C1121F" }} />
             <p className="text-[10px] tracking-[0.4em] uppercase" style={{ color: "#888" }}>
@@ -180,26 +144,19 @@ function JiuJitsuPage() {
               color: "#F5F5F5",
             }}
           >
-            JIU-JITSU
+            A ARTE SUAVE
           </h1>
 
-          <p
-            className="mt-6 mx-auto hero-word"
-            style={{
-              color: "#888",
-              fontSize: "18px",
-              maxWidth: "600px",
-            }}
-          >
-            A arte suave que transforma força em técnica. Domine o chão e tome controlo de qualquer
-            situação.
+          <p className="mt-6 mx-auto hero-word" style={{ color: "#888", fontSize: "18px", maxWidth: "620px" }}>
+            Domina a técnica, o controlo e a disciplina do Jiu-Jitsu Brasileiro num ambiente
+            estruturado, seguro e focado na evolução real.
           </p>
 
-          <div className="mt-10 hero-word">
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 hero-word">
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
               <DialogTrigger asChild>
-                <Button className="btn-red px-10 py-5 text-[12px] tracking-[0.25em] uppercase font-semibold rounded-[2px]">
-                  Agendar Aula
+                <Button className="btn-red w-full sm:w-auto px-10 py-5 text-[12px] tracking-[0.25em] uppercase font-semibold rounded-[2px]">
+                  Agendar aula experimental
                 </Button>
               </DialogTrigger>
               <DialogContent className="bg-surface border-border-subtle max-w-md">
@@ -210,11 +167,7 @@ function JiuJitsuPage() {
                 </DialogHeader>
                 {success ? (
                   <div className="text-center py-8">
-                    <Check
-                      size={48}
-                      strokeWidth={1.5}
-                      style={{ color: "#C1121F", margin: "0 auto 16px" }}
-                    />
+                    <Check size={48} strokeWidth={1.5} style={{ color: "#C1121F", margin: "0 auto 16px" }} />
                     <p className="text-lg text-foreground">Aula agendada!</p>
                     <p className="text-sm text-text-secondary mt-2">Vamos contactar-te em breve.</p>
                   </div>
@@ -225,9 +178,7 @@ function JiuJitsuPage() {
                         <X size={14} className="shrink-0" />
                         <span className="flex-1">
                           {formError ||
-                            (bookTrial.error instanceof Error
-                              ? bookTrial.error.message
-                              : "Erro ao agendar")}
+                            (bookTrial.error instanceof Error ? bookTrial.error.message : "Erro ao agendar")}
                         </span>
                         <button
                           type="button"
@@ -242,9 +193,7 @@ function JiuJitsuPage() {
                       </div>
                     )}
                     <div className="space-y-2">
-                      <label className="text-xs tracking-wider uppercase text-text-secondary">
-                        Nome *
-                      </label>
+                      <label className="text-xs tracking-wider uppercase text-text-secondary">Nome *</label>
                       <Input
                         placeholder="O teu nome"
                         value={form.name}
@@ -254,9 +203,7 @@ function JiuJitsuPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs tracking-wider uppercase text-text-secondary">
-                        Email *
-                      </label>
+                      <label className="text-xs tracking-wider uppercase text-text-secondary">Email *</label>
                       <Input
                         type="email"
                         placeholder="teu@email.com"
@@ -267,9 +214,7 @@ function JiuJitsuPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs tracking-wider uppercase text-text-secondary">
-                        Telefone
-                      </label>
+                      <label className="text-xs tracking-wider uppercase text-text-secondary">Telefone</label>
                       <Input
                         placeholder="+351"
                         value={form.phone}
@@ -287,54 +232,52 @@ function JiuJitsuPage() {
                           <Loader2 size={16} className="mr-2 animate-spin" />A enviar...
                         </>
                       ) : (
-                        "Agendar Aula"
+                        "Agendar aula"
                       )}
                     </Button>
                   </form>
                 )}
               </DialogContent>
             </Dialog>
+            <Button
+              asChild
+              variant="outline"
+              className="w-full sm:w-auto px-10 py-5 text-[12px] tracking-[0.25em] uppercase rounded-[2px] border-border-subtle hover:border-red-500"
+            >
+              <Link to="/schedule">Ver horários</Link>
+            </Button>
           </div>
         </div>
-
-        <div
-          className="absolute bottom-0 left-0 right-0"
-          style={{
-            background: "linear-gradient(to top, #0B0B0B, transparent)",
-            height: "120px",
-          }}
-        />
       </section>
 
       <section className="section-pad px-4">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2
-              className="font-display"
-              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
-            >
-              SOBRE O PROGRAMA
+            <h2 className="font-display" style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}>
+              JIU-JITSU NA 4FOUR FIGHT ACADEMY
             </h2>
-            <div
-              className="mx-auto mt-6"
-              style={{ width: "48px", height: "2px", background: "#C1121F" }}
-            />
+            <div className="mx-auto mt-6" style={{ width: "48px", height: "2px", background: "#C1121F" }} />
           </div>
-          <div className="space-y-6 text-text-secondary leading-relaxed">
-            <p className="text-lg">
-              O Jiu-Jitsu na 4Four Fight Academy é muito mais que uma arte marcial — é um estilo de
-              vida que promove disciplina, resiliência e autoconfiança através do controlo técnico.
-            </p>
-            <p>
-              Sob a orientação de instrutores experientes, os nossos treinos combinam fundamentos
-              sólidos com aplicações práticas de defesa pessoal e preparação para competição. Cada
-              aula é estruturada para desafiar o teu corpo e mente, independentemente do teu nível.
-            </p>
-            <p>
-              No tatame, aprenderás que a técnica vence a força bruta. O Jiu-Jitsu ensina-te a
-              manter a calma sob pressão, a resolver problemas em tempo real e a adaptar-te a
-              qualquer situação — lições que se estendem muito além do treino.
-            </p>
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-10 items-center">
+            <div className="space-y-6 text-text-secondary leading-relaxed">
+              <p className="text-lg">
+                O Jiu-Jitsu é uma arte marcial baseada em técnica, alavancas, controlo e estratégia.
+                Na 4Four Fight Academy, o treino é pensado para desenvolver confiança, disciplina,
+                defesa pessoal e capacidade física, respeitando o nível de cada aluno.
+              </p>
+              <p>
+                Cada aula combina fundamentos, progressão técnica e aplicação prática em treino
+                estruturado. O foco está na evolução consistente, com segurança e acompanhamento.
+              </p>
+            </div>
+            <div className="group rounded-lg overflow-hidden border border-border-subtle transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_24px_rgba(193,18,31,0.2)]">
+              <img
+                src={jiuJitsuAbout}
+                alt="Prática técnica de Jiu-Jitsu no tatame"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.01]"
+                loading="lazy"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -342,51 +285,27 @@ function JiuJitsuPage() {
       <section className="section-pad px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2
-              className="font-display"
-              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
-            >
-              O QUE VAI APRENDER
+            <h2 className="font-display" style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}>
+              BENEFÍCIOS
             </h2>
-            <div
-              className="mx-auto mt-6"
-              style={{ width: "48px", height: "2px", background: "#C1121F" }}
-            />
+            <div className="mx-auto mt-6" style={{ width: "48px", height: "2px", background: "#C1121F" }} />
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            {trainingContent.map((section, idx) => (
+          <div className="grid sm:grid-cols-2 gap-6">
+            {benefits.map((benefit, idx) => (
               <Card
-                key={section.title}
-                className="reveal bg-surface border-border-subtle"
+                key={benefit.title}
+                className="reveal bg-surface border-border-subtle transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_20px_rgba(193,18,31,0.18)]"
                 style={{ transitionDelay: `${idx * 100}ms` }}
               >
                 <CardContent className="pt-8">
-                  <section.icon
-                    size={32}
-                    strokeWidth={1.5}
-                    style={{ color: "#C1121F", marginBottom: "20px" }}
-                  />
-                  <h3
-                    className="font-display text-2xl mb-6"
-                    style={{ color: "#F5F5F5", letterSpacing: "0.05em" }}
-                  >
-                    {section.title}
+                  <benefit.icon size={32} strokeWidth={1.5} style={{ color: "#C1121F", marginBottom: "20px" }} />
+                  <h3 className="font-display text-2xl mb-4" style={{ color: "#F5F5F5", letterSpacing: "0.05em" }}>
+                    {benefit.title}
                   </h3>
-                  <ul className="space-y-3">
-                    {section.items.map((item) => (
-                      <li key={item} className="flex items-start gap-3">
-                        <Check
-                          size={16}
-                          strokeWidth={2}
-                          style={{ color: "#C1121F", marginTop: "4px" }}
-                        />
-                        <span className="text-sm" style={{ color: "#888", lineHeight: 1.6 }}>
-                          {item}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+                  <p className="text-sm" style={{ color: "#888", lineHeight: 1.8 }}>
+                    {benefit.desc}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -394,228 +313,30 @@ function JiuJitsuPage() {
         </div>
       </section>
 
-      <section className="px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          <div className="group rounded-lg overflow-hidden border border-border-subtle transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_24px_rgba(193,18,31,0.22)]">
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full h-auto transition-transform duration-500 group-hover:scale-[1.01]"
-            >
-              <source src={jiuJitsuVideoWebm} type="video/webm" />
-              <source src={jiuJitsuVideoMp4} type="video/mp4" />
-            </video>
-          </div>
-        </div>
-      </section>
-
-      <section className="section-pad px-4">
+      <section className="px-4 py-20" style={{ background: "#0B0B0B", borderTop: "1px solid #1E1E1E" }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2
-              className="font-display"
-              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
-            >
-              BENEFÍCIOS
+            <h2 className="font-display" style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}>
+              PROGRESSÃO DE FAIXAS
             </h2>
             <p className="mt-4 text-text-secondary text-lg max-w-2xl mx-auto">
-              Transforma o teu corpo e mente através da prática regular.
+              Evolução técnica por etapas, com critérios claros e treino consistente.
             </p>
-            <div
-              className="mx-auto mt-6"
-              style={{ width: "48px", height: "2px", background: "#C1121F" }}
-            />
+            <div className="mx-auto mt-6" style={{ width: "48px", height: "2px", background: "#C1121F" }} />
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                icon: Heart,
-                title: "Saúde & Bem-estar",
-                desc: "Melhora o condicionamento cardiovascular, flexibilidade e força funcional.",
-              },
-              {
-                icon: Shield,
-                title: "Defesa Pessoal",
-                desc: "Aprende técnicas eficazes para proteger-te em situações reais.",
-              },
-              {
-                icon: Zap,
-                title: "Disciplina Mental",
-                desc: "Desenvolve foco, paciência e resiliência que se aplicam no dia-a-dia.",
-              },
-              {
-                icon: Users,
-                title: "Comunidade",
-                desc: "Faz parte de uma equipa unida onde todos crescem juntos.",
-              },
-              {
-                icon: Trophy,
-                title: "Competição",
-                desc: "Prepara-te para competir com confiança em qualquer nível.",
-              },
-              {
-                icon: Target,
-                title: "Autoconfiança",
-                desc: "Ganha confiança ao dominar novas técnicas e superar desafios.",
-              },
-            ].map((benefit, idx) => (
-              <div
-                key={benefit.title}
-                className="reveal text-center py-8 px-6"
-                style={{
-                  background: "#111111",
-                  border: "1px solid #1E1E1E",
-                  borderRadius: "4px",
-                  transitionDelay: `${idx * 100}ms`,
-                }}
-              >
-                <benefit.icon
-                  size={32}
-                  strokeWidth={1.5}
-                  style={{ color: "#C1121F", marginBottom: "16px" }}
-                />
-                <h3
-                  className="font-display text-xl mb-3"
-                  style={{ color: "#F5F5F5", letterSpacing: "0.05em" }}
-                >
-                  {benefit.title}
-                </h3>
-                <p className="text-sm" style={{ color: "#666", lineHeight: 1.8 }}>
-                  {benefit.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          <div className="group rounded-lg overflow-hidden border border-border-subtle transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_24px_rgba(193,18,31,0.22)]">
-            <img
-              src={jiuJitsu3}
-              alt="Jiu-Jitsu treino na 4Four Fight Academy"
-              className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-[1.01]"
-              loading="lazy"
-            />
-          </div>
-        </div>
-      </section>
-
-      <section
-        className="px-4 py-20"
-        style={{ background: "#0B0B0B", borderTop: "1px solid #1E1E1E" }}
-      >
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2
-              className="font-display"
-              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
-            >
-              GRADUAÇÃO
-            </h2>
-            <p className="mt-4 text-text-secondary text-lg max-w-2xl mx-auto">
-              Sistema de faixas do Jiu-Jitsu.
-            </p>
-            <div
-              className="mx-auto mt-6"
-              style={{ width: "48px", height: "2px", background: "#C1121F" }}
-            />
-          </div>
-
-          <div className="grid grid-cols-3 md:grid-cols-5 gap-4 max-w-4xl mx-auto">
-            {graduations.map((grad) => (
-              <div
-                key={grad.name}
-                className="text-center py-4 px-2"
-                style={{
-                  background: "#111111",
-                  border: "1px solid #1E1E1E",
-                  borderRadius: "4px",
-                }}
-              >
-                <div
-                  className="font-display text-sm mb-2"
-                  style={{ color: "#F5F5F5", letterSpacing: "0.05em" }}
-                >
-                  {grad.name}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 max-w-4xl mx-auto">
+            {belts.map((belt) => (
+              <div key={belt.name} className="text-center py-4 px-2 rounded border border-border-subtle bg-surface">
+                <div className="mb-3 h-2 w-full rounded-sm border border-border-subtle overflow-hidden" aria-hidden>
+                  <span className={`block h-full w-full ${belt.stripeClass}`} />
                 </div>
-                <div
-                  style={{
-                    borderTop: "1px solid #1E1E1E",
-                    paddingTop: "8px",
-                  }}
-                >
-                  <span className="text-xs tracking-widest uppercase" style={{ color: "#555" }}>
-                    {grad.order}º
-                  </span>
+                <div className="font-display text-sm mb-2" style={{ color: "#F5F5F5", letterSpacing: "0.05em" }}>
+                  Faixa {belt.name}
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section
-        className="px-4 py-20"
-        style={{ background: "#0B0B0B", borderTop: "1px solid #1E1E1E" }}
-      >
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2
-              className="font-display"
-              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
-            >
-              PARA QUEM É
-            </h2>
-            <p className="mt-4 text-text-secondary text-lg max-w-2xl mx-auto">
-              O Jiu-Jitsu é para todos. Não requer força, flexibilidade ou experiência prévia.
-            </p>
-            <div
-              className="mx-auto mt-6"
-              style={{ width: "48px", height: "2px", background: "#C1121F" }}
-            />
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {levels.map((level, idx) => (
-              <div
-                key={level.title}
-                className="reveal text-center py-10 px-6"
-                style={{
-                  background: "#111111",
-                  border: "1px solid",
-                  borderColor: idx === 1 ? "#C1121F" : "#1E1E1E",
-                  borderRadius: "4px",
-                  transitionDelay: `${idx * 100}ms`,
-                }}
-              >
-                <div
-                  className="font-display text-5xl mb-4"
-                  style={{ color: idx === 1 ? "#C1121F" : "#F5F5F5" }}
-                >
-                  {String(idx + 1)}
-                </div>
-                <h3
-                  className="font-display text-2xl mb-3"
-                  style={{ color: "#F5F5F5", letterSpacing: "0.1em" }}
-                >
-                  {level.title.toUpperCase()}
-                </h3>
-                <p className="text-sm mb-6" style={{ color: "#666", lineHeight: 1.8 }}>
-                  {level.desc}
-                </p>
-                <div
-                  style={{
-                    borderTop: "1px solid #1E1E1E",
-                    paddingTop: "20px",
-                  }}
-                >
-                  <span className="text-xs tracking-widest uppercase" style={{ color: "#555" }}>
-                    {level.duration}
+                <div className="pt-2 border-t border-border-subtle">
+                  <span className={`text-xs tracking-widest uppercase ${belt.detailClass}`}>
+                    Etapa {belt.order} - progressão técnica
                   </span>
                 </div>
               </div>
@@ -627,71 +348,54 @@ function JiuJitsuPage() {
       <section className="section-pad px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h2
-              className="font-display"
-              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
-            >
+            <h2 className="font-display" style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}>
               HORÁRIOS
             </h2>
             <p className="mt-4 text-text-secondary text-lg max-w-2xl mx-auto">
-              Treinos disponíveis de Segunda a Sábado.
+              Pré-visualização das próximas aulas de Jiu-Jitsu.
             </p>
-            <div
-              className="mx-auto mt-6"
-              style={{ width: "48px", height: "2px", background: "#C1121F" }}
-            />
+            <div className="mx-auto mt-6" style={{ width: "48px", height: "2px", background: "#C1121F" }} />
           </div>
 
           <Card className="bg-surface border-border-subtle">
             <CardContent className="pt-6">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border-subtle">
-                      <th className="text-left py-3 px-4 text-text-secondary font-medium">Dia</th>
-                      <th className="text-left py-3 px-4 text-text-secondary font-medium">
-                        Horário
-                      </th>
-                      <th className="text-left py-3 px-4 text-text-secondary font-medium">Nível</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-text-secondary">
-                    <tr className="border-b border-border-subtle hover:bg-surface-2 transition-colors">
-                      <td className="py-3 px-4">Segunda</td>
-                      <td className="py-3 px-4">19:00 - 20:30</td>
-                      <td className="py-3 px-4">Todos</td>
-                    </tr>
-                    <tr className="border-b border-border-subtle hover:bg-surface-2 transition-colors">
-                      <td className="py-3 px-4">Terça</td>
-                      <td className="py-3 px-4">07:00 - 08:30</td>
-                      <td className="py-3 px-4">Todos</td>
-                    </tr>
-                    <tr className="border-b border-border-subtle hover:bg-surface-2 transition-colors">
-                      <td className="py-3 px-4">Quarta</td>
-                      <td className="py-3 px-4">19:00 - 20:30</td>
-                      <td className="py-3 px-4">Intermédio/Avançado</td>
-                    </tr>
-                    <tr className="border-b border-border-subtle hover:bg-surface-2 transition-colors">
-                      <td className="py-3 px-4">Quinta</td>
-                      <td className="py-3 px-4">07:00 - 08:30</td>
-                      <td className="py-3 px-4">Todos</td>
-                    </tr>
-                    <tr className="border-b border-border-subtle hover:bg-surface-2 transition-colors">
-                      <td className="py-3 px-4">Sexta</td>
-                      <td className="py-3 px-4">19:00 - 20:30</td>
-                      <td className="py-3 px-4">Todos</td>
-                    </tr>
-                    <tr className="hover:bg-surface-2 transition-colors">
-                      <td className="py-3 px-4">Sábado</td>
-                      <td className="py-3 px-4">10:00 - 11:30</td>
-                      <td className="py-3 px-4">Open Mat</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <p className="text-xs text-text-secondary mt-4 text-center">
-                * Horários sujeitos a alterações. Consulta a página de horários para mais detalhes.
-              </p>
+              {isScheduleLoading ? (
+                <p className="text-sm text-text-secondary">A carregar horários...</p>
+              ) : jiuJitsuSchedule.length === 0 ? (
+                <p className="text-sm text-text-secondary">
+                  Ainda não há aulas de Jiu-Jitsu publicadas. Consulta os horários completos para
+                  atualizações.
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border-subtle">
+                        <th className="text-left py-3 px-4 text-text-secondary font-medium">Dia</th>
+                        <th className="text-left py-3 px-4 text-text-secondary font-medium">Hora</th>
+                        <th className="text-left py-3 px-4 text-text-secondary font-medium">Nível</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-text-secondary">
+                      {jiuJitsuSchedule.map((entry) => (
+                        <tr
+                          key={entry.id}
+                          className="border-b border-border-subtle hover:bg-surface-2 transition-colors"
+                        >
+                          <td className="py-3 px-4">{dayLabels[entry.dayOfWeek] ?? entry.dayOfWeek}</td>
+                          <td className="py-3 px-4">
+                            {entry.startTime.slice(0, 5)} - {entry.endTime.slice(0, 5)}
+                          </td>
+                          <td className="py-3 px-4">{formatScheduleLevel(entry.level)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <Button asChild variant="outline" className="mt-5 w-full sm:w-auto">
+                <Link to="/schedule">Ver horários completos</Link>
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -701,27 +405,20 @@ function JiuJitsuPage() {
         <div className="max-w-4xl mx-auto text-center">
           <Card className="bg-surface border-border-subtle" style={{ padding: "60px 40px" }}>
             <CardContent>
-              <Target
-                size={40}
-                strokeWidth={1.5}
-                style={{ color: "#C1121F", marginBottom: "24px" }}
-              />
+              <Target size={40} strokeWidth={1.5} style={{ color: "#C1121F", marginBottom: "24px" }} />
               <h2 className="font-display text-4xl mb-4" style={{ color: "#F5F5F5" }}>
-                PRONTO PARA COMEÇAR?
+                COMEÇA A TUA EVOLUÇÃO NO TATAME
               </h2>
-              <p
-                className="text-lg mb-8 mx-auto max-w-md"
-                style={{ color: "#666", lineHeight: 1.8 }}
-              >
-                Descubra como o Jiu-Jitsu pode transformar a sua vida.
+              <p className="text-lg mb-8 mx-auto max-w-md" style={{ color: "#666", lineHeight: 1.8 }}>
+                Agenda uma aula experimental e descobre como o Jiu-Jitsu pode melhorar a tua técnica,
+                confiança e disciplina.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button
-                  asChild
-                  variant="outline"
-                  className="w-full sm:w-auto px-10 py-4 text-[12px] tracking-[0.25em] uppercase font-semibold rounded-[2px] border-border-subtle hover:border-red-500 transition-all duration-300"
+                  onClick={() => setIsOpen(true)}
+                  className="btn-red w-full sm:w-auto px-10 py-4 text-[12px] tracking-[0.25em] uppercase font-semibold rounded-[2px]"
                 >
-                  <Link to="/plans">Ver Planos</Link>
+                  Reservar aula experimental
                 </Button>
               </div>
             </CardContent>

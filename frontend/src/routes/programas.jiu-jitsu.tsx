@@ -98,28 +98,6 @@ function JiuJitsuPage() {
 
   return (
     <main className="bg-background text-foreground min-h-screen">
-      <nav className="sticky top-0 z-40 border-b border-border-subtle bg-background/95 backdrop-blur">
-        <div className="mx-auto max-w-6xl px-4 py-3">
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-            <Button asChild variant="outline" size="sm" className="border-border-subtle">
-              <Link to="/">Início</Link>
-            </Button>
-            <Button asChild variant="outline" size="sm" className="border-border-subtle">
-              <Link to="/programs">Programas</Link>
-            </Button>
-            <Button asChild variant="outline" size="sm" className="border-border-subtle">
-              <Link to="/schedule">Horários</Link>
-            </Button>
-            <Button asChild variant="outline" size="sm" className="border-border-subtle">
-              <Link to="/plans">Planos</Link>
-            </Button>
-            <Button asChild className="btn-red" size="sm">
-              <Link to="/login">Login</Link>
-            </Button>
-          </div>
-        </div>
-      </nav>
-
       <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
@@ -167,7 +145,7 @@ function JiuJitsuPage() {
               onClick={handleTrialCtaClick}
               className="btn-red w-full sm:w-auto px-10 py-5 text-[12px] tracking-[0.25em] uppercase font-semibold rounded-[2px]"
             >
-              Agendar aula experimental
+              Comecar agora
             </Button>
             <Button
               asChild
@@ -335,30 +313,6 @@ function JiuJitsuPage() {
         </div>
       </section>
 
-      <section className="section-pad px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <Card className="bg-surface border-border-subtle" style={{ padding: "60px 40px" }}>
-            <CardContent>
-              <Target size={40} strokeWidth={1.5} style={{ color: "#C1121F", marginBottom: "24px" }} />
-              <h2 className="font-display text-4xl mb-4" style={{ color: "#F5F5F5" }}>
-                COMEÇA A TUA EVOLUÇÃO NO TATAME
-              </h2>
-              <p className="text-lg mb-8 mx-auto max-w-md" style={{ color: "#666", lineHeight: 1.8 }}>
-                Agenda uma aula experimental e descobre como o Jiu-Jitsu pode melhorar a tua técnica,
-                confiança e disciplina.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button
-                  onClick={handleTrialCtaClick}
-                  className="btn-red w-full sm:w-auto px-10 py-4 text-[12px] tracking-[0.25em] uppercase font-semibold rounded-[2px]"
-                >
-                  Reservar aula experimental
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
     </main>
   );
 }

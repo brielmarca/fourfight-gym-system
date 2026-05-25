@@ -1,11 +1,14 @@
 import { Link } from "@tanstack/react-router";
 
+import { openCookiePreferences } from "@/components/privacy/CookieConsentBanner";
+
 const navigationLinks = [
   { label: "Academia", to: "/about" },
   { label: "Programas", to: "/programs" },
   { label: "Horários", to: "/schedule" },
   { label: "Planos", to: "/plans" },
   { label: "Contacto", to: "/contact" },
+  { label: "Política de Cookies", to: "/politica-cookies" },
 ];
 
 const contactInfo = {
@@ -71,6 +74,14 @@ export function Footer() {
                   <span className="absolute bottom-0 left-1/2 h-px w-0 -translate-x-1/2 bg-red-500 transition-all duration-300 group-hover:w-6" />
                 </Link>
               ))}
+              <button
+                type="button"
+                onClick={openCookiePreferences}
+                className="group relative inline-flex justify-center pb-2 text-[11px] font-medium uppercase tracking-[0.28em] text-zinc-500 transition-colors duration-300 hover:text-red-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-600/70"
+              >
+                Preferências de cookies
+                <span className="absolute bottom-0 left-1/2 h-px w-0 -translate-x-1/2 bg-red-500 transition-all duration-300 group-hover:w-6" />
+              </button>
             </nav>
           </div>
 

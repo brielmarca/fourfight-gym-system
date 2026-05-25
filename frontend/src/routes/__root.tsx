@@ -2,10 +2,11 @@ import { Outlet, Link, createRootRoute, useLocation } from "@tanstack/react-rout
 
 import { HomeButton } from "../components/site/HomeButton";
 import { Footer } from "../components/site/Footer";
+import { CookieConsentBanner } from "../components/privacy/CookieConsentBanner";
 import { AuthProvider } from "../contexts/auth-context";
 import { QueryProvider } from "../providers/query-provider";
 
-const publicFooterRoutes = new Set(["/", "/about", "/programs", "/schedule", "/plans", "/contact"]);
+const publicFooterRoutes = new Set(["/", "/about", "/programs", "/schedule", "/plans", "/contact", "/politica-cookies"]);
 
 function shouldShowFooter(pathname: string) {
   const normalizedPath = pathname.length > 1 ? pathname.replace(/\/$/, "") : pathname;
@@ -51,6 +52,7 @@ export const Route = createRootRoute({
             {!isHomePage && <HomeButton />}
             <Outlet />
             {showFooter && <Footer />}
+            <CookieConsentBanner />
           </div>
         </AuthProvider>
       </QueryProvider>

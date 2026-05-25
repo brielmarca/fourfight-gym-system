@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.UUID;
 
 @Repository
 public interface MembershipRepository extends JpaRepository<Membership, UUID> {
@@ -40,4 +41,6 @@ public interface MembershipRepository extends JpaRepository<Membership, UUID> {
     Optional<Membership> findByStripeCheckoutSessionId(String stripeCheckoutSessionId);
 
     Optional<Membership> findByStripeSubscriptionId(String stripeSubscriptionId);
+
+    Optional<Membership> findTopByUserIdAndStatusOrderByCreatedAtDesc(UUID userId, Membership.MembershipStatus status);
 }

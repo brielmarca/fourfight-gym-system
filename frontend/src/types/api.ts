@@ -8,15 +8,68 @@ export interface UserResponse {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: UserRole;
   phone?: string;
   avatarUrl?: string;
 }
 
+export type UserRole = "ADMIN" | "MANAGER" | "STUDENT" | "PROFESSOR";
+
 export interface User {
   id: string;
   email: string;
-  role: string;
+  role: UserRole;
+}
+
+export type Modality = "JIU_JITSU" | "BOXE_KICKBOXING" | "CAPOEIRA" | "MMA";
+
+export interface ProfessorSummary {
+  id: string;
+  name: string;
+  email: string;
+  modalities: Modality[];
+}
+
+export interface ProfessorAssignment {
+  id: string;
+  professorId: string;
+  professorName: string;
+  professorEmail: string;
+  studentId: string;
+  studentName: string;
+  studentEmail: string;
+  modality: Modality;
+  notes: string | null;
+  active: boolean;
+  createdAt: string;
+  deactivatedAt: string | null;
+}
+
+export interface AssignedProfessorStudent {
+  studentId: string;
+  studentName: string;
+  studentEmail: string;
+  modality: Modality;
+  notes: string | null;
+  assignedAt: string;
+  planName?: string | null;
+  membershipStatus?: string | null;
+}
+
+export interface PromoteProfessorRequest {
+  email: string;
+  modalities: Modality[];
+}
+
+export interface UpdateProfessorModalitiesRequest {
+  modalities: Modality[];
+}
+
+export interface CreateProfessorAssignmentRequest {
+  professorId: string;
+  studentId: string;
+  modality: Modality;
+  notes?: string;
 }
 
 export interface Belt {

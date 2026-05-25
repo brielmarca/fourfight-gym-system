@@ -67,3 +67,12 @@ export {
 } from "./schedule";
 export { usePreRegistrations, usePreRegistrationDetail, useImportPreRegistrationsCsv } from "./pre-registrations";
 export { useAdminGraduations, useUpdateAdminGraduation } from "./graduations";
+export {
+  useProfessors,
+  usePromoteProfessor,
+  useUpdateProfessorModalities,
+  useProfessorAssignments,
+  useCreateProfessorAssignment,
+  useDeactivateProfessorAssignment,
+  useMyProfessorStudents,
+} from "./professors";

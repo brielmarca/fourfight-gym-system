@@ -198,11 +198,12 @@ function AdminPage() {
 
   const dedupedStudents = getBestMembershipPerUser(realMemberships);
   const activeStudents = dedupedStudents.filter((m) => m.status === "ACTIVE");
-  const expiredStudents = dedupedStudents.filter((m) => m.status === "EXPIRED");
   const cancelledStudents = dedupedStudents.filter((m) => m.status === "CANCELLED");
   const basicStudents = activeStudents.filter((m) => normalizeText(m.planName) === "basic");
   const standardStudents = activeStudents.filter((m) => normalizeText(m.planName) === "standard");
   const premiumStudents = activeStudents.filter((m) => normalizeText(m.planName) === "premium");
+  const preRegistrationsCount =
+    preRegistrationsData?.totalElements ?? preRegistrationsData?.content?.length ?? 0;
 
   const studentsByFilter =
     studentsFilter === "ACTIVE"
@@ -272,7 +273,7 @@ function AdminPage() {
       <main className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
         <div className="mb-6 sm:mb-8">
           <h1 className="font-display text-2xl sm:text-4xl tracking-wider">PAINEL ADMIN</h1>
-          <p className="text-text-secondary mt-1 text-sm sm:text-base">Gerencie sua academia</p>
+          <p className="text-text-secondary mt-1 text-sm sm:text-base">Gerencie a sua academia</p>
         </div>
 
         <Tabs defaultValue="dashboard" className="space-y-6">
@@ -333,29 +334,12 @@ function AdminPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               <Card
                 className="bg-surface border-border-subtle"
-                style={{ borderTop: "2px solid #C1121F" }}
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs tracking-[0.2em] uppercase text-text-secondary flex items-center gap-2">
-                    <Users size={14} />
-                    Total de Alunos
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="font-display text-4xl tracking-wider" style={{ color: "#F5F5F5" }}>
-                    {activeStudents.length}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card
-                className="bg-surface border-border-subtle"
                 style={{ borderTop: "2px solid #22C55E" }}
               >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs tracking-[0.2em] uppercase text-text-secondary flex items-center gap-2">
-                    <Shield size={14} />
-                    Matrículas Ativas
+                    <Users size={14} />
+                    Alunos Ativos
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -371,13 +355,30 @@ function AdminPage() {
               >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs tracking-[0.2em] uppercase text-text-secondary flex items-center gap-2">
-                    <Clock size={14} />
-                    Matrículas Expiradas
+                    <Shield size={14} />
+                    Alunos Cancelados
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="font-display text-4xl tracking-wider" style={{ color: "#C1121F" }}>
-                    {expiredStudents.length}
+                    {cancelledStudents.length}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card
+                className="bg-surface border-border-subtle"
+                style={{ borderTop: "2px solid #C1121F" }}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs tracking-[0.2em] uppercase text-text-secondary flex items-center gap-2">
+                    <Clock size={14} />
+                    Pré-inscrições
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="font-display text-4xl tracking-wider" style={{ color: "#C1121F" }}>
+                    {preRegistrationsCount}
                   </p>
                 </CardContent>
               </Card>
@@ -389,16 +390,19 @@ function AdminPage() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs tracking-[0.2em] uppercase text-text-secondary flex items-center gap-2">
                     <CreditCard size={14} />
-                    Faixas Cadastradas
+                    Pedidos na Receção
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="font-display text-4xl tracking-wider" style={{ color: "#F5F5F5" }}>
-                    {belts.length}
+                    {pendingReception.length}
                   </p>
                 </CardContent>
               </Card>
             </div>
+            <p className="mt-4 text-sm text-text-secondary">
+              Pré-inscrições são contactos/leads ainda não convertidos em alunos. Pedidos na receção são matrículas pendentes de aprovação.
+            </p>
           </TabsContent>
 
           <TabsContent value="schedule">

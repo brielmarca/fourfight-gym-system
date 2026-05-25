@@ -43,7 +43,9 @@ management:
         include: health,info
   endpoint:
     health:
-      show-details: when-authorized
+      show-details: never
+      probes:
+        enabled: true
 
 stripe:
   secret-key: ${STRIPE_SECRET_KEY:}

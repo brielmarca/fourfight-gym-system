@@ -859,7 +859,7 @@ function AdminPage() {
                       <Select value={assignmentStudentId} onValueChange={setAssignmentStudentId}>
                         <SelectTrigger><SelectValue placeholder="Aluno" /></SelectTrigger>
                         <SelectContent>
-                          {activeStudents.map((student) => (
+                          {activeVisibleStudents.map((student) => (
                             <SelectItem key={student.userId} value={student.userId}>{student.userName} ({student.userEmail})</SelectItem>
                           ))}
                         </SelectContent>

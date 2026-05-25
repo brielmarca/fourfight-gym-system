@@ -68,6 +68,7 @@ public class SecurityConfig {
                 // Actuator health (public)
                 .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
                 .requestMatchers("/actuator/**").hasRole("ADMIN")
+                .requestMatchers("/api/admin/professors/**", "/api/admin/professor-assignments/**").hasAnyRole("ADMIN", "MANAGER")
                 // Admin: full access
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 // Manager: admin and manager access
@@ -86,8 +87,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/graduations/**").hasAnyRole("ADMIN", "MANAGER", "TRAINER")
                 // Trainer
                 .requestMatchers("/api/trainer/**").hasAnyRole("ADMIN", "MANAGER", "TRAINER")
+                // Professor
+                .requestMatchers("/api/professor/**").hasRole("PROFESSOR")
                 // User endpoints
-                .requestMatchers(HttpMethod.GET, "/api/user/me").hasAnyRole("ADMIN", "MANAGER", "TRAINER", "CLIENT")
+                .requestMatchers(HttpMethod.GET, "/api/user/me").hasAnyRole("ADMIN", "MANAGER", "TRAINER", "PROFESSOR", "CLIENT")
                 .requestMatchers("/api/user/**").hasAnyRole("ADMIN", "MANAGER", "TRAINER")
                 // Stripe authenticated
                 .requestMatchers("/api/stripe/**").authenticated()

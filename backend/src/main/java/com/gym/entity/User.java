@@ -95,6 +95,6 @@ public class User {
     }
 
     public enum Role {
-        ADMIN, MANAGER, TRAINER, CLIENT
+        ADMIN, MANAGER, TRAINER, PROFESSOR, CLIENT
     }
 }

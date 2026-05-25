@@ -117,8 +117,34 @@ function AdminPage() {
     }>;
     totalElements?: number;
   } | null;
-  const activeCount = memberships?.content?.filter((m) => m.status === "ACTIVE").length || 0;
-  const expiredCount = memberships?.content?.filter((m) => m.status === "EXPIRED").length || 0;
+  const visibleStudentStatuses = ["ACTIVE", "CANCELLED", "EXPIRED"] as const;
+
+  const isTestMembership = (membership: { userName: string; userEmail: string }) => {
+    const searchableText = `${membership.userName} ${membership.userEmail}`.toLowerCase();
+    const testMarkers = [
+      "example.com",
+      "postlive",
+      "eurcheck",
+      "payer",
+      "payerx",
+      "audit",
+      "stripe.test",
+      "livecheck",
+      "program prune",
+      "test",
+    ];
+
+    return testMarkers.some((marker) => searchableText.includes(marker));
+  };
+
+  const visibleStudents =
+    memberships?.content?.filter(
+      (membership) =>
+        visibleStudentStatuses.includes(membership.status as (typeof visibleStudentStatuses)[number]) &&
+        !isTestMembership(membership),
+    ) ?? [];
+  const activeCount = visibleStudents.filter((m) => m.status === "ACTIVE").length;
+  const expiredCount = visibleStudents.filter((m) => m.status === "EXPIRED").length;
 
   const handleImportCsv = async () => {
     if (!selectedCsvFile) {
@@ -237,7 +263,7 @@ function AdminPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="font-display text-4xl tracking-wider" style={{ color: "#F5F5F5" }}>
-                    {memberships?.totalElements || 0}
+                    {visibleStudents.length}
                   </p>
                 </CardContent>
               </Card>
@@ -380,6 +406,9 @@ function AdminPage() {
                 <CardTitle className="text-xs tracking-[0.2em] uppercase">
                   Todos os Alunos
                 </CardTitle>
+                <p className="text-xs text-text-secondary">
+                  Esta lista mostra apenas matrículas reais ativas, expiradas ou canceladas. Pedidos pendentes ficam na aba Receção.
+                </p>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
@@ -400,8 +429,8 @@ function AdminPage() {
                             Falha ao carregar alunos. {(membershipsError as Error).message}
                           </TableCell>
                         </TableRow>
-                      ) : memberships?.content?.length > 0 ? (
-                        memberships.content.map((m) => (
+                      ) : visibleStudents.length > 0 ? (
+                        visibleStudents.map((m) => (
                           <TableRow key={m.id} className="border-border-subtle">
                             <TableCell className="font-medium">
                               <div>{m.userName || "-"}</div>
@@ -427,7 +456,9 @@ function AdminPage() {
                                   ? "Ativo"
                                   : m.status === "EXPIRED"
                                     ? "Expirado"
-                                    : m.status}
+                                    : m.status === "CANCELLED"
+                                      ? "Cancelado"
+                                      : m.status}
                               </Badge>
                             </TableCell>
                           </TableRow>
@@ -435,7 +466,7 @@ function AdminPage() {
                       ) : (
                         <TableRow className="hover:bg-transparent">
                           <TableCell colSpan={5} className="text-center py-12 text-text-secondary">
-                            Nenhum aluno encontrado
+                            Nenhum aluno real encontrado.
                           </TableCell>
                         </TableRow>
                       )}

@@ -442,6 +442,12 @@ export const api = {
         body: formData,
       });
     },
+    listGraduations: () => request<AdminGraduation[]>("/admin/graduations"),
+    updateGraduation: (data: UpdateAdminGraduationRequest) =>
+      request<AdminGraduation>("/admin/graduations", {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
   },
 
   classEnrollments: {

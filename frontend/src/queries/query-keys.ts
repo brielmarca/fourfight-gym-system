@@ -57,6 +57,10 @@ const queryKeys = {
     list: (page: number, size: number) => [...queryKeys.preRegistrations.all, "list", page, size] as const,
     detail: (id: string) => [...queryKeys.preRegistrations.all, "detail", id] as const,
   },
+  graduations: {
+    all: ["graduations"] as const,
+    list: () => [...queryKeys.graduations.all, "list"] as const,
+  },
 };
 
 export default queryKeys;

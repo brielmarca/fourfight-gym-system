@@ -228,6 +228,23 @@ export interface AdminPreRegistrationDetail extends AdminPreRegistrationListItem
   createdAt: string;
 }
 
+export type GraduationModality = "JIU_JITSU" | "BOXE_KICKBOXING" | "CAPOEIRA" | "MMA";
+
+export interface AdminGraduation {
+  studentName: string;
+  studentEmail: string;
+  modality: GraduationModality;
+  currentGraduation: string;
+  nextGraduation: string;
+  updatedAt: string | null;
+}
+
+export interface UpdateAdminGraduationRequest {
+  studentEmail: string;
+  modality: GraduationModality;
+  currentLevel: string;
+}
+
 export interface UpdateUserRequest {
   name?: string;
   phone?: string;

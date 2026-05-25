@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { isAuthenticated, getUser } from "@/lib/api";
 import {
   useApproveReceptionRequest,
-  useBelts,
+  useAdminGraduations,
   useMemberships,
   usePendingReceptionRequests,
   usePlans,
@@ -16,6 +16,7 @@ import {
   usePreRegistrations,
   usePreRegistrationDetail,
   useImportPreRegistrationsCsv,
+  useUpdateAdminGraduation,
 } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,7 +49,8 @@ export const Route = createFileRoute("/admin")({
 function AdminPage() {
   const navigate = useNavigate();
   const { user, hasRole, logout } = useAuth();
-  const { data: belts = [], isLoading: beltsLoading } = useBelts();
+  const { data: graduations = [], isLoading: graduationsLoading } = useAdminGraduations(hasRole(["ADMIN", "MANAGER"]));
+  const updateGraduation = useUpdateAdminGraduation();
   const { data: membershipsData, isLoading: membershipsLoading, error: membershipsError } = useMemberships(0, 50);
   const { data: plans = [], isLoading: plansLoading } = usePlans();
   const canManageReception = hasRole(["ADMIN"]);
@@ -64,6 +66,8 @@ function AdminPage() {
   const [studentsFilter, setStudentsFilter] = useState<"ACTIVE" | "CANCELLED" | "BASIC" | "STANDARD" | "PREMIUM">("ACTIVE");
   const [selectedPreRegistrationId, setSelectedPreRegistrationId] = useState<string>("");
   const [selectedCsvFile, setSelectedCsvFile] = useState<File | null>(null);
+  const [graduationFilter, setGraduationFilter] = useState<"ALL" | "JIU_JITSU" | "BOXE_KICKBOXING" | "CAPOEIRA" | "MMA">("ALL");
+  const [selectedLevels, setSelectedLevels] = useState<Record<string, string>>({});
   const [importFeedback, setImportFeedback] = useState<string>("");
   const [formError, setFormError] = useState<string | null>(null);
   const importPreRegistrations = useImportPreRegistrationsCsv();
@@ -81,7 +85,7 @@ function AdminPage() {
     active: true,
   });
 
-  const loading = beltsLoading || membershipsLoading || plansLoading || pendingReceptionLoading;
+  const loading = graduationsLoading || membershipsLoading || plansLoading || pendingReceptionLoading;
   const { data: preRegistrationsData, isLoading: preRegistrationsLoading } = usePreRegistrations(0, 100, canManageReception);
   const { data: preRegistrationDetail } = usePreRegistrationDetail(selectedPreRegistrationId, canManageReception && !!selectedPreRegistrationId);
 
@@ -216,6 +220,36 @@ function AdminPage() {
             ? standardStudents
             : premiumStudents;
 
+  const graduationLabels: Record<string, string[]> = {
+    JIU_JITSU: ["Branca", "Azul", "Roxa", "Castanha", "Preta"],
+    BOXE_KICKBOXING: ["Fundamentos", "Tecnica", "Combinacoes", "Sparring", "Performance"],
+    CAPOEIRA: ["Crua", "Amarela", "Laranja", "Azul", "Verde", "Rubi"],
+    MMA: ["Fundamentos", "Tecnica", "Transicoes", "Sparring Controlado", "Performance"],
+  };
+
+  const modalityLabels: Record<string, string> = {
+    JIU_JITSU: "Jiu-Jitsu",
+    BOXE_KICKBOXING: "Boxe/Kickboxing",
+    CAPOEIRA: "Capoeira",
+    MMA: "MMA",
+  };
+
+  const visibleGraduations = graduations.filter((item) =>
+    graduationFilter === "ALL" ? true : item.modality === graduationFilter,
+  );
+
+  const graduationKey = (studentEmail: string, modality: string) => `${studentEmail}::${modality}`;
+
+  const handleSaveGraduation = async (studentEmail: string, modality: "JIU_JITSU" | "BOXE_KICKBOXING" | "CAPOEIRA" | "MMA", currentFallback: string) => {
+    const key = graduationKey(studentEmail, modality);
+    const selected = selectedLevels[key] || currentFallback;
+    await updateGraduation.mutateAsync({
+      studentEmail,
+      modality,
+      currentLevel: selected,
+    });
+  };
+
   const studentsEmptyMessage =
     studentsFilter === "ACTIVE"
       ? "Nenhum aluno ativo encontrado."
@@ -295,7 +329,7 @@ function AdminPage() {
                 value="belts"
                 className="tracking-[0.15em] uppercase text-xs data-[state=active]:bg-primary data-[state=active]:text-white rounded-sm"
               >
-                Faixas
+                Graduação
               </TabsTrigger>
               <TabsTrigger
                 value="plans"
@@ -639,37 +673,81 @@ function AdminPage() {
             >
               <CardHeader>
                 <CardTitle className="text-xs tracking-[0.2em] uppercase">
-                  Gerenciar Faixas
+                  Gestão de Graduação
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {belts.length > 0 ? (
-                  <div className="space-y-2">
-                    {belts.map((belt) => (
-                      <div
-                        key={belt.id}
-                        className="flex items-center justify-between p-3 bg-surface-2 border border-border-subtle"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className="w-6 h-6 border-2"
-                            style={{
-                              borderColor: belt.colorHex,
-                              backgroundColor: belt.colorHex + "22",
-                            }}
-                          />
-                          <span className="font-medium">{belt.name}</span>
-                        </div>
-                        <span className="text-xs text-text-secondary">Ordem: {belt.rankOrder}</span>
-                      </div>
-                    ))}
+                <div className="mb-4 flex flex-wrap gap-2">
+                  <Button size="sm" variant={graduationFilter === "ALL" ? "default" : "outline"} onClick={() => setGraduationFilter("ALL")}>Todas</Button>
+                  <Button size="sm" variant={graduationFilter === "JIU_JITSU" ? "default" : "outline"} onClick={() => setGraduationFilter("JIU_JITSU")}>Jiu-Jitsu</Button>
+                  <Button size="sm" variant={graduationFilter === "BOXE_KICKBOXING" ? "default" : "outline"} onClick={() => setGraduationFilter("BOXE_KICKBOXING")}>Boxe/Kickboxing</Button>
+                  <Button size="sm" variant={graduationFilter === "CAPOEIRA" ? "default" : "outline"} onClick={() => setGraduationFilter("CAPOEIRA")}>Capoeira</Button>
+                  <Button size="sm" variant={graduationFilter === "MMA" ? "default" : "outline"} onClick={() => setGraduationFilter("MMA")}>MMA</Button>
+                </div>
+
+                {visibleGraduations.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-border-subtle hover:bg-transparent">
+                          <TableHead>Aluno</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Modalidade</TableHead>
+                          <TableHead>Graduação atual</TableHead>
+                          <TableHead>Próxima graduação</TableHead>
+                          <TableHead>Atualizado em</TableHead>
+                          <TableHead className="text-right">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {visibleGraduations.map((item) => {
+                          const key = graduationKey(item.studentEmail, item.modality);
+                          const options = graduationLabels[item.modality] ?? [];
+                          return (
+                            <TableRow key={key} className="border-border-subtle">
+                              <TableCell className="font-medium">{item.studentName}</TableCell>
+                              <TableCell>{item.studentEmail}</TableCell>
+                              <TableCell>{modalityLabels[item.modality] ?? item.modality}</TableCell>
+                              <TableCell>
+                                <Select
+                                  value={selectedLevels[key] ?? item.currentGraduation}
+                                  onValueChange={(value) =>
+                                    setSelectedLevels((prev) => ({ ...prev, [key]: value }))
+                                  }
+                                >
+                                  <SelectTrigger className="w-[200px]">
+                                    <SelectValue placeholder="Selecionar" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {options.map((option) => (
+                                      <SelectItem key={option} value={option}>
+                                        {option}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </TableCell>
+                              <TableCell>{item.nextGraduation || "-"}</TableCell>
+                              <TableCell>{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString("pt-PT") : "-"}</TableCell>
+                              <TableCell className="text-right">
+                                <Button
+                                  size="sm"
+                                  disabled={updateGraduation.isPending}
+                                  onClick={() => handleSaveGraduation(item.studentEmail, item.modality, item.currentGraduation)}
+                                >
+                                  Guardar
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
                   </div>
                 ) : (
                   <div className="text-center py-12">
                     <Shield size={32} className="mx-auto mb-3 text-text-muted" />
-                    <p className="text-text-secondary">
-                      Nenhuma faixa cadastrada. Cadastre as faixas da academia.
-                    </p>
+                    <p className="text-text-secondary">Sem alunos encontrados</p>
                   </div>
                 )}
               </CardContent>

@@ -153,7 +153,15 @@ function AdminPage() {
 
   const normalizeText = (value?: string) => value?.trim().toLowerCase() ?? "";
 
+  const isDeveloperMembership = (membership: { userEmail: string }) => {
+    return normalizeText(membership.userEmail) === "brielmarca@gmail.com";
+  };
+
   const isTestMembership = (membership: { userName: string; userEmail: string }) => {
+    if (isDeveloperMembership(membership)) {
+      return false;
+    }
+
     const searchableText = `${membership.userName} ${membership.userEmail}`.toLowerCase();
     const testMarkers = [
       "example.com",
@@ -215,7 +223,7 @@ function AdminPage() {
     return Array.from(grouped.values());
   };
 
-  const realMemberships =
+  const visibleStudents =
     memberships?.content?.filter(
       (membership) =>
         includedStudentStatuses.includes(membership.status as (typeof includedStudentStatuses)[number]) &&
@@ -223,19 +231,23 @@ function AdminPage() {
         !isTestMembership(membership),
     ) ?? [];
 
-  const dedupedStudents = getBestMembershipPerUser(realMemberships);
-  const activeStudents = dedupedStudents.filter((m) => m.status === "ACTIVE");
-  const cancelledStudents = dedupedStudents.filter((m) => m.status === "CANCELLED");
-  const basicStudents = activeStudents.filter((m) => normalizeText(m.planName) === "basic");
-  const standardStudents = activeStudents.filter((m) => normalizeText(m.planName) === "standard");
-  const premiumStudents = activeStudents.filter((m) => normalizeText(m.planName) === "premium");
+  const dedupedVisibleStudents = getBestMembershipPerUser(visibleStudents);
+  const businessStudents = dedupedVisibleStudents.filter((membership) => !isDeveloperMembership(membership));
+
+  const activeVisibleStudents = dedupedVisibleStudents.filter((m) => m.status === "ACTIVE");
+  const cancelledVisibleStudents = dedupedVisibleStudents.filter((m) => m.status === "CANCELLED");
+  const basicStudents = activeVisibleStudents.filter((m) => normalizeText(m.planName) === "basic");
+  const standardStudents = activeVisibleStudents.filter((m) => normalizeText(m.planName) === "standard");
+  const premiumStudents = activeVisibleStudents.filter((m) => normalizeText(m.planName) === "premium");
+  const activeBusinessStudents = businessStudents.filter((m) => m.status === "ACTIVE");
+  const cancelledBusinessStudents = businessStudents.filter((m) => m.status === "CANCELLED");
   const preRegistrationsCount =
     preRegistrationsData?.totalElements ?? preRegistrationsData?.content?.length ?? 0;
   const pendingRequestsCount = pendingReception.length;
 
   const plansByName = new Map(plans.map((plan) => [normalizeText(plan.name), plan]));
 
-  const estimatedMonthlyRevenue = activeStudents.reduce((total, membership) => {
+  const estimatedMonthlyRevenue = activeBusinessStudents.reduce((total, membership) => {
     const plan = plansByName.get(normalizeText(membership.planName));
     return total + (plan?.price ?? 0);
   }, 0);
@@ -245,7 +257,7 @@ function AdminPage() {
     currency: "EUR",
   }).format(estimatedMonthlyRevenue);
 
-  const activePlanCounts = activeStudents.reduce((counts, membership) => {
+  const activePlanCounts = activeBusinessStudents.reduce((counts, membership) => {
     const planName = membership.planName?.trim();
     if (!planName) {
       return counts;
@@ -262,9 +274,9 @@ function AdminPage() {
 
   const studentsByFilter =
     studentsFilter === "ACTIVE"
-      ? activeStudents
+      ? activeVisibleStudents
       : studentsFilter === "CANCELLED"
-        ? cancelledStudents
+        ? cancelledVisibleStudents
         : studentsFilter === "BASIC"
           ? basicStudents
           : studentsFilter === "STANDARD"
@@ -485,7 +497,7 @@ function AdminPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="font-display text-4xl tracking-wider" style={{ color: "#22C55E" }}>
-                    {activeStudents.length}
+                    {activeBusinessStudents.length}
                   </p>
                 </CardContent>
               </Card>
@@ -502,7 +514,7 @@ function AdminPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="font-display text-4xl tracking-wider" style={{ color: "#C1121F" }}>
-                    {cancelledStudents.length}
+                    {cancelledBusinessStudents.length}
                   </p>
                 </CardContent>
               </Card>
@@ -580,6 +592,9 @@ function AdminPage() {
             </div>
             <p className="mt-4 text-sm text-text-secondary">
               Os valores financeiros são estimativas operacionais, não substituem faturação ou contabilidade.
+            </p>
+            <p className="mt-1 text-sm text-text-secondary">
+              Contas internas/developer não entram nas métricas de alunos pagantes nem na receita estimada.
             </p>
           </TabsContent>
 
@@ -702,7 +717,17 @@ function AdminPage() {
                         studentsByFilter.map((m) => (
                           <TableRow key={m.id} className="border-border-subtle">
                             <TableCell className="font-medium">
-                              <div>{m.userName || "-"}</div>
+                              <div className="flex items-center gap-2">
+                                <span>{m.userName || "-"}</span>
+                                {isDeveloperMembership(m) && (
+                                  <Badge
+                                    variant="outline"
+                                    className="border-blue-500/40 bg-blue-500/10 text-blue-300"
+                                  >
+                                    DEVELOPER
+                                  </Badge>
+                                )}
+                              </div>
                               <div className="text-xs text-text-secondary">{m.userEmail || "-"}</div>
                             </TableCell>
                             <TableCell>{m.planName}</TableCell>

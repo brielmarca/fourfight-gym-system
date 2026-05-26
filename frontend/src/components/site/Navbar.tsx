@@ -13,9 +13,27 @@ const links = [
 
 function Navbar() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { role, isAuthenticated, isLoading, logout } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+
+  const getDashboardAction = () => {
+    if (!isAuthenticated || !role) {
+      return { to: "/login", label: "Login" };
+    }
+
+    if (role === "ADMIN" || role === "MANAGER") {
+      return { to: "/admin", label: "Painel Admin" };
+    }
+
+    if (role === "PROFESSOR") {
+      return { to: "/professor", label: "Área Trainer" };
+    }
+
+    return { to: "/student-area", label: "Área do Aluno" };
+  };
+
+  const dashboardAction = getDashboardAction();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
@@ -66,33 +84,19 @@ function Navbar() {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
-          {isLoading ? null : isAuthenticated && user ? (
+          {isLoading ? (
+            <span className="inline-flex items-center justify-center border border-border-subtle bg-surface-2 text-text-secondary px-5 py-2.5 text-[11px] tracking-[0.2em] uppercase font-semibold rounded-[2px] opacity-70">
+              A carregar...
+            </span>
+          ) : isAuthenticated ? (
             <>
-              {user.role === "ADMIN" || user.role === "MANAGER" ? (
-                <Link
-                  to="/admin"
-                  className="flex items-center gap-2 text-[11px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors"
-                >
-                  <User size={16} />
-                  ADMIN
-                </Link>
-              ) : user.role === "PROFESSOR" ? (
-                <Link
-                  to="/professor"
-                  className="flex items-center gap-2 text-[11px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors"
-                >
-                  <User size={16} />
-                  PROFESSOR
-                </Link>
-              ) : (
-                <Link
-                  to="/student-area"
-                  className="flex items-center gap-2 text-[11px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors"
-                >
-                  <User size={16} />
-                  Minha Área
-                </Link>
-              )}
+              <Link
+                to={dashboardAction.to}
+                className="flex items-center gap-2 text-[11px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors"
+              >
+                <User size={16} />
+                {dashboardAction.label}
+              </Link>
               <button
                 onClick={handleLogout}
                 className="text-[11px] tracking-[0.15em] uppercase text-text-secondary hover:text-destructive transition-colors"
@@ -102,10 +106,10 @@ function Navbar() {
             </>
           ) : (
             <Link
-              to="/login"
+              to={dashboardAction.to}
               className="btn-red inline-flex items-center justify-center bg-primary text-primary-foreground px-5 py-2.5 text-[11px] tracking-[0.2em] uppercase font-semibold rounded-[2px]"
             >
-              Login
+              {dashboardAction.label}
             </Link>
           )}
         </div>
@@ -153,33 +157,19 @@ function Navbar() {
               {l.label}
             </Link>
           ))}
-          {isLoading ? null : isAuthenticated && user ? (
+          {isLoading ? (
+            <span className="mt-4 border border-border-subtle bg-surface-2 text-text-secondary px-8 py-3 text-sm tracking-[0.2em] font-bold rounded-[2px] text-center opacity-70">
+              A CARREGAR...
+            </span>
+          ) : isAuthenticated ? (
             <>
-              {user.role === "ADMIN" || user.role === "MANAGER" ? (
-                <Link
-                  to="/admin"
-                  onClick={() => setOpen(false)}
-                  className="font-display text-[28px] sm:text-[40px] leading-none tracking-wider text-primary text-center"
-                >
-                  ADMIN
-                </Link>
-              ) : user.role === "PROFESSOR" ? (
-                <Link
-                  to="/professor"
-                  onClick={() => setOpen(false)}
-                  className="font-display text-[28px] sm:text-[40px] leading-none tracking-wider text-primary text-center"
-                >
-                  PROFESSOR
-                </Link>
-              ) : (
-                <Link
-                  to="/student-area"
-                  onClick={() => setOpen(false)}
-                  className="font-display text-[28px] sm:text-[40px] leading-none tracking-wider text-center"
-                >
-                  MINHA ÁREA
-                </Link>
-              )}
+              <Link
+                to={dashboardAction.to}
+                onClick={() => setOpen(false)}
+                className="font-display text-[28px] sm:text-[40px] leading-none tracking-wider text-primary text-center"
+              >
+                {dashboardAction.label.toUpperCase()}
+              </Link>
               <button
                 onClick={() => {
                   handleLogout();
@@ -192,11 +182,11 @@ function Navbar() {
             </>
           ) : (
             <Link
-              to="/login"
+              to={dashboardAction.to}
               onClick={() => setOpen(false)}
               className="btn-red mt-4 bg-primary text-primary-foreground px-8 py-3 text-sm tracking-[0.2em] font-bold rounded-[2px] text-center"
             >
-              LOGIN
+              {dashboardAction.label.toUpperCase()}
             </Link>
           )}
         </nav>

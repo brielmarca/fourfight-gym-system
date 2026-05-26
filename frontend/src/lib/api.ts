@@ -35,6 +35,7 @@ let failedQueue: Array<{
   reject: (error: Error) => void;
 }> = [];
 let restorePromise: Promise<boolean> | null = null;
+const authTokenListeners = new Set<() => void>();
 
 const publicAuthEndpoints = new Set([
   "/auth/login",
@@ -181,13 +182,22 @@ function setTokens(accessToken: string, refreshToken?: string | null) {
   if (typeof window !== "undefined") {
     memoryAccessToken = accessToken;
     void refreshToken;
+    authTokenListeners.forEach((listener) => listener());
   }
 }
 
 function clearTokens() {
   if (typeof window !== "undefined") {
     memoryAccessToken = null;
+    authTokenListeners.forEach((listener) => listener());
   }
+}
+
+function onAuthTokenChange(listener: () => void): () => void {
+  authTokenListeners.add(listener);
+  return () => {
+    authTokenListeners.delete(listener);
+  };
 }
 
 function getAccessToken(): string | null {
@@ -571,7 +581,16 @@ export const api = {
   isAuthenticated,
 };
 
-export { setTokens, clearTokens, getAccessToken, getUser, isAuthenticated, hasRole, restoreAuthSession };
+export {
+  setTokens,
+  clearTokens,
+  onAuthTokenChange,
+  getAccessToken,
+  getUser,
+  isAuthenticated,
+  hasRole,
+  restoreAuthSession,
+};
 
 export type {
   TokenResponse,

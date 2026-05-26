@@ -5,6 +5,7 @@ import {
   setTokens,
   clearTokens,
   getUser,
+  onAuthTokenChange,
   restoreAuthSession,
   isAuthenticated as checkIsAuthenticated,
 } from "@/lib/api";
@@ -12,6 +13,7 @@ import type { RegisterRequest, User } from "@/types";
 
 interface AuthContextValue {
   user: User | null;
+  role: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -35,7 +37,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const restore = async () => {
       const restoreVersion = resetVersionRef.current;
       try {
-        await restoreAuthSession();
+        await Promise.race([
+          restoreAuthSession(),
+          new Promise<boolean>((resolve) => {
+            setTimeout(() => resolve(false), 12000);
+          }),
+        ]);
       } finally {
         if (!mounted) return;
         if (restoreVersion !== resetVersionRef.current) {
@@ -44,7 +51,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setIsLoading(false);
           return;
         }
-        setUser(getUser());
+        const restoredUser = getUser();
+        if (!restoredUser || !checkIsAuthenticated()) {
+          clearTokens();
+          setUser(null);
+        } else {
+          setUser(restoredUser);
+        }
         setIsLoading(false);
       }
     };
@@ -54,6 +67,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       mounted = false;
     };
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onAuthTokenChange(() => {
+      const nextUser = getUser();
+      setUser(nextUser && checkIsAuthenticated() ? nextUser : null);
+      setIsLoading(false);
+    });
+
+    return unsubscribe;
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -109,6 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        role: user?.role ?? null,
         isAuthenticated: !!user && checkIsAuthenticated(),
         isLoading,
         login,

@@ -28,7 +28,12 @@ function shouldBlockForAuthRestore(pathname: string): boolean {
 
 async function bootstrap() {
   if (typeof window !== "undefined" && shouldBlockForAuthRestore(window.location.pathname)) {
-    await restoreAuthSession();
+    await Promise.race([
+      restoreAuthSession(),
+      new Promise<boolean>((resolve) => {
+        setTimeout(() => resolve(false), 4000);
+      }),
+    ]).catch(() => false);
   }
 
   if (rootElement) {

@@ -129,16 +129,31 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
       } catch (err) {
         processQueue(err as Error, null);
         clearTokens();
-        window.location.href = "/login";
         throw err;
       } finally {
         isRefreshing = false;
       }
     }
 
-    clearTokens();
-    window.location.href = "/login";
-    throw new Error("Session expired");
+    return new Promise<T>((resolve, reject) => {
+      failedQueue.push({
+        resolve: (nextToken: string) => {
+          const retryHeaders = new Headers(options.headers ?? {});
+          retryHeaders.set("Authorization", `Bearer ${nextToken}`);
+
+          void request<T>(endpoint, {
+            ...options,
+            headers: retryHeaders,
+          })
+            .then(resolve)
+            .catch(reject);
+        },
+        reject: (error: Error) => {
+          clearTokens();
+          reject(error);
+        },
+      });
+    });
   }
 
   if (!response.ok) {

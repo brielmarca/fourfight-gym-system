@@ -39,6 +39,10 @@ function Navbar() {
     const onScroll = () => setScrolled(window.scrollY > 80);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -46,7 +50,7 @@ function Navbar() {
     void navigate({ to: "/", replace: true });
   };
 
-  const brandLogoClass = "h-9 w-auto object-contain md:h-10";
+  const brandLogoClass = "h-12 w-auto object-contain md:h-14";
 
   return (
     <header
@@ -56,7 +60,7 @@ function Navbar() {
       style={{ zIndex: 999 }}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between">
-        <Link to="/" className="flex items-center shrink-0">
+        <Link to="/" className="flex items-center shrink-0 py-1">
           <img
             src="/assets/logo.png"
             alt="4Four Fight Academy"
@@ -126,11 +130,11 @@ function Navbar() {
         style={{ zIndex: 1000 }}
       >
         <div className="h-16 px-4 sm:px-6 flex items-center justify-between border-b border-[#1A1A1A]">
-          <Link to="/" className="flex items-center shrink-0">
+          <Link to="/" className="flex items-center shrink-0 py-1">
             <img
               src="/assets/logo.png"
               alt="4Four Fight Academy"
-              className="h-9 w-auto object-contain"
+              className="h-11 w-auto object-contain"
             />
           </Link>
           <button aria-label="Close menu" className="p-2 -mr-2" onClick={() => setOpen(false)}>

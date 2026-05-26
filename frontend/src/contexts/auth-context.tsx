@@ -34,15 +34,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
+    const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number, fallback: T): Promise<T> => {
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+      const timeoutPromise = new Promise<T>((resolve) => {
+        timeoutId = setTimeout(() => resolve(fallback), timeoutMs);
+      });
+
+      try {
+        return await Promise.race([promise, timeoutPromise]);
+      } finally {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      }
+    };
+
     const restore = async () => {
       const restoreVersion = resetVersionRef.current;
       try {
-        await Promise.race([
-          restoreAuthSession(),
-          new Promise<boolean>((resolve) => {
-            setTimeout(() => resolve(false), 12000);
-          }),
-        ]);
+        await withTimeout(restoreAuthSession(), 4500, false);
+      } catch {
+        clearTokens();
+        setUser(null);
       } finally {
         if (!mounted) return;
         if (restoreVersion !== resetVersionRef.current) {

@@ -46,6 +46,8 @@ function Navbar() {
     void navigate({ to: "/", replace: true });
   };
 
+  const brandLogoClass = "h-9 w-auto object-contain md:h-10";
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 transition-all duration-300 ${
@@ -58,13 +60,7 @@ function Navbar() {
           <img
             src="/assets/logo.png"
             alt="4Four Fight Academy"
-            style={{
-              height: "34px",
-              width: "auto",
-              mixBlendMode: "screen",
-              filter: "brightness(1.1)",
-            }}
-            className="md:h-[40px]"
+            className={brandLogoClass}
           />
         </Link>
 
@@ -134,12 +130,7 @@ function Navbar() {
             <img
               src="/assets/logo.png"
               alt="4Four Fight Academy"
-              style={{
-                height: "34px",
-                width: "auto",
-                mixBlendMode: "screen",
-                filter: "brightness(1.1)",
-              }}
+              className="h-9 w-auto object-contain"
             />
           </Link>
           <button aria-label="Close menu" className="p-2 -mr-2" onClick={() => setOpen(false)}>

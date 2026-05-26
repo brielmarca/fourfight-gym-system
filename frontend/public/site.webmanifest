@@ -1,19 +1,37 @@
 {
+  "id": "/",
   "name": "4Four Fight Academy",
   "short_name": "4Four",
-  "icons": [
-    {
-      "src": "/android-chrome-192x192.png?v=2",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/android-chrome-512x512.png?v=2",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ],
+  "description": "4Four Fight Academy",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
   "theme_color": "#050505",
   "background_color": "#050505",
-  "display": "standalone"
+  "icons": [
+    {
+      "src": "/android-chrome-192x192-4four-v4.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/android-chrome-512x512-4four-v4.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/maskable-icon-192x192-4four-v4.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/maskable-icon-512x512-4four-v4.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
 }

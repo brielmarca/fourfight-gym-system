@@ -26,6 +26,12 @@ function shouldBlockForAuthRestore(pathname: string): boolean {
   return protectedPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
+function registerServiceWorker() {
+  if (import.meta.env.PROD && typeof window !== "undefined" && "serviceWorker" in navigator) {
+    void navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+  }
+}
+
 async function bootstrap() {
   if (typeof window !== "undefined" && shouldBlockForAuthRestore(window.location.pathname)) {
     await Promise.race([
@@ -42,6 +48,8 @@ async function bootstrap() {
         <RouterProvider router={router} />
       </StrictMode>,
     );
+
+    registerServiceWorker();
   }
 }
 

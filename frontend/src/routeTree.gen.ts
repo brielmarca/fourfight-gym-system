@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermosUtilizacaoRouteImport } from './routes/termos-utilizacao'
 import { Route as StudentAreaRouteImport } from './routes/student-area'
 import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as RegisterRouteImport } from './routes/register'
@@ -31,6 +32,11 @@ import { Route as MembershipMembershipIdRouteImport } from './routes/membership/
 import { Route as CheckoutPlanIdRouteImport } from './routes/checkout/$planId'
 import { Route as MembershipMembershipIdFormRouteImport } from './routes/membership/$membershipId/form'
 
+const TermosUtilizacaoRoute = TermosUtilizacaoRouteImport.update({
+  id: '/termos-utilizacao',
+  path: '/termos-utilizacao',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StudentAreaRoute = StudentAreaRouteImport.update({
   id: '/student-area',
   path: '/student-area',
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/schedule': typeof ScheduleRoute
   '/student-area': typeof StudentAreaRoute
+  '/termos-utilizacao': typeof TermosUtilizacaoRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
   '/membership/$membershipId': typeof MembershipMembershipIdRouteWithChildren
   '/membership/success': typeof MembershipSuccessRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/schedule': typeof ScheduleRoute
   '/student-area': typeof StudentAreaRoute
+  '/termos-utilizacao': typeof TermosUtilizacaoRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
   '/membership/$membershipId': typeof MembershipMembershipIdRouteWithChildren
   '/membership/success': typeof MembershipSuccessRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/schedule': typeof ScheduleRoute
   '/student-area': typeof StudentAreaRoute
+  '/termos-utilizacao': typeof TermosUtilizacaoRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
   '/membership/$membershipId': typeof MembershipMembershipIdRouteWithChildren
   '/membership/success': typeof MembershipSuccessRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/schedule'
     | '/student-area'
+    | '/termos-utilizacao'
     | '/checkout/$planId'
     | '/membership/$membershipId'
     | '/membership/success'
@@ -247,6 +257,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/schedule'
     | '/student-area'
+    | '/termos-utilizacao'
     | '/checkout/$planId'
     | '/membership/$membershipId'
     | '/membership/success'
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/schedule'
     | '/student-area'
+    | '/termos-utilizacao'
     | '/checkout/$planId'
     | '/membership/$membershipId'
     | '/membership/success'
@@ -294,6 +306,7 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   ScheduleRoute: typeof ScheduleRoute
   StudentAreaRoute: typeof StudentAreaRoute
+  TermosUtilizacaoRoute: typeof TermosUtilizacaoRoute
   CheckoutPlanIdRoute: typeof CheckoutPlanIdRoute
   MembershipMembershipIdRoute: typeof MembershipMembershipIdRouteWithChildren
   MembershipSuccessRoute: typeof MembershipSuccessRoute
@@ -305,6 +318,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/termos-utilizacao': {
+      id: '/termos-utilizacao'
+      path: '/termos-utilizacao'
+      fullPath: '/termos-utilizacao'
+      preLoaderRoute: typeof TermosUtilizacaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/student-area': {
       id: '/student-area'
       path: '/student-area'
@@ -483,6 +503,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   ScheduleRoute: ScheduleRoute,
   StudentAreaRoute: StudentAreaRoute,
+  TermosUtilizacaoRoute: TermosUtilizacaoRoute,
   CheckoutPlanIdRoute: CheckoutPlanIdRoute,
   MembershipMembershipIdRoute: MembershipMembershipIdRouteWithChildren,
   MembershipSuccessRoute: MembershipSuccessRoute,

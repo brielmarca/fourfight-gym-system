@@ -30,6 +30,7 @@ public record RegisterRequest(
     String password,
 
     @NotBlank(message = "Phone is required")
+    @Pattern(regexp = "^\\+?[0-9()\\-\\s]{7,20}$", message = "Invalid phone format")
     @Size(max = 20, message = "Phone must not exceed 20 characters")
     String phone,
 

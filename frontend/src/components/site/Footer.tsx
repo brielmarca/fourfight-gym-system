@@ -9,6 +9,7 @@ const navigationLinks = [
   { label: "Planos", to: "/plans" },
   { label: "Contacto", to: "/contact" },
   { label: "Política de Privacidade", to: "/politica-privacidade" },
+  { label: "Termos de Utilização", to: "/termos-utilizacao" },
   { label: "Política de Cookies", to: "/politica-cookies" },
 ];
 

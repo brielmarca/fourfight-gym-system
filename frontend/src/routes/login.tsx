@@ -61,10 +61,11 @@ function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
+    const normalizedEmail = email.trim().toLowerCase();
 
     try {
       clearAuthState();
-      await login(email, password);
+      await login(normalizedEmail, password);
 
       const user = getUser();
       if (redirect) {
@@ -133,6 +134,7 @@ function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  maxLength={255}
                   className="bg-surface-2 border-border-subtle h-12"
                 />
               </div>
@@ -148,6 +150,7 @@ function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    maxLength={100}
                     className="bg-surface-2 border-border-subtle h-12 pr-10"
                   />
                   <button

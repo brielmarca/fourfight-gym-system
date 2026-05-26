@@ -15,6 +15,7 @@ const publicFooterRoutes = new Set([
   "/contact",
   "/politica-cookies",
   "/politica-privacidade",
+  "/termos-utilizacao",
 ]);
 
 function shouldShowFooter(pathname: string) {

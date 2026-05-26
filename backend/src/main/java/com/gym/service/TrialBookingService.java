@@ -12,6 +12,7 @@ import com.gym.entity.TrialBooking;
 import com.gym.entity.User;
 import com.gym.exception.ResourceNotFoundException;
 import com.gym.repository.TrialBookingRepository;
+import com.gym.util.InputSanitizer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,9 +40,9 @@ public class TrialBookingService {
     @Transactional
     public TrialBookingResponse create(BookTrialRequest request, String program) {
         TrialBooking booking = TrialBooking.builder()
-            .name(request.name())
-            .email(request.email())
-            .phone(request.phone())
+            .name(InputSanitizer.trimToNull(request.name()))
+            .email(InputSanitizer.normalizeEmail(request.email()))
+            .phone(InputSanitizer.trimToNull(request.phone()))
             .program(program)
             .status(TrialBooking.BookingStatus.PENDING)
             .build();

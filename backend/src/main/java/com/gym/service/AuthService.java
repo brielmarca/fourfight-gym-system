@@ -5,7 +5,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +31,7 @@ import com.gym.repository.RefreshTokenRepository;
 import com.gym.repository.PreRegistrationProfileRepository;
 import com.gym.repository.UserRepository;
 import com.gym.security.JwtUtil;
+import com.gym.util.InputSanitizer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -68,10 +68,10 @@ public class AuthService {
         }
 
         User user = User.builder()
-            .name(request.name())
+            .name(InputSanitizer.trimToNull(request.name()))
             .email(normalizedEmail)
             .passwordHash(passwordEncoder.encode(request.password()))
-            .phone(request.phone())
+            .phone(InputSanitizer.trimToNull(request.phone()))
             .dateOfBirth(request.dateOfBirth())
             .role(User.Role.CLIENT)
             .isActive(true)
@@ -82,19 +82,19 @@ public class AuthService {
         PreRegistrationProfile profile = PreRegistrationProfile.builder()
             .user(user)
             .age(request.age())
-            .phone(request.phone())
-            .parishOrArea(request.parishOrArea())
+            .phone(InputSanitizer.trimToNull(request.phone()))
+            .parishOrArea(InputSanitizer.trimToNull(request.parishOrArea()))
             .hasMartialArtsExperience(request.hasMartialArtsExperience())
-            .martialArtsExperienceDetails(request.martialArtsExperienceDetails())
-            .trainingGoal(request.trainingGoal())
+            .martialArtsExperienceDetails(InputSanitizer.trimToNull(request.martialArtsExperienceDetails()))
+            .trainingGoal(InputSanitizer.trimToNull(request.trainingGoal()))
             .preferredModality(mapPreferredModality(request.preferredModality()))
-            .preferredModalityOther(request.preferredModalityOther())
+            .preferredModalityOther(InputSanitizer.trimToNull(request.preferredModalityOther()))
             .preferredTrainingTime(mapPreferredTrainingTime(request.preferredTrainingTime()))
-            .preferredTrainingTimeOther(request.preferredTrainingTimeOther())
+            .preferredTrainingTimeOther(InputSanitizer.trimToNull(request.preferredTrainingTimeOther()))
             .preferredTrainingDays(mapPreferredTrainingDays(request.preferredTrainingDays()))
             .valuesMartialArtsPhilosophy(request.valuesMartialArtsPhilosophy())
             .preferredContactMethod(mapPreferredContactMethod(request.preferredContactMethod()))
-            .preferredContactMethodOther(request.preferredContactMethodOther())
+            .preferredContactMethodOther(InputSanitizer.trimToNull(request.preferredContactMethodOther()))
             .build();
 
         preRegistrationProfileRepository.save(profile);
@@ -162,10 +162,7 @@ public class AuthService {
     }
 
     private String normalizeEmail(String email) {
-        if (email == null) {
-            return null;
-        }
-        return email.trim().toLowerCase(Locale.ROOT);
+        return InputSanitizer.normalizeEmail(email);
     }
 
     private void logAuthDiagnostics(

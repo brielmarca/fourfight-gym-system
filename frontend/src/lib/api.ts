@@ -152,7 +152,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
           (msg): msg is string => typeof msg === "string",
         );
         errorMessage = messages.join("\n");
-      } else if (errorBody.detail) {
+      } else if (errorBody.detail && response.status < 500) {
         errorMessage = errorBody.detail;
       } else if (errorBody.title) {
         errorMessage = errorBody.title;
@@ -166,6 +166,10 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
         response.status >= 500
           ? NETWORK_ERROR_MESSAGE
           : "Ocorreu um erro inesperado. Tente novamente.";
+    }
+
+    if (response.status >= 500) {
+      errorMessage = "Ocorreu um erro interno. Tente novamente em instantes.";
     }
 
     throw new Error(errorMessage);

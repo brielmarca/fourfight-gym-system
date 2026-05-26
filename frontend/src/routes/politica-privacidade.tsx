@@ -52,6 +52,9 @@ function PoliticaPrivacidadePage() {
           <section>
             <h2 className="text-xl font-semibold text-white">3. Finalidades do tratamento</h2>
             <ul className="mt-2 list-disc space-y-1 pl-5">
+              <li>Gestão de conta de utilizador e adesão de membro.</li>
+              <li>Gestão operacional da academia e acompanhamento de alunos.</li>
+              <li>Resposta a pedidos de contacto e suporte.</li>
               <li>Criar e gerir contas de utilizador.</li>
               <li>Permitir login e autenticação segura.</li>
               <li>Gerir planos, inscrições e pagamentos.</li>
@@ -129,6 +132,8 @@ function PoliticaPrivacidadePage() {
               <li>Analytics apenas com consentimento.</li>
               <li>Autoridades quando exigido por lei.</li>
             </ul>
+            <p className="mt-3">Os pagamentos são processados pela Stripe.</p>
+            <p className="mt-1">A aplicação não armazena dados completos de cartão bancário.</p>
             <p className="mt-3">Os dados não são vendidos.</p>
           </section>
 
@@ -161,6 +166,7 @@ function PoliticaPrivacidadePage() {
               Os pedidos podem ser enviados para 4fourfight@gmail.com, sujeitos a verificação de
               identidade.
             </p>
+            <p className="mt-2">Também pode pedir a correção ou eliminação dos seus dados por este contacto.</p>
           </section>
 
           <section>

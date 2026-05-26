@@ -42,8 +42,22 @@ function ContactPage() {
     e.preventDefault();
     if (createContact.isPending) return;
     setFormError(null);
+
+    const normalized = {
+      name: form.name.trim(),
+      email: form.email.trim().toLowerCase(),
+      phone: form.phone.trim(),
+      subject: form.subject.trim(),
+      message: form.message.trim(),
+    };
+
+    if (!normalized.name || !normalized.email || !normalized.subject || !normalized.message) {
+      setFormError("Preenche os campos obrigatórios.");
+      return;
+    }
+
     try {
-      await createContact.mutateAsync(form);
+      await createContact.mutateAsync(normalized);
       setSuccess(true);
       setForm({ name: "", email: "", phone: "", subject: "", message: "" });
       setTimeout(() => setSuccess(false), 5000);
@@ -110,6 +124,7 @@ function ContactPage() {
                           value={form.name}
                           onChange={(e) => setForm({ ...form, name: e.target.value })}
                           required
+                          maxLength={255}
                           disabled={createContact.isPending}
                           className="bg-surface-2 border-border-subtle"
                         />
@@ -122,6 +137,7 @@ function ContactPage() {
                           placeholder="+351"
                           value={form.phone}
                           onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                          maxLength={20}
                           disabled={createContact.isPending}
                           className="bg-surface-2 border-border-subtle"
                         />
@@ -138,6 +154,7 @@ function ContactPage() {
                           value={form.email}
                           onChange={(e) => setForm({ ...form, email: e.target.value })}
                           required
+                          maxLength={255}
                           disabled={createContact.isPending}
                           className="bg-surface-2 border-border-subtle"
                         />
@@ -151,6 +168,7 @@ function ContactPage() {
                           value={form.subject}
                           onChange={(e) => setForm({ ...form, subject: e.target.value })}
                           required
+                          maxLength={255}
                           disabled={createContact.isPending}
                           className="bg-surface-2 border-border-subtle"
                         />
@@ -164,11 +182,12 @@ function ContactPage() {
                           value={form.message}
                           onChange={(e) => setForm({ ...form, message: e.target.value })}
                           required
+                          maxLength={5000}
                           disabled={createContact.isPending}
                           className="bg-surface-2 border-border-subtle min-h-[120px]"
                         />
                         <p className="text-[11px] text-text-muted text-right">
-                          {form.message.length}/1000 caracteres
+                          {form.message.length}/5000 caracteres
                         </p>
                       </div>
                     <Button

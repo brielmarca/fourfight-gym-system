@@ -12,6 +12,7 @@ import com.gym.entity.Contact.ContactStatus;
 import com.gym.entity.User;
 import com.gym.exception.ResourceNotFoundException;
 import com.gym.repository.ContactRepository;
+import com.gym.util.InputSanitizer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,11 +40,11 @@ public class ContactService {
     @Transactional
     public ContactResponse create(CreateContactRequest request) {
         Contact contact = Contact.builder()
-            .name(request.name())
-            .email(request.email())
-            .phone(request.phone())
-            .subject(request.subject())
-            .message(request.message())
+            .name(InputSanitizer.trimToNull(request.name()))
+            .email(InputSanitizer.normalizeEmail(request.email()))
+            .phone(InputSanitizer.trimToNull(request.phone()))
+            .subject(InputSanitizer.trimToNull(request.subject()))
+            .message(InputSanitizer.trimToNull(request.message()))
             .status(Contact.ContactStatus.PENDING)
             .build();
 

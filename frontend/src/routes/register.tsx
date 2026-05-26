@@ -52,6 +52,10 @@ function RegisterPage() {
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [acceptLegal, setAcceptLegal] = useState(false);
+
+  const normalizeText = (value: string) => value.trim();
+  const normalizeEmail = (value: string) => value.trim().toLowerCase();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -86,30 +90,35 @@ function RegisterPage() {
       return;
     }
 
+    if (!acceptLegal) {
+      setError("Deves aceitar a Política de Privacidade e os Termos de Utilização");
+      return;
+    }
+
     setLoading(true);
 
     try {
       await authRegister({
-        name: formData.name,
-        email: formData.email,
+        name: normalizeText(formData.name),
+        email: normalizeEmail(formData.email),
         password: formData.password,
-        phone: formData.phone,
+        phone: normalizeText(formData.phone),
         age: Number(formData.age),
-        parishOrArea: formData.parishOrArea,
+        parishOrArea: normalizeText(formData.parishOrArea),
         hasMartialArtsExperience: formData.hasMartialArtsExperience === "SIM",
-        martialArtsExperienceDetails: formData.martialArtsExperienceDetails || undefined,
-        trainingGoal: formData.trainingGoal,
+        martialArtsExperienceDetails: normalizeText(formData.martialArtsExperienceDetails) || undefined,
+        trainingGoal: normalizeText(formData.trainingGoal),
         preferredModality: formData.preferredModality,
-        preferredModalityOther: formData.preferredModalityOther || undefined,
+        preferredModalityOther: normalizeText(formData.preferredModalityOther) || undefined,
         preferredTrainingTime: formData.preferredTrainingTime,
-        preferredTrainingTimeOther: formData.preferredTrainingTimeOther || undefined,
+        preferredTrainingTimeOther: normalizeText(formData.preferredTrainingTimeOther) || undefined,
         preferredTrainingDays: formData.preferredTrainingDays,
         valuesMartialArtsPhilosophy: formData.valuesMartialArtsPhilosophy === "SIM",
         preferredContactMethod: formData.preferredContactMethod,
-        preferredContactMethodOther: formData.preferredContactMethodOther || undefined,
+        preferredContactMethodOther: normalizeText(formData.preferredContactMethodOther) || undefined,
       });
 
-      const response = await api.auth.login(formData.email, formData.password);
+      const response = await api.auth.login(normalizeEmail(formData.email), formData.password);
       if (!response.accessToken) {
         throw new Error("A conta foi criada, mas o login requer validacao adicional.");
       }
@@ -168,11 +177,11 @@ function RegisterPage() {
 
               {currentStep === 1 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Nome</label><Input name="name" type="text" value={formData.name} onChange={handleChange} required className="bg-surface-2 border-border-subtle h-12" /></div>
-                  <div className="space-y-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">E-mail</label><Input name="email" type="email" value={formData.email} onChange={handleChange} required className="bg-surface-2 border-border-subtle h-12" /></div>
-                  <div className="space-y-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Telemóvel</label><Input name="phone" type="tel" value={formData.phone} onChange={handleChange} required className="bg-surface-2 border-border-subtle h-12" /></div>
+                  <div className="space-y-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Nome</label><Input name="name" type="text" value={formData.name} onChange={handleChange} required maxLength={255} className="bg-surface-2 border-border-subtle h-12" /></div>
+                  <div className="space-y-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">E-mail</label><Input name="email" type="email" value={formData.email} onChange={handleChange} required maxLength={255} className="bg-surface-2 border-border-subtle h-12" /></div>
+                  <div className="space-y-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Telemóvel</label><Input name="phone" type="tel" value={formData.phone} onChange={handleChange} required maxLength={20} className="bg-surface-2 border-border-subtle h-12" /></div>
                   <div className="space-y-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Idade</label><Input name="age" type="number" min={4} max={100} value={formData.age} onChange={handleChange} required className="bg-surface-2 border-border-subtle h-12" /></div>
-                  <div className="space-y-2 md:col-span-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Morada / freguesia</label><Input name="parishOrArea" type="text" value={formData.parishOrArea} onChange={handleChange} required className="bg-surface-2 border-border-subtle h-12" /></div>
+                  <div className="space-y-2 md:col-span-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Morada / freguesia</label><Input name="parishOrArea" type="text" value={formData.parishOrArea} onChange={handleChange} required maxLength={255} className="bg-surface-2 border-border-subtle h-12" /></div>
                   <div className="space-y-2">
                     <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Palavra-passe</label>
                     <div className="relative"><Input name="password" type={showPassword ? "text" : "password"} value={formData.password} onChange={handleChange} required className="bg-surface-2 border-border-subtle h-12 pr-10" />
@@ -189,8 +198,8 @@ function RegisterPage() {
               {currentStep === 2 && (
                 <div className="space-y-4">
                   <div><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Pratica ou já praticou alguma arte marcial?</label><select name="hasMartialArtsExperience" value={formData.hasMartialArtsExperience} onChange={handleChange} required className="mt-2 w-full h-12 bg-surface-2 border border-border-subtle px-3"><option value="">Selecionar</option><option value="SIM">Sim</option><option value="NAO">Não</option></select></div>
-                  <div><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Se já praticou, descreva qual modalidade e quanto tempo</label><Textarea name="martialArtsExperienceDetails" value={formData.martialArtsExperienceDetails} onChange={handleChange} className="bg-surface-2 border-border-subtle mt-2" /></div>
-                  <div><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Objetivo com a arte marcial</label><Textarea required name="trainingGoal" value={formData.trainingGoal} onChange={handleChange} className="bg-surface-2 border-border-subtle mt-2" /></div>
+                   <div><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Se já praticou, descreva qual modalidade e quanto tempo</label><Textarea name="martialArtsExperienceDetails" value={formData.martialArtsExperienceDetails} onChange={handleChange} maxLength={1500} className="bg-surface-2 border-border-subtle mt-2" /></div>
+                   <div><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Objetivo com a arte marcial</label><Textarea required name="trainingGoal" value={formData.trainingGoal} onChange={handleChange} maxLength={2000} className="bg-surface-2 border-border-subtle mt-2" /></div>
                   <div><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">A filosofia da arte marcial é importante?</label><select name="valuesMartialArtsPhilosophy" value={formData.valuesMartialArtsPhilosophy} onChange={handleChange} required className="mt-2 w-full h-12 bg-surface-2 border border-border-subtle px-3"><option value="">Selecionar</option><option value="SIM">Sim</option><option value="NAO">Não</option></select></div>
                 </div>
               )}
@@ -198,13 +207,21 @@ function RegisterPage() {
               {currentStep === 3 && (
                 <div className="space-y-4">
                   <div><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Modalidade de maior interesse</label><select name="preferredModality" value={formData.preferredModality} onChange={handleChange} required className="mt-2 w-full h-12 bg-surface-2 border border-border-subtle px-3"><option value="">Selecionar</option><option value="KICKBOXING">Kickboxing</option><option value="JIU_JITSU">Jiu Jitsu</option><option value="CAPOEIRA">Capoeira</option><option value="BOXE">Boxe</option><option value="MMA">M.M.A</option><option value="JIU_JITSU_KIDS">Jiu Jitsu Kids</option><option value="CAPOEIRA_KIDS">Capoeira Kids</option><option value="KICKBOXING_KIDS">Kickboxing Kids</option><option value="OTHER">Outro</option></select></div>
-                  {formData.preferredModality === "OTHER" && <Input name="preferredModalityOther" value={formData.preferredModalityOther} onChange={handleChange} placeholder="Qual modalidade?" className="bg-surface-2 border-border-subtle h-12" />}
+                  {formData.preferredModality === "OTHER" && <Input name="preferredModalityOther" value={formData.preferredModalityOther} onChange={handleChange} placeholder="Qual modalidade?" maxLength={255} className="bg-surface-2 border-border-subtle h-12" />}
                   <div><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Horário pretendido</label><select name="preferredTrainingTime" value={formData.preferredTrainingTime} onChange={handleChange} required className="mt-2 w-full h-12 bg-surface-2 border border-border-subtle px-3"><option value="">Selecionar</option><option value="MORNING_BEFORE_0830">Manhã antes das 8h30</option><option value="LUNCH_1230">Almoço 12h30</option><option value="AFTERNOON_14_17">Tarde 14h a 17h</option><option value="NIGHT_AFTER_18">Noite depois das 18h</option><option value="OTHER">Outro</option></select></div>
-                  {formData.preferredTrainingTime === "OTHER" && <Input name="preferredTrainingTimeOther" value={formData.preferredTrainingTimeOther} onChange={handleChange} placeholder="Qual horário?" className="bg-surface-2 border-border-subtle h-12" />}
+                  {formData.preferredTrainingTime === "OTHER" && <Input name="preferredTrainingTimeOther" value={formData.preferredTrainingTimeOther} onChange={handleChange} placeholder="Qual horário?" maxLength={255} className="bg-surface-2 border-border-subtle h-12" />}
                   <div><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Dias da semana pretendidos</label><div className="grid grid-cols-2 gap-2 mt-2 text-sm">{[["MONDAY","Segunda-feira"],["TUESDAY","Terça-feira"],["WEDNESDAY","Quarta-feira"],["THURSDAY","Quinta-feira"],["FRIDAY","Sexta-feira"]].map(([value,label]) => <label key={value} className="flex items-center gap-2"><input type="checkbox" checked={formData.preferredTrainingDays.includes(value as PreferredTrainingDay)} onChange={() => handleToggleDay(value as PreferredTrainingDay)} />{label}</label>)}</div></div>
                   <div><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Como prefere ser contactado?</label><select name="preferredContactMethod" value={formData.preferredContactMethod} onChange={handleChange} required className="mt-2 w-full h-12 bg-surface-2 border border-border-subtle px-3"><option value="">Selecionar</option><option value="CALL">Chamada</option><option value="MESSAGE">Mensagem</option><option value="OTHER">Outro</option></select></div>
-                  {formData.preferredContactMethod === "OTHER" && <Input name="preferredContactMethodOther" value={formData.preferredContactMethodOther} onChange={handleChange} placeholder="Preferência de contacto" className="bg-surface-2 border-border-subtle h-12" />}
+                  {formData.preferredContactMethod === "OTHER" && <Input name="preferredContactMethodOther" value={formData.preferredContactMethodOther} onChange={handleChange} placeholder="Preferência de contacto" maxLength={255} className="bg-surface-2 border-border-subtle h-12" />}
                 </div>
+              )}
+              {currentStep === 3 && (
+                <label className="flex items-start gap-2 text-xs text-text-secondary">
+                  <input type="checkbox" checked={acceptLegal} onChange={(e) => setAcceptLegal(e.target.checked)} className="mt-0.5" />
+                  <span>
+                    Li e aceito a <Link to="/politica-privacidade" className="text-primary hover:underline">Política de Privacidade</Link> e os <Link to="/termos-utilizacao" className="text-primary hover:underline">Termos de Utilização</Link>.
+                  </span>
+                </label>
               )}
               <div className="flex gap-2">
                 <Button type="button" variant="outline" className="h-12 flex-1" disabled={currentStep === 1 || loading} onClick={() => setCurrentStep((s) => Math.max(1, s - 1))}>Anterior</Button>

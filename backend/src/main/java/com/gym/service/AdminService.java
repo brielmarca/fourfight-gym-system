@@ -1,11 +1,14 @@
 package com.gym.service;
 
+import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
@@ -132,6 +135,15 @@ public class AdminService {
                 return new PreRegistrationLeadImportResponse(0, 0, 0, 0, List.of("CSV sem linhas de dados."));
             }
 
+            Set<String> existingNormalizedPhones = preRegistrationLeadRepository
+                .findAllByStatusNotAndPhoneIsNotNull(LEAD_STATUS_ARCHIVED)
+                .stream()
+                .map(PreRegistrationLead::getPhone)
+                .map(this::normalizePhone)
+                .filter(normalized -> !normalized.isBlank())
+                .collect(Collectors.toCollection(HashSet::new));
+            Set<String> importedNormalizedPhones = new HashSet<>();
+
             for (int i = 1; i < rows.size(); i++) {
                 totalRows++;
                 int lineNumber = i + 1;
@@ -141,10 +153,25 @@ public class AdminService {
                     String fullName = getCell(row, 1);
                     String ageRaw = getCell(row, 2);
                     String phone = getCell(row, 3);
+                    String normalizedFullName = normalizeName(fullName);
+                    String normalizedPhone = normalizePhone(phone);
 
-                    if (fullName.isBlank() || phone.isBlank() || submittedRaw.isBlank()) {
+                    if (normalizedFullName.isBlank() || normalizedPhone.isBlank() || submittedRaw.isBlank()) {
                         invalidRows++;
                         issues.add("Linha " + lineNumber + ": campos obrigatorios em falta.");
+                        continue;
+                    }
+
+                    if (importedNormalizedPhones.contains(normalizedPhone)) {
+                        duplicateRows++;
+                        issues.add("Linha " + lineNumber + ": duplicado ignorado por telefone já existente.");
+                        continue;
+                    }
+
+                    if (existingNormalizedPhones.contains(normalizedPhone)) {
+                        duplicateRows++;
+                        issues.add("Linha " + lineNumber + ": duplicado ignorado por telefone já existente.");
+                        importedNormalizedPhones.add(normalizedPhone);
                         continue;
                     }
 
@@ -153,6 +180,8 @@ public class AdminService {
 
                     if (preRegistrationLeadRepository.existsByFullNameAndPhoneAndSubmittedAt(fullName, phone, submittedAt)) {
                         duplicateRows++;
+                        issues.add("Linha " + lineNumber + ": duplicado ignorado por telefone já existente.");
+                        importedNormalizedPhones.add(normalizedPhone);
                         continue;
                     }
 
@@ -176,6 +205,7 @@ public class AdminService {
                         .build();
 
                     preRegistrationLeadRepository.save(lead);
+                    importedNormalizedPhones.add(normalizedPhone);
                     importedRows++;
                 } catch (Exception e) {
                     invalidRows++;
@@ -223,6 +253,36 @@ public class AdminService {
     private String sanitizeIssue(String message) {
         if (message == null || message.isBlank()) return "erro desconhecido";
         return message.replaceAll("[\\r\\n]", " ");
+    }
+
+    private String normalizePhone(String rawPhone) {
+        if (rawPhone == null) return "";
+
+        String trimmed = rawPhone.trim();
+        if (trimmed.isBlank()) return "";
+
+        StringBuilder normalized = new StringBuilder();
+        for (int i = 0; i < trimmed.length(); i++) {
+            char c = trimmed.charAt(i);
+            if (Character.isDigit(c)) {
+                normalized.append(c);
+                continue;
+            }
+            if (c == '+' && normalized.length() == 0) {
+                normalized.append(c);
+            }
+        }
+        return normalized.toString();
+    }
+
+    private String normalizeName(String rawName) {
+        if (rawName == null) return "";
+
+        String collapsed = rawName.trim().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
+        if (collapsed.isBlank()) return "";
+
+        String decomposed = Normalizer.normalize(collapsed, Normalizer.Form.NFD);
+        return decomposed.replaceAll("\\p{M}+", "");
     }
 
     private List<List<String>> parseCsv(String content) {

@@ -27,3 +27,23 @@ export function useImportPreRegistrationsCsv() {
     },
   });
 }
+
+export function useAcceptPreRegistration() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.admin.acceptPreRegistration(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.preRegistrations.all });
+    },
+  });
+}
+
+export function useArchivePreRegistration() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.admin.archivePreRegistration(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.preRegistrations.all });
+    },
+  });
+}

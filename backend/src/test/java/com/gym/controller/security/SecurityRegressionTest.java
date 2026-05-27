@@ -172,6 +172,15 @@ class SecurityRegressionTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    @DisplayName("Pre-registration admin actions are forbidden for non-admin users")
+    void preRegistrationAdminActionsRequireAdminRole() throws Exception {
+        UUID leadId = UUID.randomUUID();
+        mockMvc.perform(patch("/api/admin/pre-registrations/" + leadId + "/accept")
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isForbidden());
+    }
+
     // ===== TEST 4: Endpoint Exists =====
 
     @Test

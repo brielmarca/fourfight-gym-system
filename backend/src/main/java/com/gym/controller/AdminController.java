@@ -75,6 +75,16 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getPreRegistrationById(id));
     }
 
+    @PatchMapping("/pre-registrations/{id}/accept")
+    public ResponseEntity<AdminPreRegistrationLeadDetailResponse> acceptPreRegistration(@PathVariable UUID id) {
+        return ResponseEntity.ok(adminService.acceptPreRegistration(id));
+    }
+
+    @PatchMapping("/pre-registrations/{id}/archive")
+    public ResponseEntity<AdminPreRegistrationLeadDetailResponse> archivePreRegistration(@PathVariable UUID id) {
+        return ResponseEntity.ok(adminService.archivePreRegistration(id));
+    }
+
     @PostMapping(value = "/pre-registrations/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PreRegistrationLeadImportResponse> importPreRegistrations(@RequestParam("file") MultipartFile file) {
         return ResponseEntity.ok(adminService.importPreRegistrationsCsv(file));

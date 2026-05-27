@@ -16,6 +16,8 @@ import {
   usePreRegistrations,
   usePreRegistrationDetail,
   useImportPreRegistrationsCsv,
+  useAcceptPreRegistration,
+  useArchivePreRegistration,
   useUpdateAdminGraduation,
   useProfessors,
   usePromoteProfessor,
@@ -111,6 +113,8 @@ function AdminPage() {
     active: true,
   });
   const importPreRegistrations = useImportPreRegistrationsCsv();
+  const acceptPreRegistration = useAcceptPreRegistration();
+  const archivePreRegistration = useArchivePreRegistration();
   const [form, setForm] = useState<CreateScheduleEntryRequest>({
     title: "",
     modality: "JIU_JITSU",
@@ -137,6 +141,29 @@ function AdminPage() {
   const handleLogout = () => {
     logout();
     void navigate({ to: "/", replace: true });
+  };
+
+  const handleAcceptPreRegistration = (id: string) => {
+    acceptPreRegistration.mutate(id, {
+      onError: () => {
+        setImportFeedback("Nao foi possivel aceitar a pre-inscricao. Tente novamente.");
+      },
+    });
+  };
+
+  const handleArchivePreRegistration = (id: string) => {
+    const shouldArchive = window.confirm("Remover esta pre-inscricao da lista?");
+    if (!shouldArchive) return;
+    archivePreRegistration.mutate(id, {
+      onSuccess: () => {
+        if (selectedPreRegistrationId === id) {
+          setSelectedPreRegistrationId("");
+        }
+      },
+      onError: () => {
+        setImportFeedback("Nao foi possivel remover a pre-inscricao. Tente novamente.");
+      },
+    });
   };
 
   if (loading) {
@@ -1072,19 +1099,19 @@ function AdminPage() {
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="border-border-subtle hover:bg-transparent">
-                        <TableHead>Nome</TableHead><TableHead>Telefone</TableHead><TableHead>Idade</TableHead><TableHead>Freguesia</TableHead><TableHead>Modalidades</TableHead><TableHead>Horario</TableHead><TableHead>Dias</TableHead><TableHead>Contacto</TableHead><TableHead>Data</TableHead><TableHead>Status</TableHead>
-                      </TableRow>
+                        <TableRow className="border-border-subtle hover:bg-transparent">
+                        <TableHead>Nome</TableHead><TableHead>Telefone</TableHead><TableHead>Idade</TableHead><TableHead>Freguesia</TableHead><TableHead>Modalidades</TableHead><TableHead>Horario</TableHead><TableHead>Dias</TableHead><TableHead>Contacto</TableHead><TableHead>Data</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Acoes</TableHead>
+                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {preRegistrationsLoading ? (
-                        <TableRow><TableCell colSpan={10}>A carregar pré-inscrições...</TableCell></TableRow>
+                        <TableRow><TableCell colSpan={11}>A carregar pré-inscrições...</TableCell></TableRow>
                       ) : (preRegistrationsData?.content?.length ?? 0) === 0 ? (
-                        <TableRow><TableCell colSpan={10}>Sem pré-inscrições registadas.</TableCell></TableRow>
+                        <TableRow><TableCell colSpan={11}>Sem pré-inscrições registadas.</TableCell></TableRow>
                       ) : (
                         preRegistrationsData?.content?.map((item) => (
                           <TableRow key={item.id} className="cursor-pointer" onClick={() => setSelectedPreRegistrationId(item.id)}>
-                            <TableCell>{item.fullName}</TableCell><TableCell>{item.phone}</TableCell><TableCell>{item.age ?? "-"}</TableCell><TableCell>{item.parish || "-"}</TableCell><TableCell>{item.preferredModalities || "-"}</TableCell><TableCell>{item.preferredTrainingTimes || "-"}</TableCell><TableCell>{item.preferredTrainingDays || "-"}</TableCell><TableCell>{item.preferredContactMethod || "-"}</TableCell><TableCell>{new Date(item.submittedAt).toLocaleDateString("pt-PT")}</TableCell><TableCell>{item.status}</TableCell>
+                            <TableCell>{item.fullName}</TableCell><TableCell>{item.phone}</TableCell><TableCell>{item.age ?? "-"}</TableCell><TableCell>{item.parish || "-"}</TableCell><TableCell>{item.preferredModalities || "-"}</TableCell><TableCell>{item.preferredTrainingTimes || "-"}</TableCell><TableCell>{item.preferredTrainingDays || "-"}</TableCell><TableCell>{item.preferredContactMethod || "-"}</TableCell><TableCell>{new Date(item.submittedAt).toLocaleDateString("pt-PT")}</TableCell><TableCell>{item.status}</TableCell><TableCell className="text-right"><div className="flex justify-end gap-2"><Button size="sm" onClick={(event) => { event.stopPropagation(); handleAcceptPreRegistration(item.id); }} disabled={acceptPreRegistration.isPending || archivePreRegistration.isPending || item.status === "ACCEPTED"}>Aceitar</Button><Button size="sm" variant="destructive" onClick={(event) => { event.stopPropagation(); handleArchivePreRegistration(item.id); }} disabled={archivePreRegistration.isPending || acceptPreRegistration.isPending}>Remover</Button></div></TableCell>
                           </TableRow>
                         ))
                       )}

@@ -65,7 +65,13 @@ export {
   useUpdateScheduleEntry,
   useDeactivateScheduleEntry,
 } from "./schedule";
-export { usePreRegistrations, usePreRegistrationDetail, useImportPreRegistrationsCsv } from "./pre-registrations";
+export {
+  usePreRegistrations,
+  usePreRegistrationDetail,
+  useImportPreRegistrationsCsv,
+  useAcceptPreRegistration,
+  useArchivePreRegistration,
+} from "./pre-registrations";
 export { useAdminGraduations, useUpdateAdminGraduation } from "./graduations";
 export {
   useProfessors,

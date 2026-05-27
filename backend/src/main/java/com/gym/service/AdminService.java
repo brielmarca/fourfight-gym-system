@@ -42,6 +42,8 @@ public class AdminService {
 
     private static final String LEAD_SOURCE = "GOOGLE_FORMS_IMPORT";
     private static final String LEAD_STATUS = "PRE_REGISTERED";
+    private static final String LEAD_STATUS_ACCEPTED = "ACCEPTED";
+    private static final String LEAD_STATUS_ARCHIVED = "ARCHIVED";
     private static final DateTimeFormatter SUBMITTED_AT_FORMATTER = DateTimeFormatter.ofPattern("d/M/yyyy H:mm:ss");
 
     public DashboardResponse getDashboard() {
@@ -83,7 +85,7 @@ public class AdminService {
     }
 
     public Page<AdminPreRegistrationLeadListItemResponse> getPreRegistrations(Pageable pageable) {
-        return preRegistrationLeadRepository.findAllByOrderBySubmittedAtDesc(pageable)
+        return preRegistrationLeadRepository.findAllByStatusNotOrderBySubmittedAtDesc(LEAD_STATUS_ARCHIVED, pageable)
             .map(AdminPreRegistrationLeadListItemResponse::from);
     }
 
@@ -91,6 +93,24 @@ public class AdminService {
         return preRegistrationLeadRepository.findById(id)
             .map(AdminPreRegistrationLeadDetailResponse::from)
             .orElseThrow(() -> new ResourceNotFoundException("PreRegistrationLead", id));
+    }
+
+    @Transactional
+    public AdminPreRegistrationLeadDetailResponse acceptPreRegistration(UUID id) {
+        PreRegistrationLead lead = preRegistrationLeadRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("PreRegistrationLead", id));
+
+        lead.setStatus(LEAD_STATUS_ACCEPTED);
+        return AdminPreRegistrationLeadDetailResponse.from(preRegistrationLeadRepository.save(lead));
+    }
+
+    @Transactional
+    public AdminPreRegistrationLeadDetailResponse archivePreRegistration(UUID id) {
+        PreRegistrationLead lead = preRegistrationLeadRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("PreRegistrationLead", id));
+
+        lead.setStatus(LEAD_STATUS_ARCHIVED);
+        return AdminPreRegistrationLeadDetailResponse.from(preRegistrationLeadRepository.save(lead));
     }
 
     @Transactional

@@ -460,6 +460,14 @@ export const api = {
       ),
     getPreRegistrationById: (id: string) =>
       request<AdminPreRegistrationDetail>(`/admin/pre-registrations/${id}`),
+    acceptPreRegistration: (id: string) =>
+      request<AdminPreRegistrationDetail>(`/admin/pre-registrations/${id}/accept`, {
+        method: "PATCH",
+      }),
+    archivePreRegistration: (id: string) =>
+      request<AdminPreRegistrationDetail>(`/admin/pre-registrations/${id}/archive`, {
+        method: "PATCH",
+      }),
     importPreRegistrationsCsv: (file: File) => {
       const formData = new FormData();
       formData.append("file", file);

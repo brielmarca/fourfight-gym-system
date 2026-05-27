@@ -11,5 +11,7 @@ public interface PreRegistrationLeadRepository extends JpaRepository<PreRegistra
 
     Page<PreRegistrationLead> findAllByOrderBySubmittedAtDesc(Pageable pageable);
 
+    Page<PreRegistrationLead> findAllByStatusNotOrderBySubmittedAtDesc(String status, Pageable pageable);
+
     boolean existsByFullNameAndPhoneAndSubmittedAt(String fullName, String phone, LocalDateTime submittedAt);
 }

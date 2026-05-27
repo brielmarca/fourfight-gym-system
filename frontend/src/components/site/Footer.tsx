@@ -104,23 +104,25 @@ export function Footer() {
                   </p>
                 ))}
               </div>
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={whatsappAriaLabel}
-                className="group relative inline-flex pb-1 text-sm text-[#888] transition-colors duration-300 hover:text-[#C1121F] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-600/70"
-              >
-                {contactInfo.phone}
-                <span className="absolute bottom-0 left-0 h-px w-0 bg-[#C1121F] transition-all duration-300 group-hover:w-full" />
-              </a>
-              <a
-                href={`mailto:${contactInfo.email}`}
-                className="group relative inline-flex pb-1 text-sm text-[#888] transition-colors duration-300 hover:text-[#C1121F] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-600/70"
-              >
-                {contactInfo.email}
-                <span className="absolute bottom-0 left-0 h-px w-0 bg-[#C1121F] transition-all duration-300 group-hover:w-full" />
-              </a>
+              <div className="flex flex-col items-center gap-2 md:items-end">
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={whatsappAriaLabel}
+                  className="group relative inline-flex pb-1 text-sm text-[#888] transition-colors duration-300 hover:text-[#C1121F] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-600/70"
+                >
+                  +351 923 304 078
+                  <span className="absolute bottom-0 left-0 h-px w-0 bg-[#C1121F] transition-all duration-300 group-hover:w-full" />
+                </a>
+                <a
+                  href="mailto:4fourfight@gmail.com"
+                  className="group relative inline-flex pb-1 text-sm text-[#888] transition-colors duration-300 hover:text-[#C1121F] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-600/70"
+                >
+                  4fourfight@gmail.com
+                  <span className="absolute bottom-0 left-0 h-px w-0 bg-[#C1121F] transition-all duration-300 group-hover:w-full" />
+                </a>
+              </div>
               <div className="space-y-1 pt-1">
                 {contactInfo.schedule.map((line) => (
                   <p

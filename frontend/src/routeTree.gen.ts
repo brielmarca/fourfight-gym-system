@@ -13,12 +13,14 @@ import { Route as TermosUtilizacaoRouteImport } from './routes/termos-utilizacao
 import { Route as StudentAreaRouteImport } from './routes/student-area'
 import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as ProgramsRouteImport } from './routes/programs'
 import { Route as ProfessorRouteImport } from './routes/professor'
 import { Route as PoliticaPrivacidadeRouteImport } from './routes/politica-privacidade'
 import { Route as PoliticaCookiesRouteImport } from './routes/politica-cookies'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as EsqueciSenhaRouteImport } from './routes/esqueci-senha'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
@@ -52,6 +54,11 @@ const RegisterRoute = RegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
+  id: '/redefinir-senha',
+  path: '/redefinir-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProgramsRoute = ProgramsRouteImport.update({
   id: '/programs',
   path: '/programs',
@@ -80,6 +87,11 @@ const PlansRoute = PlansRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EsqueciSenhaRoute = EsqueciSenhaRouteImport.update({
+  id: '/esqueci-senha',
+  path: '/esqueci-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -149,12 +161,14 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/contact': typeof ContactRoute
+  '/esqueci-senha': typeof EsqueciSenhaRoute
   '/login': typeof LoginRoute
   '/plans': typeof PlansRoute
   '/politica-cookies': typeof PoliticaCookiesRoute
   '/politica-privacidade': typeof PoliticaPrivacidadeRoute
   '/professor': typeof ProfessorRoute
   '/programs': typeof ProgramsRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/register': typeof RegisterRoute
   '/schedule': typeof ScheduleRoute
   '/student-area': typeof StudentAreaRoute
@@ -173,12 +187,14 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/contact': typeof ContactRoute
+  '/esqueci-senha': typeof EsqueciSenhaRoute
   '/login': typeof LoginRoute
   '/plans': typeof PlansRoute
   '/politica-cookies': typeof PoliticaCookiesRoute
   '/politica-privacidade': typeof PoliticaPrivacidadeRoute
   '/professor': typeof ProfessorRoute
   '/programs': typeof ProgramsRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/register': typeof RegisterRoute
   '/schedule': typeof ScheduleRoute
   '/student-area': typeof StudentAreaRoute
@@ -198,12 +214,14 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/contact': typeof ContactRoute
+  '/esqueci-senha': typeof EsqueciSenhaRoute
   '/login': typeof LoginRoute
   '/plans': typeof PlansRoute
   '/politica-cookies': typeof PoliticaCookiesRoute
   '/politica-privacidade': typeof PoliticaPrivacidadeRoute
   '/professor': typeof ProfessorRoute
   '/programs': typeof ProgramsRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/register': typeof RegisterRoute
   '/schedule': typeof ScheduleRoute
   '/student-area': typeof StudentAreaRoute
@@ -224,12 +242,14 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/contact'
+    | '/esqueci-senha'
     | '/login'
     | '/plans'
     | '/politica-cookies'
     | '/politica-privacidade'
     | '/professor'
     | '/programs'
+    | '/redefinir-senha'
     | '/register'
     | '/schedule'
     | '/student-area'
@@ -248,12 +268,14 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/contact'
+    | '/esqueci-senha'
     | '/login'
     | '/plans'
     | '/politica-cookies'
     | '/politica-privacidade'
     | '/professor'
     | '/programs'
+    | '/redefinir-senha'
     | '/register'
     | '/schedule'
     | '/student-area'
@@ -272,12 +294,14 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/contact'
+    | '/esqueci-senha'
     | '/login'
     | '/plans'
     | '/politica-cookies'
     | '/politica-privacidade'
     | '/professor'
     | '/programs'
+    | '/redefinir-senha'
     | '/register'
     | '/schedule'
     | '/student-area'
@@ -297,12 +321,14 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRoute
   ContactRoute: typeof ContactRoute
+  EsqueciSenhaRoute: typeof EsqueciSenhaRoute
   LoginRoute: typeof LoginRoute
   PlansRoute: typeof PlansRoute
   PoliticaCookiesRoute: typeof PoliticaCookiesRoute
   PoliticaPrivacidadeRoute: typeof PoliticaPrivacidadeRoute
   ProfessorRoute: typeof ProfessorRoute
   ProgramsRoute: typeof ProgramsRoute
+  RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   RegisterRoute: typeof RegisterRoute
   ScheduleRoute: typeof ScheduleRoute
   StudentAreaRoute: typeof StudentAreaRoute
@@ -346,6 +372,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/redefinir-senha': {
+      id: '/redefinir-senha'
+      path: '/redefinir-senha'
+      fullPath: '/redefinir-senha'
+      preLoaderRoute: typeof RedefinirSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/programs': {
       id: '/programs'
       path: '/programs'
@@ -386,6 +419,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/esqueci-senha': {
+      id: '/esqueci-senha'
+      path: '/esqueci-senha'
+      fullPath: '/esqueci-senha'
+      preLoaderRoute: typeof EsqueciSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -494,12 +534,14 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AdminRoute: AdminRoute,
   ContactRoute: ContactRoute,
+  EsqueciSenhaRoute: EsqueciSenhaRoute,
   LoginRoute: LoginRoute,
   PlansRoute: PlansRoute,
   PoliticaCookiesRoute: PoliticaCookiesRoute,
   PoliticaPrivacidadeRoute: PoliticaPrivacidadeRoute,
   ProfessorRoute: ProfessorRoute,
   ProgramsRoute: ProgramsRoute,
+  RedefinirSenhaRoute: RedefinirSenhaRoute,
   RegisterRoute: RegisterRoute,
   ScheduleRoute: ScheduleRoute,
   StudentAreaRoute: StudentAreaRoute,

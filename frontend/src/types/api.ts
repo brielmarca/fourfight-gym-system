@@ -267,6 +267,15 @@ export interface RegisterRequest {
   preferredContactMethodOther?: string;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+
 export type PreferredModality =
   | "KICKBOXING"
   | "JIU_JITSU"

@@ -178,6 +178,11 @@ function LoginPage() {
                   "ENTRAR"
                 )}
               </Button>
+              <div className="text-right">
+                <Link to="/esqueci-senha" className="text-xs text-primary hover:underline font-semibold">
+                  Esqueceste-te da palavra-passe?
+                </Link>
+              </div>
             </form>
 
             <div className="mt-6 space-y-3 text-center">

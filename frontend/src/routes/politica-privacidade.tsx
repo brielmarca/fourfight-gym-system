@@ -10,148 +10,176 @@ function PoliticaPrivacidadePage() {
       <div className="mx-auto max-w-5xl">
         <h1 className="text-3xl font-semibold text-white sm:text-4xl">Política de Privacidade</h1>
         <p className="mt-4 text-sm leading-7 text-zinc-300">
-          Esta política descreve como a 4Four Fight Academy trata dados pessoais através do seu
-          website/plataforma, incluindo páginas públicas, registo/login, planos, contacto, pedidos
-          de aula experimental quando aplicável, área de aluno e operações administrativas.
-        </p>
-
-        <p className="mt-6 rounded-md border border-amber-600/50 bg-amber-950/30 p-4 text-sm text-amber-200">
-          Esta política é uma base informativa e deve ser revista pelo responsável legal/proteção de
-          dados da 4Four Fight Academy antes da entrada em produção.
+          Esta política descreve como a 4Four Fight Academy trata dados pessoais no website e na
+          plataforma, em conformidade com o RGPD e a legislação aplicável em Portugal e na União
+          Europeia.
         </p>
 
         <div className="mt-8 space-y-8 text-sm leading-7 text-zinc-300">
           <section>
-            <h2 className="text-xl font-semibold text-white">1. Responsável pelo tratamento</h2>
+            <h2 className="text-xl font-semibold text-white">1. Última atualização</h2>
+            <p className="mt-2">27 de maio de 2026.</p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-white">2. Âmbito e introdução</h2>
+            <p className="mt-2">
+              Esta política aplica-se às páginas públicas do site, registo/login, fluxos de
+              pré-inscrição e pré-venda, planos/adesões, formulário de contacto, links para WhatsApp,
+              área de aluno e área administrativa.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-white">3. Responsável e contacto</h2>
             <p className="mt-2">4Four Fight Academy</p>
-            <p>Contacto: 4fourfight@gmail.com</p>
-            <p className="mt-2 text-zinc-400">
-              TODO: confirmar entidade legal, morada oficial e contacto do responsável de proteção
-              de dados, se aplicável.
+            <p>Email: 4fourfight@gmail.com</p>
+            <p className="mt-2">
+              Caso os dados da entidade jurídica oficial sejam formalizados ou atualizados, esta
+              política poderá ser revista para refletir essa informação.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white">2. Dados pessoais que podemos recolher</h2>
+            <h2 className="text-xl font-semibold text-white">4. Dados pessoais tratados</h2>
             <ul className="mt-2 list-disc space-y-1 pl-5">
-              <li>Identificação: nome.</li>
-              <li>Contacto: email, telefone.</li>
-              <li>Conta: credenciais protegidas, estado da conta, função/perfil.</li>
-              <li>Inscrição/planos: plano escolhido, estado de pagamento/adesão.</li>
-              <li>Treino/gestão: modalidade, horários, presença/aulas se aplicável.</li>
-              <li>Comunicação: mensagens enviadas por formulários/contacto.</li>
-              <li>Segurança: logs técnicos, endereço IP, user-agent, tentativas de login.</li>
-              <li>Cookies/preferências: escolha de consentimento de cookies.</li>
-            </ul>
-            <p className="mt-3">
-              Caso sejam recolhidos dados de saúde ou restrições médicas no futuro, será necessária
-              base legal adequada e informação adicional específica.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-white">3. Finalidades do tratamento</h2>
-            <ul className="mt-2 list-disc space-y-1 pl-5">
-              <li>Gestão de conta de utilizador e adesão de membro.</li>
-              <li>Gestão operacional da academia e acompanhamento de alunos.</li>
-              <li>Resposta a pedidos de contacto e suporte.</li>
-              <li>Criar e gerir contas de utilizador.</li>
-              <li>Permitir login e autenticação segura.</li>
-              <li>Gerir planos, inscrições e pagamentos.</li>
-              <li>Gerir horários, aulas e modalidades.</li>
-              <li>Responder a contactos/pedidos.</li>
-              <li>Garantir segurança da plataforma e prevenir abuso.</li>
-              <li>Cumprir obrigações legais.</li>
-              <li>Melhorar o site com analytics apenas se o utilizador consentir.</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-white">4. Base legal</h2>
-            <div className="mt-3 overflow-x-auto rounded-lg border border-zinc-800">
-              <table className="min-w-full divide-y divide-zinc-800 text-left text-sm text-zinc-200">
-                <thead className="bg-zinc-950/80 text-xs uppercase tracking-wider text-zinc-400">
-                  <tr>
-                    <th className="px-4 py-3">Finalidade</th>
-                    <th className="px-4 py-3">Base legal</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-800">
-                  <tr>
-                    <td className="px-4 py-4">Gestão de conta e prestação do serviço</td>
-                    <td className="px-4 py-4">Execução de contrato/diligências pré-contratuais</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-4">Pagamentos e faturação</td>
-                    <td className="px-4 py-4">Execução de contrato e obrigação legal</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-4">Segurança, logs e prevenção de abuso</td>
-                    <td className="px-4 py-4">Interesse legítimo e segurança da plataforma</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-4">Resposta a contactos</td>
-                    <td className="px-4 py-4">Diligências pré-contratuais ou interesse legítimo</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-4">Comunicações de marketing</td>
-                    <td className="px-4 py-4">Consentimento, quando aplicável</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-4">Analytics/cookies não necessários</td>
-                    <td className="px-4 py-4">Consentimento</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-white">5. Conservação dos dados</h2>
-            <ul className="mt-2 list-disc space-y-1 pl-5">
-              <li>Dados de conta: enquanto a conta estiver ativa ou necessário para obrigações legais.</li>
-              <li>Dados de pagamento/faturação: pelo período exigido por lei.</li>
-              <li>Contactos/formulários: pelo tempo necessário para responder e gerir o pedido.</li>
-              <li>Logs de segurança: por período limitado e proporcional.</li>
+              <li>Identificação e contacto: nome, email, telefone e conteúdo de mensagens.</li>
+              <li>Conta: email de login, palavra-passe cifrada por hash, estado da conta e perfil/role.</li>
+              <li>Pré-inscrição, pré-venda, planos e adesões.</li>
+              <li>Estado de pagamento e referências técnicas associadas ao fluxo de pagamento.</li>
+              <li>Dados de treino e gestão do ginásio, quando aplicável ao serviço.</li>
+              <li>Logs técnicos e de segurança: IP, user-agent, tentativas de autenticação e eventos de segurança.</li>
               <li>
-                Consentimento de cookies: até alteração das preferências ou expiração definida.
+                Uploads por administradores/professores/equipa autorizada: imagens, vídeos,
+                documentos e ficheiros, incluindo metadados (nome, tipo, tamanho, data e utilizador que carregou).
               </li>
             </ul>
-            <p className="mt-2 text-zinc-400">
-              TODO: Confirmar prazos concretos de retenção com o responsável legal/contabilístico.
-            </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white">6. Partilha de dados com terceiros</h2>
-            <ul className="mt-2 list-disc space-y-1 pl-5">
-              <li>Alojamento/hosting.</li>
-              <li>Base de dados/infraestrutura.</li>
-              <li>Processamento de pagamentos, se aplicável.</li>
-              <li>Email/transacional, se aplicável.</li>
-              <li>Analytics apenas com consentimento.</li>
-              <li>Autoridades quando exigido por lei.</li>
-            </ul>
-            <p className="mt-3">Os pagamentos são processados pela Stripe.</p>
-            <p className="mt-1">A aplicação não armazena dados completos de cartão bancário.</p>
-            <p className="mt-3">Os dados não são vendidos.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-white">7. Transferências internacionais</h2>
+            <h2 className="text-xl font-semibold text-white">5. Dados sensíveis e informação de saúde</h2>
             <p className="mt-2">
-              Alguns fornecedores tecnológicos podem tratar dados fora do Espaço Económico Europeu
-              (EEE). Nesses casos, devem ser confirmadas garantias adequadas para a transferência de
-              dados pessoais.
-            </p>
-            <p className="mt-2 text-zinc-400">
-              TODO: Confirmar fornecedores reais e mecanismos de transferência antes de produção.
+              Sempre que sejam necessários dados de saúde, limitações médicas ou contactos de
+              emergência para segurança e gestão do treino, esses dados devem ser tratados com cuidado
+              reforçado, apenas na medida do necessário e com base jurídica adequada.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white">8. Direitos dos utilizadores</h2>
-            <p className="mt-2">Nos termos aplicáveis, o utilizador pode exercer os direitos de:</p>
+            <h2 className="text-xl font-semibold text-white">6. Finalidades do tratamento</h2>
+            <ul className="mt-2 list-disc space-y-1 pl-5">
+              <li>Criar e gerir contas, login e autenticação.</li>
+              <li>Responder a pedidos de pré-inscrição, pré-venda e contacto.</li>
+              <li>Gerir planos, adesões/mensalidades e respetivos estados.</li>
+              <li>Suportar a gestão da área de aluno e da área administrativa.</li>
+              <li>Permitir contacto via WhatsApp quando o utilizador seleciona essa opção.</li>
+              <li>Prevenir fraude, abuso e incidentes de segurança.</li>
+              <li>Cumprir obrigações legais, fiscais e contabilísticas.</li>
+              <li>Gerir conteúdos carregados por equipa autorizada para finalidades pedagógicas e operacionais.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-white">7. Bases jurídicas</h2>
+            <ul className="mt-2 list-disc space-y-1 pl-5">
+              <li>Execução de contrato e diligências pré-contratuais.</li>
+              <li>Cumprimento de obrigações legais.</li>
+              <li>Interesse legítimo, nomeadamente segurança e gestão operacional.</li>
+              <li>Consentimento, quando legalmente exigido.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-white">8. Pagamentos</h2>
+            <p className="mt-2">
+              Quando ativados, os pagamentos online são processados pela Stripe. A aplicação da 4Four
+              Fight Academy não armazena dados completos de cartão bancário.
+            </p>
+            <p className="mt-2">
+              Enquanto a ativação pública do pagamento online estiver em transição, poderão ser usados
+              fluxos de pré-venda, contacto por WhatsApp ou tratamento presencial na receção.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-white">9. WhatsApp</h2>
+            <p className="mt-2">
+              Ao clicar num link de WhatsApp, o utilizador é encaminhado para um ambiente externo da
+              WhatsApp/Meta. O tratamento realizado nesses serviços segue os termos e políticas de
+              privacidade da respetiva plataforma.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-white">10. Uploads por professores/admin/equipa autorizada</h2>
+            <p className="mt-2">
+              As funcionalidades de upload destinam-se a administradores, professores e membros da
+              equipa autorizados. Por omissão, alunos/clientes não carregam ficheiros na plataforma.
+            </p>
+            <p className="mt-2">
+              Os conteúdos podem incluir imagens, vídeos, documentos e outros ficheiros relacionados
+              com aulas, movimentos técnicos, modalidades, comunicação institucional e gestão interna
+              do ginásio.
+            </p>
+            <p className="mt-2">
+              Sempre que um conteúdo inclua pessoas identificáveis, deve ser tratado como dado pessoal
+              e carregado apenas com finalidade válida e autorização/base jurídica adequada.
+            </p>
+            <p className="mt-2">
+              Se forem adicionadas no futuro funcionalidades de upload para alunos/clientes, esta
+              política será atualizada.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-white">11. Fornecedores e terceiros</h2>
+            <ul className="mt-2 list-disc space-y-1 pl-5">
+              <li>Cloudflare Pages (alojamento do frontend).</li>
+              <li>Render (alojamento do backend).</li>
+              <li>Supabase/PostgreSQL (base de dados e infraestrutura).</li>
+              <li>Stripe (processamento de pagamentos, quando ativo).</li>
+              <li>WhatsApp/Meta (contacto externo acionado pelo utilizador).</li>
+              <li>Fornecedores de email transacional, apenas se/quando implementados.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-white">12. Transferências internacionais</h2>
+            <p className="mt-2">
+              Alguns fornecedores tecnológicos podem tratar dados fora do Espaço Económico Europeu.
+              Quando aplicável, devem ser adotadas as salvaguardas exigidas pela legislação em vigor.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-white">13. Conservação dos dados</h2>
+            <ul className="mt-2 list-disc space-y-1 pl-5">
+              <li>Dados de conta: durante a relação ativa e pelo período necessário às obrigações legais.</li>
+              <li>Pré-inscrição e contacto: pelo tempo necessário à gestão do pedido e seguimento comercial.</li>
+              <li>Pagamentos e dados fiscais/contabilísticos: pelos prazos legalmente exigidos.</li>
+              <li>Logs e eventos de segurança: por período limitado e proporcional às finalidades de segurança.</li>
+              <li>
+                Conteúdos carregados por equipa autorizada: enquanto forem úteis/necessários a fins
+                pedagógicos e administrativos, ou até remoção/pedido aplicável.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-white">14. Segurança</h2>
+            <ul className="mt-2 list-disc space-y-1 pl-5">
+              <li>Ligações seguras HTTPS/TLS em produção.</li>
+              <li>Palavras-passe protegidas por hash no backend.</li>
+              <li>Controlo de acesso por perfil/função (RBAC).</li>
+              <li>Modelo de sessão/autenticação com cookie seguro para refresh token.</li>
+              <li>Medidas de mitigação de abuso, incluindo rate limiting.</li>
+              <li>Separação funcional entre áreas administrativas e de aluno.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-white">15. Direitos dos titulares dos dados</h2>
+            <p className="mt-2">Nos termos legais, pode exercer os seguintes direitos:</p>
             <ul className="mt-2 list-disc space-y-1 pl-5">
               <li>Acesso.</li>
               <li>Retificação.</li>
@@ -159,32 +187,20 @@ function PoliticaPrivacidadePage() {
               <li>Limitação do tratamento.</li>
               <li>Oposição.</li>
               <li>Portabilidade.</li>
-              <li>Retirar consentimento.</li>
-              <li>Apresentar reclamação à CNPD.</li>
+              <li>Retirada do consentimento (quando aplicável).</li>
+              <li>Reclamação junto da CNPD.</li>
             </ul>
             <p className="mt-3">
-              Os pedidos podem ser enviados para 4fourfight@gmail.com, sujeitos a verificação de
-              identidade.
+              Para exercer direitos, contacte 4fourfight@gmail.com. Pode ser solicitada verificação
+              de identidade para proteção dos dados pessoais.
             </p>
-            <p className="mt-2">Também pode pedir a correção ou eliminação dos seus dados por este contacto.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white">9. Segurança</h2>
-            <ul className="mt-2 list-disc space-y-1 pl-5">
-              <li>Autenticação.</li>
-              <li>Passwords hashed.</li>
-              <li>HTTPS/TLS em produção.</li>
-              <li>Controlo de acesso.</li>
-              <li>Proteção contra abuso/rate limiting.</li>
-              <li>Logs de segurança proporcionais.</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-white">10. Cookies</h2>
+            <h2 className="text-xl font-semibold text-white">16. Cookies</h2>
             <p className="mt-2">
-              Para mais informação sobre cookies e preferências, consulta a{" "}
+              Para informação detalhada sobre categorias de cookies e gestão de preferências, consulte
+              a{" "}
               <Link to="/politica-cookies" className="text-red-400 underline underline-offset-4 hover:text-red-300">
                 Política de Cookies
               </Link>
@@ -193,19 +209,17 @@ function PoliticaPrivacidadePage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white">11. Alterações à política</h2>
+            <h2 className="text-xl font-semibold text-white">17. Alterações a esta política</h2>
             <p className="mt-2">
-              Esta política pode ser atualizada periodicamente. A versão mais recente será publicada no
-              site.
+              Esta política pode ser atualizada para refletir alterações legais, técnicas ou
+              operacionais. A versão mais recente estará sempre disponível nesta página.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white">12. Contacto</h2>
-            <p className="mt-2">4fourfight@gmail.com</p>
-            <p className="mt-2 text-zinc-400">
-              TODO: Confirmar dados oficiais da entidade legal e contacto institucional.
-            </p>
+            <h2 className="text-xl font-semibold text-white">18. Contacto</h2>
+            <p className="mt-2">4Four Fight Academy</p>
+            <p>Email: 4fourfight@gmail.com</p>
           </section>
         </div>
       </div>

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Feedback, EmptyState } from "@/components/ui/feedback";
 import { Skeleton } from "@/components/ui/skeleton";
+import { whatsappAriaLabel, whatsappUrl } from "@/lib/contact";
 
 import { AlertTriangle } from "lucide-react";
 
@@ -288,9 +289,14 @@ function PlansPage() {
             description="Nenhum plano disponível no momento."
             action={
               <Button asChild variant="outline" className="mt-4">
-                <Link to="/" hash="contact">
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={whatsappAriaLabel}
+                >
                   Contacte-nos para mais informações
-                </Link>
+                </a>
               </Button>
             }
           />
@@ -308,10 +314,20 @@ function PlansPage() {
               <h3 className="font-semibold mb-2 text-sm sm:text-base">
                 Posso experimentar uma aula grátis?
               </h3>
-              <p className="text-text-secondary text-sm">
-                Sim! Oferecemos uma aula experimental gratuita para novos alunos. Contacta-nos para
-                agendares.
-              </p>
+               <p className="text-text-secondary text-sm">
+                 Sim! Oferecemos uma aula experimental gratuita para novos alunos. Contacta-nos para
+                 {" "}
+                 <a
+                   href={whatsappUrl}
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   aria-label={whatsappAriaLabel}
+                   className="text-primary hover:text-primary/80"
+                 >
+                   agendares
+                 </a>
+                 .
+               </p>
             </div>
             <div
               className="bg-surface p-4 sm:p-6 border border-border-subtle"

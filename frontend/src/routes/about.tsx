@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { whatsappAriaLabel, whatsappNumberDisplay, whatsappUrl } from "@/lib/contact";
 
 import { Shield, Trophy, Users, Star, MapPin, Phone, Mail, Clock } from "lucide-react";
 
@@ -135,7 +136,15 @@ function AboutPage() {
                 <Phone size={20} style={{ color: "#C1121F" }} />
                 <div>
                   <p className="font-semibold">Contacto</p>
-                  <p className="text-sm text-text-secondary">+351 9xx xxx xxx</p>
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={whatsappAriaLabel}
+                    className="text-sm text-text-secondary hover:text-primary transition-colors"
+                  >
+                    {whatsappNumberDisplay}
+                  </a>
                 </div>
               </div>
             </CardContent>

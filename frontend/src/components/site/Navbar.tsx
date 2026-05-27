@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Menu, X, User, LogOut } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/contexts/auth-context";
+import { whatsappAriaLabel, whatsappUrl } from "@/lib/contact";
 
 const links = [
   { label: "ACADEMIA", href: "/about" },
@@ -84,6 +85,15 @@ function Navbar() {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={whatsappAriaLabel}
+            className="text-[11px] tracking-[0.15em] uppercase text-text-secondary hover:text-primary transition-colors"
+          >
+            WhatsApp
+          </a>
           {isLoading ? (
             <span className="inline-flex items-center justify-center border border-border-subtle bg-surface-2 text-text-secondary px-5 py-2.5 text-[11px] tracking-[0.2em] uppercase font-semibold rounded-[2px] opacity-70">
               A carregar...
@@ -184,6 +194,16 @@ function Navbar() {
               {dashboardAction.label.toUpperCase()}
             </Link>
           )}
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={whatsappAriaLabel}
+            className="mt-2 text-[13px] tracking-[0.2em] uppercase text-text-secondary hover:text-primary transition-colors"
+            onClick={() => setOpen(false)}
+          >
+            WhatsApp
+          </a>
         </nav>
       </div>
     </header>

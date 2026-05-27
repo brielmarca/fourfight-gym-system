@@ -1,9 +1,10 @@
 import { MapPin, Phone, Mail, Clock, Shield, Calendar } from "lucide-react";
 import { DarkMap } from "./DarkMap";
+import { whatsappNumberDisplay } from "@/lib/contact";
 
 const items = [
   { icon: MapPin, label: "Endereço", value: "Rua de Teste, 123, Gondomar, Portugal" },
-  { icon: Phone, label: "Telefone", value: "+351 912 345 678" },
+  { icon: Phone, label: "WhatsApp", value: whatsappNumberDisplay },
   { icon: Mail, label: "Email", value: "4fourfight@gmail.com" },
   { icon: Clock, label: "Horário", value: "Seg–Sex 8h–22h · Sáb 8h–20h · Dom 8h–12h" },
 ];

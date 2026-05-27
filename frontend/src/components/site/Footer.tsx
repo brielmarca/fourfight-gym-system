@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 
 import { openCookiePreferences } from "@/components/privacy/CookieConsentBanner";
+import { whatsappAriaLabel, whatsappNumberDisplay, whatsappUrl } from "@/lib/contact";
 
 const navigationLinks = [
   { label: "Academia", to: "/about" },
@@ -15,7 +16,7 @@ const navigationLinks = [
 
 const contactInfo = {
   address: ["Rua de Teste, 123", "Cidade de Teste, 1234-567"],
-  phone: "+351 912 345 678",
+  phone: whatsappNumberDisplay,
   email: "4fourfight@gmail.com",
   schedule: ["Seg–Sex: 8h–22h", "Sáb: 8h–20h | Dom: 8h–12h"],
 };
@@ -103,9 +104,16 @@ export function Footer() {
                   </p>
                 ))}
               </div>
-              <p className="text-sm" style={{ color: "#777" }}>
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={whatsappAriaLabel}
+                className="group relative inline-flex pb-1 text-sm text-[#888] transition-colors duration-300 hover:text-[#C1121F] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-600/70"
+              >
                 {contactInfo.phone}
-              </p>
+                <span className="absolute bottom-0 left-0 h-px w-0 bg-[#C1121F] transition-all duration-300 group-hover:w-full" />
+              </a>
               <a
                 href={`mailto:${contactInfo.email}`}
                 className="group relative inline-flex pb-1 text-sm text-[#888] transition-colors duration-300 hover:text-[#C1121F] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-600/70"

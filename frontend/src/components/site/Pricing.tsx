@@ -1,3 +1,5 @@
+import { whatsappAriaLabel, whatsappUrl } from "@/lib/contact";
+
 const plans = [
   {
     name: "FIGHTER BASIC",
@@ -5,7 +7,7 @@ const plans = [
     originalPrice: "€60",
     features: ["3 aulas por semana", "Acesso ao vestiário", "App da comunidade"],
     cta: "QUERO COMEÇAR",
-    href: "/#contact",
+    href: whatsappUrl,
     featured: false,
   },
   {
@@ -19,7 +21,7 @@ const plans = [
       "Acompanhamento de progresso",
     ],
     cta: "QUERO ESTE",
-    href: "/#contact",
+    href: whatsappUrl,
     featured: true,
   },
   {
@@ -28,7 +30,7 @@ const plans = [
     originalPrice: "€120",
     features: ["Tudo do Pro", "1-on-1 com instrutor", "Plano nutricional", "Apoio a competições"],
     cta: "QUERO ELITE",
-    href: "/#contact",
+    href: whatsappUrl,
     featured: false,
   },
 ];
@@ -156,6 +158,9 @@ export function Pricing() {
               {p.featured ? (
                 <a
                   href={p.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={whatsappAriaLabel}
                   className="btn-red w-full block text-center"
                   style={{
                     background: "#C1121F",
@@ -175,6 +180,9 @@ export function Pricing() {
               ) : (
                 <a
                   href={p.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={whatsappAriaLabel}
                   className="w-full block text-center"
                   style={{
                     background: "transparent",

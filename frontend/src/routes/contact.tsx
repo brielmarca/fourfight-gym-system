@@ -9,6 +9,7 @@ import { DarkMap } from "@/components/site/DarkMap";
 import { useCreateContact } from "@/queries";
 import { MapPin, Phone, Mail, Clock, Send, Loader2, Check, X } from "lucide-react";
 import { Feedback } from "@/components/ui/feedback";
+import { whatsappAriaLabel, whatsappNumberDisplay, whatsappUrl } from "@/lib/contact";
 
 export const Route = createFileRoute("/contact")({
   component: ContactPage,
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/contact")({
 
 const contactInfo = [
   { icon: MapPin, label: "Morada", value: ["Rua de Teste, 123", "Cidade de Teste, 1234-567"] },
-  { icon: Phone, label: "Telefone", value: ["+351 912 345 678"] },
+  { icon: Phone, label: "WhatsApp", value: [whatsappNumberDisplay], href: whatsappUrl },
   {
     icon: Mail,
     label: "Email",
@@ -73,9 +74,18 @@ function ContactPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">FALA COMIGO</h1>
-            <p className="mt-4 text-text-secondary text-lg">
-              Tens dúvidas? Queres experimentar? Fala connosco!
-            </p>
+              <p className="mt-4 text-text-secondary text-lg">
+                Tens dúvidas? Queres experimentar? Fala connosco!
+              </p>
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={whatsappAriaLabel}
+                className="mt-4 inline-flex text-primary hover:text-primary/80 transition-colors"
+              >
+                Abrir conversa no WhatsApp
+              </a>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
@@ -227,6 +237,9 @@ function ContactPage() {
                         {href ? (
                           <a
                             href={href}
+                            target={href.startsWith("https://wa.me/") ? "_blank" : undefined}
+                            rel={href.startsWith("https://wa.me/") ? "noopener noreferrer" : undefined}
+                            aria-label={href.startsWith("https://wa.me/") ? whatsappAriaLabel : undefined}
                             className="text-foreground transition-colors hover:text-primary"
                           >
                             {value[0]}

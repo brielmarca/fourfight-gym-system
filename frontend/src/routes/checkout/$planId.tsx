@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { whatsappAriaLabel, whatsappUrl } from "@/lib/contact";
 
 import { CreditCard, Loader2, Building, ExternalLink } from "lucide-react";
 
@@ -247,15 +248,26 @@ function CheckoutPage() {
                      </div>
                    )}
 
-                  {paymentMethod === "RECECAO" && (
-                    <div className="p-4 rounded-md bg-primary/5 border border-primary/20 flex gap-3 text-sm text-text-secondary">
-                      <Building className="h-5 w-5 flex-shrink-0 text-primary mt-0.5" />
-                      <p>
-                        Dirija-se à receção da 4Four Fight Academy para efetuar o pagamento
-                        presencialmente.
-                      </p>
-                    </div>
-                  )}
+                   {paymentMethod === "RECECAO" && (
+                     <div className="p-4 rounded-md bg-primary/5 border border-primary/20 flex gap-3 text-sm text-text-secondary">
+                       <Building className="h-5 w-5 flex-shrink-0 text-primary mt-0.5" />
+                       <p>
+                         Dirija-se à receção da 4Four Fight Academy para efetuar o pagamento
+                         presencialmente. Se preferir, também pode
+                         {" "}
+                         <a
+                           href={whatsappUrl}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           aria-label={whatsappAriaLabel}
+                           className="text-primary hover:text-primary/80"
+                         >
+                           falar connosco no WhatsApp
+                         </a>
+                         .
+                       </p>
+                     </div>
+                   )}
 
                   <Button
                     type="submit"

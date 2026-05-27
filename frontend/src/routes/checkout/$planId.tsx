@@ -13,8 +13,6 @@ import { CreditCard, Loader2, Building, ExternalLink } from "lucide-react";
 const STRIPE_CHECKOUT_ENABLED = import.meta.env.VITE_STRIPE_CHECKOUT_ENABLED === "true";
 const PRESALE_MESSAGE =
   "As inscricoes estao em pre-venda. Para finalizar a inscricao, fale connosco pelo WhatsApp ou na rececao.";
-const WHATSAPP_URL =
-  "https://wa.me/351923304078?text=Ol%C3%A1%204Four%20Fight%20Academy%2C%20quero%20finalizar%20a%20minha%20inscri%C3%A7%C3%A3o.";
 
 export const Route = createFileRoute("/checkout/$planId")({
   beforeLoad: ({ params }) => {
@@ -160,7 +158,7 @@ function CheckoutPage() {
               <p className="text-sm text-text-secondary">{PRESALE_MESSAGE}</p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button asChild className="btn-red w-full sm:w-auto">
-                  <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
+                  <a href={whatsappUrl} target="_blank" rel="noreferrer" aria-label={whatsappAriaLabel}>
                     Falar no WhatsApp
                   </a>
                 </Button>

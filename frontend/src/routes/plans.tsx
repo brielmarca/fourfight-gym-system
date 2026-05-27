@@ -13,6 +13,12 @@ import { whatsappAriaLabel, whatsappUrl } from "@/lib/contact";
 
 import { AlertTriangle } from "lucide-react";
 
+const STRIPE_CHECKOUT_ENABLED = import.meta.env.VITE_STRIPE_CHECKOUT_ENABLED === "true";
+const PRESALE_MESSAGE =
+  "As inscricoes estao em pre-venda. Para finalizar a inscricao, fale connosco pelo WhatsApp ou na rececao.";
+const WHATSAPP_URL =
+  "https://wa.me/351923304078?text=Ol%C3%A1%204Four%20Fight%20Academy%2C%20quero%20finalizar%20a%20minha%20inscri%C3%A7%C3%A3o.";
+
 export const Route = createFileRoute("/plans")({
   component: PlansPage,
 });
@@ -158,6 +164,19 @@ function PlansPage() {
           </div>
         ) : null}
 
+        {!STRIPE_CHECKOUT_ENABLED && (
+          <div className="max-w-3xl mx-auto mb-8 rounded-md border border-primary/30 bg-primary/10 p-4 sm:p-5">
+            <p className="text-sm text-text-secondary text-center">{PRESALE_MESSAGE}</p>
+            <div className="mt-4 flex justify-center">
+              <Button asChild className="btn-red text-xs tracking-[0.15em] uppercase">
+                <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
+                  Falar no WhatsApp
+                </a>
+              </Button>
+            </div>
+          </div>
+        )}
+
         {displayPlans.length > 0 ? (
           <motion.div
             className="grid md:grid-cols-3 gap-6"
@@ -255,9 +274,9 @@ function PlansPage() {
                      {selectedPlan === plan.id ? (
                        <span className="flex items-center justify-center gap-2">+ Selecionado</span>
                      ) : (
-                       "Selecionar"
-                     )}
-                   </Button>
+                        STRIPE_CHECKOUT_ENABLED ? "Selecionar" : "Pre-registrar"
+                      )}
+                    </Button>
                   <p className="mt-2 text-[11px] text-text-muted text-center">
                     Seras redirecionado para login se ainda nao tiveres sessao iniciada.
                   </p>

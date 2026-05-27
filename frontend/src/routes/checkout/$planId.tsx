@@ -10,6 +10,12 @@ import { whatsappAriaLabel, whatsappUrl } from "@/lib/contact";
 
 import { CreditCard, Loader2, Building, ExternalLink } from "lucide-react";
 
+const STRIPE_CHECKOUT_ENABLED = import.meta.env.VITE_STRIPE_CHECKOUT_ENABLED === "true";
+const PRESALE_MESSAGE =
+  "As inscricoes estao em pre-venda. Para finalizar a inscricao, fale connosco pelo WhatsApp ou na rececao.";
+const WHATSAPP_URL =
+  "https://wa.me/351923304078?text=Ol%C3%A1%204Four%20Fight%20Academy%2C%20quero%20finalizar%20a%20minha%20inscri%C3%A7%C3%A3o.";
+
 export const Route = createFileRoute("/checkout/$planId")({
   beforeLoad: ({ params }) => {
     if (!isAuthenticated()) {
@@ -28,7 +34,9 @@ function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"STRIPE" | "RECECAO">("STRIPE");
+  const [paymentMethod, setPaymentMethod] = useState<"STRIPE" | "RECECAO">(
+    STRIPE_CHECKOUT_ENABLED ? "STRIPE" : "RECECAO",
+  );
 
   const displayPlan = plan || {
     id: planId,
@@ -52,6 +60,11 @@ function CheckoutPage() {
     }
 
     if (paymentMethod === "STRIPE") {
+      if (!STRIPE_CHECKOUT_ENABLED) {
+        setError(PRESALE_MESSAGE);
+        return;
+      }
+
       setSubmitting(true);
       try {
         const response = await stripeCheckout.mutateAsync(planId);
@@ -138,6 +151,27 @@ function CheckoutPage() {
           </p>
         </div>
 
+        {!STRIPE_CHECKOUT_ENABLED && (
+          <Card
+            className="mb-8 bg-surface border-border-subtle"
+            style={{ borderTop: "2px solid #C1121F" }}
+          >
+            <CardContent className="pt-6 space-y-4">
+              <p className="text-sm text-text-secondary">{PRESALE_MESSAGE}</p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button asChild className="btn-red w-full sm:w-auto">
+                  <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
+                    Falar no WhatsApp
+                  </a>
+                </Button>
+                <Button asChild variant="outline" className="w-full sm:w-auto">
+                  <Link to="/plans">Voltar aos planos</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid md:grid-cols-5 gap-8">
           <div className="md:col-span-2">
             <Card
@@ -200,23 +234,25 @@ function CheckoutPage() {
                     }}
                     className="grid gap-4"
                   >
-                    <Label
-                      htmlFor="stripe"
-                      className={`${
-                        paymentMethod === "STRIPE"
-                          ? "border-primary bg-primary/5"
-                          : "border-border-subtle hover:border-primary/50"
-                      } border-2 rounded-lg p-5 cursor-pointer transition-all`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <RadioGroupItem value="STRIPE" id="stripe" />
-                        <CreditCard className="h-6 w-6 text-primary" />
-                        <div>
-                          <CardTitle className="text-lg">Cartão / MB WAY / SEPA</CardTitle>
-                          <CardDescription>Pagamento seguro via Stripe</CardDescription>
+                    {STRIPE_CHECKOUT_ENABLED && (
+                      <Label
+                        htmlFor="stripe"
+                        className={`${
+                          paymentMethod === "STRIPE"
+                            ? "border-primary bg-primary/5"
+                            : "border-border-subtle hover:border-primary/50"
+                        } border-2 rounded-lg p-5 cursor-pointer transition-all`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <RadioGroupItem value="STRIPE" id="stripe" />
+                          <CreditCard className="h-6 w-6 text-primary" />
+                          <div>
+                            <CardTitle className="text-lg">Cartão / MB WAY / SEPA</CardTitle>
+                            <CardDescription>Pagamento seguro via Stripe</CardDescription>
+                          </div>
                         </div>
-                      </div>
-                    </Label>
+                      </Label>
+                    )}
 
                     <Label
                       htmlFor="rececao"
@@ -237,10 +273,10 @@ function CheckoutPage() {
                     </Label>
                   </RadioGroup>
 
-                   {paymentMethod === "STRIPE" && (
-                     <div className="p-4 rounded-md bg-primary/5 border border-primary/20 flex gap-3 text-sm text-text-secondary">
-                       <CreditCard className="h-5 w-5 flex-shrink-0 text-primary mt-0.5" />
-                       <p>
+                    {STRIPE_CHECKOUT_ENABLED && paymentMethod === "STRIPE" && (
+                      <div className="p-4 rounded-md bg-primary/5 border border-primary/20 flex gap-3 text-sm text-text-secondary">
+                        <CreditCard className="h-5 w-5 flex-shrink-0 text-primary mt-0.5" />
+                        <p>
                          Será redirecionado para o Stripe para concluir o pagamento de forma segura.
                          Aceitamos cartões, MB WAY, SEPA, Apple Pay e Google Pay.
                          Disponível apenas para Portugal. Pagamento em EUR.

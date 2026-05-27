@@ -3,9 +3,7 @@ package com.gym.service;
 import com.gym.entity.Membership;
 import com.gym.entity.Payment;
 import com.gym.entity.StripeWebhookEvent;
-import com.gym.entity.User;
 import com.gym.exception.BusinessRuleException;
-import com.gym.exception.ResourceNotFoundException;
 import com.gym.repository.MembershipRepository;
 import com.gym.repository.PaymentRepository;
 import com.gym.repository.StripeWebhookEventRepository;
@@ -28,6 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -114,15 +114,14 @@ public class StripeWebhookService {
         String sessionId = session.getId();
         String subscriptionId = session.getSubscription();
 
-        Membership membership = membershipRepository
-                .findByStripeCheckoutSessionId(sessionId)
-                .orElse(null);
+        Membership membership = resolveMembershipForCheckoutSession(sessionId, session);
 
         if (membership == null) {
             log.warn("No pending membership found for session: {}", sessionId);
             return;
         }
 
+        membership.setStripeCheckoutSessionId(sessionId);
         membership.setStripeSubscriptionId(subscriptionId);
 
         if (!isPortugalCustomer(session)) {
@@ -195,20 +194,24 @@ public class StripeWebhookService {
 
         BigDecimal amount = BigDecimal.valueOf(invoice.getAmountPaid()).divide(BigDecimal.valueOf(100));
 
-        Payment payment = Payment.builder()
-                .user(membership.getUser())
-                .membership(membership)
-                .amount(amount)
-                .currency(invoice.getCurrency() != null ? invoice.getCurrency().toUpperCase() : "EUR")
-                .method(Payment.PaymentMethod.STRIPE)
-                .status(Payment.PaymentStatus.COMPLETED)
-                .gatewayRef(invoice.getId())
-                .stripePaymentIntentId(invoice.getPaymentIntent())
-                .stripeInvoiceId(invoice.getId())
-                .paidAt(Instant.ofEpochSecond(invoice.getCreated()).atZone(java.time.ZoneId.systemDefault()).toLocalDateTime())
-                .build();
+        if (invoice.getId() != null && !paymentRepository.existsByStripeInvoiceId(invoice.getId())) {
+            Payment payment = Payment.builder()
+                    .user(membership.getUser())
+                    .membership(membership)
+                    .amount(amount)
+                    .currency(invoice.getCurrency() != null ? invoice.getCurrency().toUpperCase() : "EUR")
+                    .method(Payment.PaymentMethod.STRIPE)
+                    .status(Payment.PaymentStatus.COMPLETED)
+                    .gatewayRef(invoice.getId())
+                    .stripePaymentIntentId(invoice.getPaymentIntent())
+                    .stripeInvoiceId(invoice.getId())
+                    .paidAt(Instant.ofEpochSecond(invoice.getCreated()).atZone(java.time.ZoneId.systemDefault()).toLocalDateTime())
+                    .build();
 
-        paymentRepository.save(payment);
+            paymentRepository.save(payment);
+        } else if (invoice.getId() != null) {
+            log.info("Skipping duplicate Stripe payment insert for invoice {}", invoice.getId());
+        }
 
         LocalDate startDate = LocalDate.now();
         if (invoice.getPeriodStart() != null) {
@@ -353,5 +356,79 @@ public class StripeWebhookService {
         }
 
         return country != null && "PT".equalsIgnoreCase(country);
+    }
+
+    private Membership resolveMembershipForCheckoutSession(String sessionId, Session session) {
+        Membership directMatch = membershipRepository.findByStripeCheckoutSessionId(sessionId).orElse(null);
+        if (directMatch != null) {
+            return directMatch;
+        }
+
+        UUID userId = null;
+        UUID planId = null;
+
+        Map<String, String> metadata = session.getMetadata();
+        if (metadata != null) {
+            userId = parseUuid(metadata.get("userId"));
+            planId = parseUuid(metadata.get("planId"));
+        }
+
+        if (userId == null || planId == null) {
+            String clientReferenceId = session.getClientReferenceId();
+            if (clientReferenceId != null && clientReferenceId.contains(":")) {
+                String[] parts = clientReferenceId.split(":", 2);
+                if (userId == null && parts.length > 0) {
+                    userId = parseUuid(parts[0]);
+                }
+                if (planId == null && parts.length > 1) {
+                    planId = parseUuid(parts[1]);
+                }
+            }
+        }
+
+        if (userId == null || planId == null) {
+            log.warn("Stripe checkout fallback lookup skipped due to missing/invalid metadata for session {}", sessionId);
+            return null;
+        }
+
+        if (!userRepository.existsById(userId)) {
+            log.warn("Stripe checkout fallback lookup failed: user {} not found for session {}", userId, sessionId);
+            return null;
+        }
+
+        List<Membership> candidates = membershipRepository.findAllByUserIdAndPlanIdOrderByCreatedAtDesc(userId, planId);
+        for (Membership candidate : candidates) {
+            if (isEligibleForCheckoutLinking(candidate)) {
+                log.info("Stripe checkout fallback matched membership {} for session {}", candidate.getId(), sessionId);
+                return candidate;
+            }
+        }
+
+        log.warn("Stripe checkout fallback found no safe membership candidate for session {}", sessionId);
+        return null;
+    }
+
+    private boolean isEligibleForCheckoutLinking(Membership membership) {
+        if (membership == null || membership.getPlan() == null || membership.getUser() == null) {
+            return false;
+        }
+
+        if (membership.getStripeSubscriptionId() != null && !membership.getStripeSubscriptionId().isBlank()) {
+            return false;
+        }
+
+        return membership.getStatus() == Membership.MembershipStatus.PENDING_PAYMENT
+                || membership.getStatus() == Membership.MembershipStatus.PENDING_APPROVAL;
+    }
+
+    private UUID parseUuid(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return UUID.fromString(raw.trim());
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 }

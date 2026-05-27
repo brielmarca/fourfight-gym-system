@@ -44,6 +44,8 @@ public interface MembershipRepository extends JpaRepository<Membership, UUID> {
 
     Optional<Membership> findTopByUserIdAndStatusOrderByCreatedAtDesc(UUID userId, Membership.MembershipStatus status);
 
+    List<Membership> findAllByUserIdAndPlanIdOrderByCreatedAtDesc(UUID userId, UUID planId);
+
     @EntityGraph(attributePaths = {"user", "plan"})
     List<Membership> findAllByUserIdOrderByCreatedAtDesc(UUID userId);
 }

@@ -9,6 +9,9 @@ const navigationLinks = [
   { label: "Horários", to: "/schedule" },
   { label: "Planos", to: "/plans" },
   { label: "Contacto", to: "/contact" },
+];
+
+const legalLinks = [
   { label: "Política de Privacidade", to: "/politica-privacidade" },
   { label: "Termos de Utilização", to: "/termos-utilizacao" },
   { label: "Política de Cookies", to: "/politica-cookies" },
@@ -65,27 +68,51 @@ export function Footer() {
             >
               Navegação
             </h3>
-            <nav className="mx-auto flex max-w-[280px] flex-wrap items-center justify-center gap-x-5 gap-y-4">
-              {navigationLinks.map((l) => (
-                <Link
-                  key={l.to}
-                  to={l.to}
-                  className="group relative inline-flex justify-center pb-2 text-[11px] font-medium uppercase tracking-[0.28em] text-zinc-500 transition-colors duration-300 hover:text-red-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-600/70"
-                  activeProps={{ className: "text-[#C1121F]" }}
+            <div className="mx-auto max-w-[340px] space-y-7">
+              <nav className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3" aria-label="Navegação principal">
+                {navigationLinks.map((l) => (
+                  <Link
+                    key={l.to}
+                    to={l.to}
+                    className="group relative inline-flex justify-center pb-2 text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-500 transition-colors duration-300 hover:text-red-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-600/70"
+                    activeProps={{ className: "text-[#C1121F]" }}
+                  >
+                    {l.label}
+                    <span className="absolute bottom-0 left-1/2 h-px w-0 -translate-x-1/2 bg-red-500 transition-all duration-300 group-hover:w-6" />
+                  </Link>
+                ))}
+              </nav>
+
+              <div className="border-t border-white/[0.06] pt-5">
+                <h4
+                  className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em]"
+                  style={{ color: "#8A8A8A" }}
                 >
-                  {l.label}
-                  <span className="absolute bottom-0 left-1/2 h-px w-0 -translate-x-1/2 bg-red-500 transition-all duration-300 group-hover:w-6" />
-                </Link>
-              ))}
-              <button
-                type="button"
-                onClick={openCookiePreferences}
-                className="group relative inline-flex justify-center pb-2 text-[11px] font-medium uppercase tracking-[0.28em] text-zinc-500 transition-colors duration-300 hover:text-red-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-600/70"
-              >
-                Preferências de cookies
-                <span className="absolute bottom-0 left-1/2 h-px w-0 -translate-x-1/2 bg-red-500 transition-all duration-300 group-hover:w-6" />
-              </button>
-            </nav>
+                  Legal
+                </h4>
+                <nav className="space-y-2" aria-label="Links legais">
+                  {legalLinks.map((l) => (
+                    <Link
+                      key={l.to}
+                      to={l.to}
+                      className="group relative inline-flex pb-1 text-[12px] font-medium tracking-[0.04em] text-zinc-500 transition-colors duration-300 hover:text-red-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-600/70"
+                      activeProps={{ className: "text-[#C1121F]" }}
+                    >
+                      {l.label}
+                      <span className="absolute bottom-0 left-0 h-px w-0 bg-red-500 transition-all duration-300 group-hover:w-full" />
+                    </Link>
+                  ))}
+                </nav>
+
+                <button
+                  type="button"
+                  onClick={openCookiePreferences}
+                  className="mt-4 inline-flex text-[11px] font-medium text-zinc-600 transition-colors duration-300 hover:text-zinc-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-600/70"
+                >
+                  Preferências de cookies
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Contact information */}

@@ -68,10 +68,13 @@ export function Hero() {
             textShadow: "0 8px 36px rgba(0,0,0,0.9)",
           }}
         >
-          <span className="block hero-word" style={{ animationDelay: "0.1s", color: "#F5F5F5" }}>
+          <span className="hero-title-mobile hero-word" style={{ animationDelay: "0.1s", color: "#F5F5F5" }}>
+            TREINE O <span style={{ color: "#C1121F" }}>INSTINTO</span>
+          </span>
+          <span className="block hero-word hero-title-desktop" style={{ animationDelay: "0.1s", color: "#F5F5F5" }}>
             TREINE O
           </span>
-          <span className="block hero-word" style={{ animationDelay: "0.35s", color: "#C1121F" }}>
+          <span className="block hero-word hero-title-desktop" style={{ animationDelay: "0.35s", color: "#C1121F" }}>
             INSTINTO
           </span>
         </h1>
@@ -110,7 +113,7 @@ export function Hero() {
 
       {/* Stats bar — in normal flow, not absolute */}
       <div
-        className="relative w-full"
+        className="relative w-full hero-stats-band"
         style={{
           background: "rgba(10,10,10,0.92)",
           borderTop: "1px solid #1E1E1E",
@@ -118,7 +121,7 @@ export function Hero() {
         }}
       >
         <div
-          className="max-w-5xl mx-auto grid grid-cols-3 text-center gap-1 sm:gap-2 px-2 sm:px-4"
+          className="max-w-5xl mx-auto grid grid-cols-3 text-center gap-1 sm:gap-2 px-2 sm:px-4 hero-stats-grid"
           style={{ padding: "16px 0 20px" }}
         >
           {[

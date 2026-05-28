@@ -27,12 +27,10 @@ const contactInfo = {
 export function Footer() {
   return (
     <footer
-      className="px-4"
+      className="px-4 pt-6 pb-7 sm:pt-12 sm:pb-8"
       style={{
         background: "#080808",
         borderTop: "1px solid #161616",
-        paddingTop: "48px",
-        paddingBottom: "32px",
       }}
     >
       <div className="max-w-7xl mx-auto">
@@ -41,14 +39,13 @@ export function Footer() {
           <div className="text-center md:text-left">
             <Link
               to="/"
-              className="inline-block mb-5 transition-opacity duration-300 hover:opacity-85"
+              className="inline-block mb-3 sm:mb-5 transition-opacity duration-300 hover:opacity-85"
             >
               <img
                 src="/assets/logo.png"
                 alt="4Four Fight Academy"
+                className="h-10 sm:h-[52px] w-auto"
                 style={{
-                  height: "52px",
-                  width: "auto",
                   mixBlendMode: "screen",
                   filter: "brightness(1.1)",
                 }}

@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,11 @@ function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    setPassword("");
+    setConfirmPassword("");
+  }, []);
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -40,6 +45,8 @@ function ResetPasswordPage() {
     try {
       await api.auth.resetPassword(token, password);
       setMessage("Palavra-passe redefinida com sucesso.");
+      setPassword("");
+      setConfirmPassword("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nao foi possivel redefinir a palavra-passe.");
     } finally {
@@ -55,9 +62,27 @@ function ResetPasswordPage() {
           <CardDescription>Define uma nova palavra-passe para a tua conta.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <Input type="password" placeholder="Nova palavra-passe" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            <Input type="password" placeholder="Confirmar palavra-passe" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+          <form onSubmit={onSubmit} className="space-y-4" autoComplete="off">
+            <Input
+              id="reset-password-new"
+              name="reset-password-new"
+              type="password"
+              placeholder="Nova palavra-passe"
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <Input
+              id="reset-password-confirm"
+              name="reset-password-confirm"
+              type="password"
+              placeholder="Confirmar palavra-passe"
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
             {message && <p className="text-sm text-green-600">{message}</p>}
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" disabled={loading} className="w-full">

@@ -42,7 +42,8 @@ function ProfessorPage() {
   const createVideoLesson = useCreateVideoLesson();
   const deactivateVideoLesson = useDeactivateVideoLesson();
   const [feedback, setFeedback] = useState<string | null>(null);
-  const [form, setForm] = useState({ title: "", description: "", modality: "JIU_JITSU" as const, videoUrl: "", minimumPlanRank: 1 as 1 | 2 | 3 });
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [form, setForm] = useState({ title: "", description: "", modality: "JIU_JITSU" as const, minimumPlanRank: 1 as 1 | 2 | 3 });
 
   if (user && hasRole(["ADMIN", "MANAGER"])) {
     void navigate({ to: "/admin", replace: true });
@@ -145,19 +146,27 @@ function ProfessorPage() {
                     <SelectItem value="MMA">MMA</SelectItem>
                   </SelectContent>
                 </Select>
-                <Input placeholder="Link do video" value={form.videoUrl} onChange={(event) => setForm((prev) => ({ ...prev, videoUrl: event.target.value }))} className="md:col-span-2" />
+                <Input type="file" accept="video/mp4,.mp4" onChange={(event) => setVideoFile(event.target.files?.[0] ?? null)} className="md:col-span-2" />
                 <Select value={String(form.minimumPlanRank)} onValueChange={(value) => setForm((prev) => ({ ...prev, minimumPlanRank: Number(value) as 1 | 2 | 3 }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent><SelectItem value="1">Basic</SelectItem><SelectItem value="2">Standard</SelectItem><SelectItem value="3">Premium</SelectItem></SelectContent>
                 </Select>
               </div>
               <Textarea placeholder="Descricao" value={form.description} onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))} />
+              <p className="text-xs text-text-secondary">
+                Apenas MP4. O ficheiro sera convertido para WebM e o MP4 original sera removido apos o processamento.
+              </p>
               <Button
                 onClick={async () => {
                   setFeedback(null);
                   try {
-                    await createVideoLesson.mutateAsync(form);
-                    setForm({ title: "", description: "", modality: "JIU_JITSU", videoUrl: "", minimumPlanRank: 1 });
+                    if (!videoFile) {
+                      setFeedback("Selecione um ficheiro MP4 para upload.");
+                      return;
+                    }
+                    await createVideoLesson.mutateAsync({ file: videoFile, payload: form });
+                    setVideoFile(null);
+                    setForm({ title: "", description: "", modality: "JIU_JITSU", minimumPlanRank: 1 });
                     setFeedback("Videoaula guardada com sucesso.");
                   } catch (error) {
                     setFeedback(error instanceof Error ? error.message : "Erro ao guardar videoaula.");
@@ -178,9 +187,9 @@ function ProfessorPage() {
                 <div key={lesson.id} className="flex items-center justify-between gap-3 border border-border-subtle rounded-md p-3">
                   <div>
                     <p className="font-semibold">{lesson.title}</p>
-                    <p className="text-xs text-text-secondary">{modalityLabels[lesson.modality]} - Plano minimo {lesson.minimumPlanRank}</p>
+                    <p className="text-xs text-text-secondary">{modalityLabels[lesson.modality]} - Plano minimo {lesson.minimumPlanRank} - Estado {lesson.status ?? "READY"}</p>
                   </div>
-                  {lesson.active && <Button size="sm" variant="destructive" onClick={() => deactivateVideoLesson.mutate(lesson.id)} disabled={deactivateVideoLesson.isPending}>Desativar</Button>}
+                  {lesson.active && <Button size="sm" variant="destructive" onClick={() => { if (window.confirm("Eliminar esta videoaula?")) { deactivateVideoLesson.mutate(lesson.id); } }} disabled={deactivateVideoLesson.isPending}>Eliminar</Button>}
                 </div>
               ))}
             </CardContent>

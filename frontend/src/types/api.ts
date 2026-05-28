@@ -23,14 +23,20 @@ export interface User {
 
 export type Modality = "JIU_JITSU" | "BOXE_KICKBOXING" | "CAPOEIRA" | "MMA";
 
-export type VideoProvider = "YOUTUBE" | "VIMEO" | "EXTERNAL";
+export type VideoProvider = "YOUTUBE" | "VIMEO" | "EXTERNAL" | "INTERNAL";
+
+export type VideoLessonStatus = "PROCESSING" | "READY" | "FAILED";
 
 export interface VideoLesson {
   id: string;
   title: string;
   description: string | null;
   modality: Modality;
-  videoUrl: string;
+  videoUrl?: string;
+  streamUrl?: string;
+  status?: VideoLessonStatus;
+  isActive?: boolean;
+  active?: boolean;
   embedUrl: string | null;
   provider: VideoProvider;
   minimumPlanRank: 1 | 2 | 3;
@@ -47,7 +53,6 @@ export interface UpsertVideoLessonRequest {
   title: string;
   description?: string;
   modality: Modality;
-  videoUrl: string;
   minimumPlanRank: 1 | 2 | 3;
   professorId?: string;
   active?: boolean;

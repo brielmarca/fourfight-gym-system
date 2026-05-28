@@ -196,6 +196,42 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   return response.json();
 }
 
+async function requestBlob(endpoint: string): Promise<Blob> {
+  const token = getAccessToken();
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_BASE}${endpoint}`, {
+      method: "GET",
+      credentials: "include",
+      signal: AbortSignal.timeout(30000),
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+  } catch {
+    throw new Error(NETWORK_ERROR_MESSAGE);
+  }
+
+  if (!response.ok) {
+    throw new Error("Nao foi possivel carregar o video.");
+  }
+
+  return response.blob();
+}
+
+async function requestWithFallback<T>(
+  primaryEndpoint: string,
+  fallbackEndpoint: string,
+  options: RequestInit = {},
+): Promise<T> {
+  try {
+    return await request<T>(primaryEndpoint, options);
+  } catch {
+    return request<T>(fallbackEndpoint, options);
+  }
+}
+
 // Access token stored in memory (XSS protection)
 let memoryAccessToken: string | null = null;
 
@@ -528,23 +564,34 @@ export const api = {
   },
 
   videoLessons: {
-    getManage: () => request<VideoLesson[]>("/video-lessons/manage"),
-    create: (payload: UpsertVideoLessonRequest) =>
-      request<VideoLesson>("/video-lessons", {
+    getManage: () => requestWithFallback<VideoLesson[]>("/admin/video-lessons", "/video-lessons/manage"),
+    upload: (file: File, payload: UpsertVideoLessonRequest) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("title", payload.title);
+      formData.append("description", payload.description ?? "");
+      formData.append("modality", payload.modality);
+      formData.append("minimumPlanRank", String(payload.minimumPlanRank));
+      if (typeof payload.active === "boolean") {
+        formData.append("active", String(payload.active));
+      }
+      return requestWithFallback<VideoLesson>("/admin/video-lessons/upload", "/video-lessons", {
         method: "POST",
-        body: JSON.stringify(payload),
-      }),
+        body: formData,
+      });
+    },
     update: (id: string, payload: UpsertVideoLessonRequest) =>
-      request<VideoLesson>(`/video-lessons/${id}`, {
-        method: "PUT",
+      requestWithFallback<VideoLesson>(`/admin/video-lessons/${id}`, `/video-lessons/${id}`, {
+        method: "PATCH",
         body: JSON.stringify(payload),
       }),
     deactivate: (id: string) =>
-      request<VideoLesson>(`/video-lessons/${id}/deactivate`, {
-        method: "PATCH",
+      requestWithFallback<VideoLesson>(`/admin/video-lessons/${id}`, `/video-lessons/${id}/deactivate`, {
+        method: "DELETE",
       }),
-    getMy: () => request<VideoLesson[]>("/video-lessons/my"),
-    getMyById: (id: string) => request<VideoLesson>(`/video-lessons/my/${id}`),
+    getMy: () => requestWithFallback<VideoLesson[]>("/video-lessons", "/video-lessons/my"),
+    getMyById: (id: string) => requestWithFallback<VideoLesson>(`/video-lessons/${id}`, `/video-lessons/my/${id}`),
+    getStreamBlob: (id: string) => requestBlob(`/video-lessons/${id}/stream`),
   },
 
   classEnrollments: {

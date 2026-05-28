@@ -30,7 +30,8 @@ export function useMyVideoLesson(id: string, enabled = true) {
 export function useCreateVideoLesson() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: UpsertVideoLessonRequest) => api.videoLessons.create(payload),
+    mutationFn: ({ file, payload }: { file: File; payload: UpsertVideoLessonRequest }) =>
+      api.videoLessons.upload(file, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.videoLessons.manage() });
       queryClient.invalidateQueries({ queryKey: queryKeys.videoLessons.my() });

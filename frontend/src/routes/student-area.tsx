@@ -1,6 +1,7 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { isAuthenticated } from "@/lib/api";
+import { api, isAuthenticated } from "@/lib/api";
 import {
   useMyStudentProfile,
   useMyMembership,
@@ -44,6 +45,8 @@ function StudentAreaPage() {
   const { data: monthlyAttendance = 0, isLoading: attendanceLoading } = useMyMonthlyAttendance();
   const { data: enrollments = [], isLoading: enrollmentsLoading } = useMyEnrollments();
   const { data: videoLessons = [], isLoading: videoLessonsLoading } = useMyVideoLessons(true);
+  const [videoErrorById, setVideoErrorById] = useState<Record<string, string>>({});
+  const [videoBlobUrlById, setVideoBlobUrlById] = useState<Record<string, string>>({});
 
   const loading = profileLoading || membershipLoading || attendanceLoading || enrollmentsLoading;
 
@@ -76,6 +79,40 @@ function StudentAreaPage() {
   const attendanceProgress = membership?.plan?.maxClasses
     ? Math.min(100, (monthlyAttendance / membership.plan.maxClasses) * 100)
     : Math.min(100, (monthlyAttendance / 12) * 100);
+
+  const readyActiveLessons = useMemo(
+    () =>
+      videoLessons.filter(
+        (lesson) =>
+          (lesson.status ? lesson.status === "READY" : true) &&
+          (typeof lesson.isActive === "boolean" ? lesson.isActive : (lesson.active ?? true)),
+      ),
+    [videoLessons],
+  );
+
+  useEffect(() => {
+    return () => {
+      Object.values(videoBlobUrlById).forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [videoBlobUrlById]);
+
+  const loadVideoBlob = async (lessonId: string) => {
+    if (videoBlobUrlById[lessonId]) {
+      return;
+    }
+
+    try {
+      setVideoErrorById((prev) => ({ ...prev, [lessonId]: "" }));
+      const blob = await api.videoLessons.getStreamBlob(lessonId);
+      const objectUrl = URL.createObjectURL(blob);
+      setVideoBlobUrlById((prev) => ({ ...prev, [lessonId]: objectUrl }));
+    } catch (error) {
+      setVideoErrorById((prev) => ({
+        ...prev,
+        [lessonId]: error instanceof Error ? error.message : "Nao foi possivel carregar o video.",
+      }));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -432,12 +469,12 @@ function StudentAreaPage() {
               <CardContent>
                 {videoLessonsLoading ? (
                   <p className="text-text-secondary">A carregar videoaulas...</p>
-                ) : videoLessons.length === 0 ? (
+                ) : readyActiveLessons.length === 0 ? (
                   <EmptyState icon={Target} title="Sem videoaulas disponíveis" description="Quando houver conteúdo para o teu plano ele aparece aqui." />
                 ) : (
                   <div className="space-y-6">
                     {(["JIU_JITSU", "BOXE_KICKBOXING", "CAPOEIRA", "MMA"] as const).map((modality) => {
-                      const byModality = videoLessons.filter((lesson) => lesson.modality === modality);
+                      const byModality = readyActiveLessons.filter((lesson) => lesson.modality === modality);
                       if (byModality.length === 0) return null;
                       const label = modality === "JIU_JITSU" ? "Jiu-Jitsu" : modality === "BOXE_KICKBOXING" ? "Boxe/Kickboxing" : modality === "CAPOEIRA" ? "Capoeira" : "MMA";
                       return (
@@ -457,7 +494,20 @@ function StudentAreaPage() {
                                       <iframe title={lesson.title} src={lesson.embedUrl} className="w-full h-full" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
                                     </div>
                                   ) : (
-                                    <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="text-primary underline text-sm">Abrir vídeo</a>
+                                    <div className="space-y-2">
+                                      {videoBlobUrlById[lesson.id] ? (
+                                        <video controls preload="metadata" className="w-full rounded-md border border-border-subtle bg-black">
+                                          <source src={videoBlobUrlById[lesson.id]} type="video/webm" />
+                                        </video>
+                                      ) : (
+                                        <Button size="sm" variant="outline" onClick={() => void loadVideoBlob(lesson.id)}>
+                                          Carregar video
+                                        </Button>
+                                      )}
+                                      {videoErrorById[lesson.id] && (
+                                        <p className="text-xs text-destructive">{videoErrorById[lesson.id]}</p>
+                                      )}
+                                    </div>
                                   )}
                                 </CardContent>
                               </Card>

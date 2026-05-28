@@ -289,3 +289,23 @@ html {
 .cta-desktop-suffix {
   display: none;
 }
+
+@media (max-width: 639px) {
+  .hero-section {
+    min-height: 80dvh;
+  }
+
+  .hero-bg-image {
+    object-position: 66% 34% !important;
+    transform: scale(1.03);
+  }
+
+  .hero-content {
+    padding-top: 5.25rem;
+    padding-bottom: 2.75rem;
+  }
+
+  .hero-cta-group {
+    margin-top: 18px;
+  }
+}

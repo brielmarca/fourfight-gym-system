@@ -4,7 +4,7 @@ export function Hero() {
   return (
     <section
       id="top"
-      className="relative w-full overflow-hidden"
+      className="relative w-full overflow-hidden hero-section"
     >
       {/* Single BG image */}
       <div className="absolute inset-0">
@@ -12,7 +12,7 @@ export function Hero() {
           src="/assets/FundoTelaInicial.webp"
           alt=""
           loading="eager"
-          className="absolute inset-0 w-full h-full object-cover grayscale scale-[1.08]"
+          className="absolute inset-0 w-full h-full object-cover grayscale scale-[1.08] hero-bg-image"
           style={{ objectPosition: "58% 50%" }}
         />
         <div
@@ -33,7 +33,7 @@ export function Hero() {
       />
 
       <div
-        className="relative w-full max-w-[1040px] mx-auto px-4 sm:px-6 text-center pt-32 pb-16 sm:pt-44 sm:pb-20"
+        className="relative w-full max-w-[1040px] mx-auto px-4 sm:px-6 text-center pt-32 pb-16 sm:pt-44 sm:pb-20 hero-content"
         style={{ zIndex: 10 }}
       >
         {/* Top label with side lines */}
@@ -59,6 +59,7 @@ export function Hero() {
         </div>
 
         <h1
+          aria-label="TREINE O INSTINTO"
           className="font-display leading-[0.9] sm:leading-[0.82] w-full max-w-[90vw] sm:max-w-none mx-auto break-words"
           style={{
             letterSpacing: "0.02em",

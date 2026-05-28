@@ -315,8 +315,8 @@ html {
   }
 
   .hero-bg-image {
-    object-position: 74% 18% !important;
-    transform: scale(1.01);
+    object-position: 70% 8% !important;
+    transform: scale(1.03);
   }
 
   .hero-content {

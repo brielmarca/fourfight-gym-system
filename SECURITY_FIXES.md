@@ -1,86 +1,47 @@
-# Security fixes applied - Production readiness checklist
+# Security Fixes - Audit Trail
 
-## CRITICAL FIXES APPLIED ✅
+> Status: Ativo
+> Natureza: historico de hardening e auditoria
+> Fonte operacional de deploy: `README.md` e `docs/DEPLOYMENT.md`
 
-1. **IDOR Vulnerabilities Fixed**
-   - MembershipController: Added ownership checks on getById, renew, cancel
-   - All user-specific endpoints now verify resource ownership
+## Escopo
 
-2. **HTTPS Configured**
-   - Nginx configured with SSL/TLS support
-   - HTTP → HTTPS redirect enabled
-   - CSP headers added
-   - Security headers configured
+Este documento registra correcoes de seguranca aplicadas e decisoes de hardening.
+Nao e um runbook de deploy.
 
-3. **Firewall Rules**
-   - Script created: scripts/setup-firewall.sh
-   - Blocks ports 8080, 5432, 6379 externally
-   - Only allows 80, 443, 22
+## Baseline de seguranca (vigente)
 
-4. **JWT Private Key Removed**
-   - Removed from repo (private_key.pem, public_key.pem)
-   - Use environment variables JWT_PRIVATE_KEY/JWT_PUBLIC_KEY
+- Autenticacao JWT e autorizacao por RBAC
+- Ownership checks para recursos sensiveis
+- Politica anti-enumeration em recursos by-id sensiveis (`404` para nao-owner autenticado)
+- Hash de senha com BCrypt
+- Rate limiting em fluxos sensiveis
+- HTTPS via proxy reverso (operacao atual: Caddy)
 
-5. **Rate Limiting Extended**
-   - All /api/** endpoints now rate-limited
-   - Login: 5/min, Refresh: 10/min, General API: 60/min
+## Registro de hardening recente (2026-06-01)
 
-6. **Database Security**
-   - Docker Compose updated for dedicated user (gymapp)
-   - Least privilege principle applied
-   - No external DB port exposure
+- `3444845` - hardening de membership e ownership access controls
+  - listagem de memberships restrita a `ADMIN`/`MANAGER`
+  - ownership checks reforcados em fluxos sensiveis
 
-7. **Fail2Ban Configured**
-   - SSH protection enabled
-   - Nginx rate-limit monitoring
-   - Setup script created
+- `d841605` - regressao de schedule requests
+  - cobertura de seguranca para ownership em endpoints por id
 
-8. **Token Storage Secured**
-   - Access token: In memory (XSS protection)
-   - Refresh token: HttpOnly cookie (Secure, SameSite=Strict)
-   - Backend sets cookies properly
+- `eafb45a` - ownership de notifications
+  - operacoes by-id escopadas ao usuario autenticado
+  - nao-owner autenticado retorna `404`
 
-## MANUAL STEPS REQUIRED:
+## Preflight audit (historico)
 
-1. **Generate JWT Keys:**
-   ```bash
-   openssl genrsa -out private_key.pem 2048
-   openssl rsa -in private_key.pem -pubout -out public_key.pem
-   # Convert to single-line for .env:
-   awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' private_key.pem
-   ```
+- Data: 2026-06-01
+- Branch: `security/preflight-audit-2026-06-01`
+- Resultado: baseline de seguranca preservado; conflitos documentais identificados e tratados em docs de deploy
 
-2. **Run Fail2Ban Setup:**
-   ```bash
-   sudo ./scripts/setup-fail2ban.sh
-   ```
+## Nota sobre proxy (historico x atual)
 
-3. **Run Firewall Setup:**
-   ```bash
-   sudo ./scripts/setup-firewall.sh
-   ```
+- Historico: parte do hardening original citava Nginx.
+- Operacao atual: proxy reverso e HTTPS com Caddy na VPS.
 
-4. **Setup SSL Certificates (Let's Encrypt):**
-   ```bash
-   sudo apt install certbot python3-certbot-nginx
-   sudo certbot --nginx -d yourdomain.com
-   # Update nginx.conf with actual certificate paths
-   ```
+## Proxima revisao
 
-5. **Update .env file** with secure passwords
-
-## VERIFICATION COMMANDS:
-
-```bash
-# Check firewall
-sudo ufw status verbose
-
-# Check Fail2Ban
-sudo fail2ban-client status
-
-# Test HTTPS
-curl -I https://yourdomain.com
-
-# Test rate limiting
-# (should get 429 after threshold)
-```
+- Trigger: qualquer mudanca em auth, autorizacao, endpoints sensiveis, deploy, headers, ou pagamentos.

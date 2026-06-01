@@ -49,6 +49,18 @@ public class RateLimitFilter implements Filter {
     @Value("${rate-limit.refresh.refill-duration:1}")
     private int refreshRefillDurationMinutes;
 
+    @Value("${rate-limit.forgot-password.capacity:5}")
+    private int forgotPasswordCapacity;
+
+    @Value("${rate-limit.forgot-password.refill-duration:15}")
+    private int forgotPasswordRefillDurationMinutes;
+
+    @Value("${rate-limit.reset-password.capacity:10}")
+    private int resetPasswordCapacity;
+
+    @Value("${rate-limit.reset-password.refill-duration:15}")
+    private int resetPasswordRefillDurationMinutes;
+
     @Value("${rate-limit.general.capacity:100}")
     private int generalCapacity;
     
@@ -105,6 +117,8 @@ public class RateLimitFilter implements Filter {
         if (path.equals("/api/auth/login")) return "login";
         if (path.equals("/api/auth/register")) return "register";
         if (path.equals("/api/auth/refresh")) return "refresh";
+        if (path.equals("/api/auth/forgot-password")) return "forgot-password";
+        if (path.equals("/api/auth/reset-password")) return "reset-password";
         if (path.startsWith("/api/checkout")) return "checkout";
         if (path.startsWith("/api/admin")) return "admin";
         return "general";
@@ -123,6 +137,14 @@ public class RateLimitFilter implements Filter {
             case "refresh" -> Bucket.builder()
                     .addLimit(Bandwidth.simple(refreshCapacity, 
                         Duration.ofMinutes(refreshRefillDurationMinutes)))
+                    .build();
+            case "forgot-password" -> Bucket.builder()
+                    .addLimit(Bandwidth.simple(forgotPasswordCapacity,
+                        Duration.ofMinutes(forgotPasswordRefillDurationMinutes)))
+                    .build();
+            case "reset-password" -> Bucket.builder()
+                    .addLimit(Bandwidth.simple(resetPasswordCapacity,
+                        Duration.ofMinutes(resetPasswordRefillDurationMinutes)))
                     .build();
             case "checkout" -> Bucket.builder()
                     .addLimit(Bandwidth.simple(20, Duration.ofMinutes(1)))

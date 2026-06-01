@@ -33,6 +33,12 @@ rate-limit:
     capacity: 20
     refill-tokens: 10
     refill-duration: 1
+  forgot-password:
+    capacity: 5
+    refill-duration: 15
+  reset-password:
+    capacity: 10
+    refill-duration: 15
 
 cors:
   allowed-origins: http://localhost:3000,http://localhost:5173,http://localhost:5174,http://localhost:8080,http://localhost:8081,http://localhost:8082

@@ -70,9 +70,12 @@ class SecurityRegressionTest {
     private static final String ADMIN_EMAIL = "admin@test.com";
     private static final String CLIENT_PASSWORD = "Pass12345";
     private static final String ADMIN_PASSWORD = "AdminPass123!";
+    private static final String MANAGER_EMAIL = "manager@test.com";
+    private static final String MANAGER_PASSWORD = "ManagerPass123!";
 
     private String validUserToken;
     private String validAdminToken;
+    private String validManagerToken;
     private UUID testUserId;
     private UUID adminUserId;
     private UUID otherUserPaymentId;
@@ -103,6 +106,17 @@ class SecurityRegressionTest {
             user.setEmail(ADMIN_EMAIL);
             user.setPasswordHash(passwordEncoder.encode(ADMIN_PASSWORD));
             user.setRole(User.Role.ADMIN);
+            user.setIsActive(true);
+            return userRepository.save(user);
+        });
+
+        User managerUser = userRepository.findByEmail(MANAGER_EMAIL).orElseGet(() -> {
+            User user = new User();
+            user.setId(UUID.randomUUID());
+            user.setName("Manager User");
+            user.setEmail(MANAGER_EMAIL);
+            user.setPasswordHash(passwordEncoder.encode(MANAGER_PASSWORD));
+            user.setRole(User.Role.MANAGER);
             user.setIsActive(true);
             return userRepository.save(user);
         });
@@ -180,6 +194,9 @@ class SecurityRegressionTest {
         );
         validAdminToken = jwtUtil.generateAccessToken(
                 adminUserId, "admin@test.com", "ADMIN"
+        );
+        validManagerToken = jwtUtil.generateAccessToken(
+                managerUser.getId(), MANAGER_EMAIL, "MANAGER"
         );
         testPaymentId = ownPayment.getId();
         otherUserPaymentId = otherPayment.getId();
@@ -308,6 +325,86 @@ class SecurityRegressionTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString(testUserId.toString())))
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString(otherUserPaymentId.toString()))));
+    }
+
+    @Test
+    @DisplayName("Admin can access full membership listing")
+    void adminCanAccessFullMembershipListing() throws Exception {
+        mockMvc.perform(get("/api/memberships")
+                        .header("Authorization", "Bearer " + validAdminToken))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Manager can access full membership listing")
+    void managerCanAccessFullMembershipListing() throws Exception {
+        mockMvc.perform(get("/api/memberships")
+                        .header("Authorization", "Bearer " + validManagerToken))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Client cannot access full membership listing")
+    void clientCannotAccessFullMembershipListing() throws Exception {
+        mockMvc.perform(get("/api/memberships")
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Unauthenticated cannot access full membership listing")
+    void unauthenticatedCannotAccessFullMembershipListing() throws Exception {
+        mockMvc.perform(get("/api/memberships"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Client can access own membership via me endpoint")
+    void clientCanAccessOwnMembershipViaMeEndpoint() throws Exception {
+        mockMvc.perform(get("/api/memberships/me")
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(testUserId.toString())));
+    }
+
+    @Test
+    @DisplayName("Client cannot access another user's membership by id")
+    void clientCannotAccessAnotherUsersMembershipById() throws Exception {
+        mockMvc.perform(get("/api/memberships/" + otherMembershipId)
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Client can access own membership by id")
+    void clientCanAccessOwnMembershipById() throws Exception {
+        mockMvc.perform(get("/api/memberships/" + ownMembershipId)
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(testUserId.toString())));
+    }
+
+    @Test
+    @DisplayName("Admin can access another user's membership by id")
+    void adminCanAccessAnotherUsersMembershipById() throws Exception {
+        mockMvc.perform(get("/api/memberships/" + otherMembershipId)
+                        .header("Authorization", "Bearer " + validAdminToken))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Manager cannot access another user's membership by id")
+    void managerCannotAccessAnotherUsersMembershipById() throws Exception {
+        mockMvc.perform(get("/api/memberships/" + otherMembershipId)
+                        .header("Authorization", "Bearer " + validManagerToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Unauthenticated cannot access membership by id")
+    void unauthenticatedCannotAccessMembershipById() throws Exception {
+        mockMvc.perform(get("/api/memberships/" + ownMembershipId))
+                .andExpect(status().isUnauthorized());
     }
 
     // ===== TEST 4: Endpoint Exists =====

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -34,6 +35,7 @@ public class MembershipController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Page<MembershipResponse>> getAll(@PageableDefault(size = 20) Pageable pageable) {
         return ResponseEntity.ok(membershipService.getAll(pageable));
     }
@@ -44,7 +46,7 @@ public class MembershipController {
             @AuthenticationPrincipal JwtUserPrincipal principal) {
         MembershipResponse membership = membershipService.getById(id);
         if (!membership.userId().equals(principal.id()) && !"ADMIN".equals(principal.role())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.ok(membership);
     }
@@ -60,7 +62,7 @@ public class MembershipController {
             @AuthenticationPrincipal JwtUserPrincipal principal) {
         MembershipResponse membership = membershipService.getById(id);
         if (!membership.userId().equals(principal.id()) && !"ADMIN".equals(principal.role())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.ok(membershipService.renew(id));
     }
@@ -71,7 +73,7 @@ public class MembershipController {
             @AuthenticationPrincipal JwtUserPrincipal principal) {
         MembershipResponse membership = membershipService.getById(id);
         if (!membership.userId().equals(principal.id()) && !"ADMIN".equals(principal.role())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.ok(membershipService.cancel(id));
     }

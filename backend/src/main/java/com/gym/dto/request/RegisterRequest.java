@@ -34,11 +34,12 @@ public record RegisterRequest(
     @Size(max = 20, message = "Phone must not exceed 20 characters")
     String phone,
 
+    @NotNull(message = "Date of birth is required")
     @Past(message = "Date of birth must be in the past")
     LocalDate dateOfBirth,
 
     @NotNull(message = "Age is required")
-    @Min(value = 4, message = "Age must be at least 4")
+    @Min(value = 3, message = "Age must be at least 3")
     @Max(value = 100, message = "Age must be at most 100")
     Integer age,
 

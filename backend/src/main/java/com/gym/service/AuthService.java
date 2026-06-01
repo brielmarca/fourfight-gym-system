@@ -4,7 +4,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +29,7 @@ import com.gym.entity.User;
 import com.gym.exception.DuplicateResourceException;
 import com.gym.exception.ResourceNotFoundException;
 import com.gym.exception.UnauthorizedException;
+import com.gym.exception.ValidationException;
 import com.gym.repository.RefreshTokenRepository;
 import com.gym.repository.PreRegistrationProfileRepository;
 import com.gym.repository.UserRepository;
@@ -67,6 +70,9 @@ public class AuthService {
             throw new DuplicateResourceException("User", "email", request.email());
         }
 
+        int calculatedAge = validateAndCalculateAge(request.dateOfBirth());
+        validateClientAgeConsistency(request.age(), calculatedAge);
+
         User user = User.builder()
             .name(InputSanitizer.trimToNull(request.name()))
             .email(normalizedEmail)
@@ -81,7 +87,7 @@ public class AuthService {
 
         PreRegistrationProfile profile = PreRegistrationProfile.builder()
             .user(user)
-            .age(request.age())
+            .age(calculatedAge)
             .phone(InputSanitizer.trimToNull(request.phone()))
             .parishOrArea(InputSanitizer.trimToNull(request.parishOrArea()))
             .hasMartialArtsExperience(request.hasMartialArtsExperience())
@@ -101,6 +107,33 @@ public class AuthService {
         log.info("New user registered: {}", user.getEmail());
 
         return UserResponse.from(user);
+    }
+
+    private int validateAndCalculateAge(LocalDate dateOfBirth) {
+        if (dateOfBirth == null) {
+            throw new ValidationException(Map.of("dateOfBirth", "Date of birth is required"));
+        }
+
+        LocalDate today = LocalDate.now();
+        if (dateOfBirth.isAfter(today)) {
+            throw new ValidationException(Map.of("dateOfBirth", "Date of birth must be in the past"));
+        }
+
+        int calculatedAge = Period.between(dateOfBirth, today).getYears();
+        if (calculatedAge < 3 || calculatedAge > 100) {
+            throw new ValidationException(Map.of("dateOfBirth", "Age must be between 3 and 100 years"));
+        }
+
+        return calculatedAge;
+    }
+
+    private void validateClientAgeConsistency(Integer clientAge, int calculatedAge) {
+        if (clientAge == null) {
+            throw new ValidationException(Map.of("age", "Age is required"));
+        }
+        if (!clientAge.equals(calculatedAge)) {
+            throw new ValidationException(Map.of("age", "Age does not match date of birth"));
+        }
     }
 
     @Transactional

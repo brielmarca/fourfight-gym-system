@@ -30,15 +30,15 @@ public class NotificationService {
         return notificationRepository.findByUserIdAndReadAtIsNull(userId, pageable).map(NotificationResponse::from);
     }
 
-    public NotificationResponse getById(UUID id) {
-        Notification notification = notificationRepository.findById(id)
+    public NotificationResponse getById(UUID userId, UUID id) {
+        Notification notification = notificationRepository.findByIdAndUserId(id, userId)
             .orElseThrow(() -> new ResourceNotFoundException("Notification", id));
         return NotificationResponse.from(notification);
     }
 
     @Transactional
-    public NotificationResponse markAsRead(UUID id) {
-        Notification notification = notificationRepository.findById(id)
+    public NotificationResponse markAsRead(UUID userId, UUID id) {
+        Notification notification = notificationRepository.findByIdAndUserId(id, userId)
             .orElseThrow(() -> new ResourceNotFoundException("Notification", id));
         notification.markAsRead();
         notification = notificationRepository.save(notification);
@@ -61,8 +61,8 @@ public class NotificationService {
     }
 
     @Transactional
-    public void delete(UUID id) {
-        Notification notification = notificationRepository.findById(id)
+    public void delete(UUID userId, UUID id) {
+        Notification notification = notificationRepository.findByIdAndUserId(id, userId)
             .orElseThrow(() -> new ResourceNotFoundException("Notification", id));
         notification.softDelete();
         notificationRepository.save(notification);

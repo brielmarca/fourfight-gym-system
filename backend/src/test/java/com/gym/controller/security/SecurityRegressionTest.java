@@ -3,9 +3,11 @@ package com.gym.controller.security;
 import com.gym.entity.User;
 import com.gym.entity.Plan;
 import com.gym.entity.Membership;
+import com.gym.entity.Notification;
 import com.gym.entity.Payment;
 import com.gym.entity.ScheduleRequest;
 import com.gym.entity.Trainer;
+import com.gym.repository.NotificationRepository;
 import com.gym.repository.PaymentRepository;
 import com.gym.repository.PlanRepository;
 import com.gym.repository.MembershipRepository;
@@ -76,6 +78,9 @@ class SecurityRegressionTest {
     @Autowired
     private TrainerRepository trainerRepository;
 
+    @Autowired
+    private NotificationRepository notificationRepository;
+
     private static final String TEST_EMAIL = "test@test.com";
     private static final String ADMIN_EMAIL = "admin@test.com";
     private static final String CLIENT_PASSWORD = "Pass12345";
@@ -95,6 +100,8 @@ class SecurityRegressionTest {
     private UUID testCheckoutId;
     private UUID ownScheduleRequestId;
     private UUID otherScheduleRequestId;
+    private UUID ownNotificationId;
+    private UUID otherNotificationId;
 
     @BeforeEach
     void setUp() {
@@ -237,6 +244,24 @@ class SecurityRegressionTest {
                         .status(ScheduleRequest.RequestStatus.PENDING)
                         .build()));
 
+        Notification ownNotification = notificationRepository.findByUserId(testUser.getId(), org.springframework.data.domain.PageRequest.of(0, 1))
+                .stream().findFirst().orElseGet(() -> notificationRepository.save(Notification.builder()
+                        .user(testUser)
+                        .title("Own notification")
+                        .body("Own body")
+                        .type(Notification.NotificationType.GENERAL)
+                        .channel(Notification.NotificationChannel.IN_APP)
+                        .build()));
+
+        Notification otherNotification = notificationRepository.findByUserId(otherUser.getId(), org.springframework.data.domain.PageRequest.of(0, 1))
+                .stream().findFirst().orElseGet(() -> notificationRepository.save(Notification.builder()
+                        .user(otherUser)
+                        .title("Other notification")
+                        .body("Other body")
+                        .type(Notification.NotificationType.GENERAL)
+                        .channel(Notification.NotificationChannel.IN_APP)
+                        .build()));
+
         validUserToken = jwtUtil.generateAccessToken(
                 testUserId, TEST_EMAIL, "CLIENT"
         );
@@ -251,6 +276,8 @@ class SecurityRegressionTest {
         testCheckoutId = UUID.randomUUID();
         ownScheduleRequestId = ownScheduleRequest.getId();
         otherScheduleRequestId = otherScheduleRequest.getId();
+        ownNotificationId = ownNotification.getId();
+        otherNotificationId = otherNotification.getId();
     }
 
     // ===== TEST 1: JWT Validation =====
@@ -511,6 +538,38 @@ class SecurityRegressionTest {
         mockMvc.perform(get("/api/schedule-requests")
                         .header("Authorization", "Bearer " + validUserToken))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Unauthenticated cannot access notification by id")
+    void unauthenticatedCannotAccessNotificationById() throws Exception {
+        mockMvc.perform(get("/api/notifications/" + ownNotificationId))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Client can access own notification by id")
+    void clientCanAccessOwnNotificationById() throws Exception {
+        mockMvc.perform(get("/api/notifications/" + ownNotificationId)
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(testUserId.toString())));
+    }
+
+    @Test
+    @DisplayName("Client cannot access another user's notification by id")
+    void clientCannotAccessAnotherUsersNotificationById() throws Exception {
+        mockMvc.perform(get("/api/notifications/" + otherNotificationId)
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Client cannot mark another user's notification as read")
+    void clientCannotMarkAnotherUsersNotificationAsRead() throws Exception {
+        mockMvc.perform(patch("/api/notifications/" + otherNotificationId + "/read")
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isNotFound());
     }
 
     // ===== TEST 4: Endpoint Exists =====

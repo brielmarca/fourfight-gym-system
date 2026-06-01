@@ -30,7 +30,7 @@ function RegisterPage() {
     name: "",
     email: "",
     phone: "",
-    age: "",
+    birthDate: "",
     parishOrArea: "",
     password: "",
     confirmPassword: "",
@@ -57,6 +57,40 @@ function RegisterPage() {
   const normalizeText = (value: string) => value.trim();
   const normalizeEmail = (value: string) => value.trim().toLowerCase();
 
+  const calculateAge = (birthDate: string): number | null => {
+    if (!birthDate) return null;
+    const date = new Date(`${birthDate}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return null;
+
+    const today = new Date();
+    let age = today.getFullYear() - date.getFullYear();
+    const monthDiff = today.getMonth() - date.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) {
+      age -= 1;
+    }
+    return age;
+  };
+
+  const getBirthDateError = (birthDate: string): string | null => {
+    if (!birthDate) return "A data de nascimento é obrigatória.";
+
+    const date = new Date(`${birthDate}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return "Data de nascimento inválida.";
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (date > today) return "A data de nascimento não pode ser no futuro.";
+
+    const age = calculateAge(birthDate);
+    if (age === null || age < 3 || age > 100) {
+      return "A idade calculada deve estar entre 3 e 100 anos.";
+    }
+
+    return null;
+  };
+
+  const calculatedAge = calculateAge(formData.birthDate);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -77,6 +111,12 @@ function RegisterPage() {
 
     if (formData.password !== formData.confirmPassword) {
       setError("As palavras-passe não coincidem");
+      return;
+    }
+
+    const birthDateError = getBirthDateError(formData.birthDate);
+    if (birthDateError) {
+      setError(birthDateError);
       return;
     }
 
@@ -103,7 +143,8 @@ function RegisterPage() {
         email: normalizeEmail(formData.email),
         password: formData.password,
         phone: normalizeText(formData.phone),
-        age: Number(formData.age),
+        dateOfBirth: formData.birthDate,
+        age: calculatedAge as number,
         parishOrArea: normalizeText(formData.parishOrArea),
         hasMartialArtsExperience: formData.hasMartialArtsExperience === "SIM",
         martialArtsExperienceDetails: normalizeText(formData.martialArtsExperienceDetails) || undefined,
@@ -180,7 +221,21 @@ function RegisterPage() {
                   <div className="space-y-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Nome</label><Input name="name" type="text" value={formData.name} onChange={handleChange} required maxLength={255} className="bg-surface-2 border-border-subtle h-12" /></div>
                   <div className="space-y-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">E-mail</label><Input name="email" type="email" value={formData.email} onChange={handleChange} required maxLength={255} className="bg-surface-2 border-border-subtle h-12" /></div>
                   <div className="space-y-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Telemóvel</label><Input name="phone" type="tel" value={formData.phone} onChange={handleChange} required maxLength={20} className="bg-surface-2 border-border-subtle h-12" /></div>
-                  <div className="space-y-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Idade</label><Input name="age" type="number" min={4} max={100} value={formData.age} onChange={handleChange} required className="bg-surface-2 border-border-subtle h-12" /></div>
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Data de nascimento</label>
+                    <Input
+                      name="birthDate"
+                      type="date"
+                      max={new Date().toISOString().split("T")[0]}
+                      value={formData.birthDate}
+                      onChange={handleChange}
+                      required
+                      className="bg-surface-2 border-border-subtle h-12"
+                    />
+                    {formData.birthDate && calculatedAge !== null && calculatedAge >= 0 && (
+                      <p className="text-xs text-text-secondary">Idade calculada: {calculatedAge} anos</p>
+                    )}
+                  </div>
                   <div className="space-y-2 md:col-span-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Morada / freguesia</label><Input name="parishOrArea" type="text" value={formData.parishOrArea} onChange={handleChange} required maxLength={255} className="bg-surface-2 border-border-subtle h-12" /></div>
                   <div className="space-y-2">
                     <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Palavra-passe</label>

@@ -27,18 +27,22 @@ public class ScheduleRequestService {
     private final UserRepository userRepository;
     private final TrainerRepository trainerRepository;
 
+    @Transactional(readOnly = true)
     public Page<ScheduleRequestResponse> getAll(Pageable pageable) {
         return scheduleRequestRepository.findAll(pageable).map(ScheduleRequestResponse::from);
     }
 
+    @Transactional(readOnly = true)
     public Page<ScheduleRequestResponse> getByUser(UUID userId, Pageable pageable) {
         return scheduleRequestRepository.findByUserId(userId, pageable).map(ScheduleRequestResponse::from);
     }
 
+    @Transactional(readOnly = true)
     public Page<ScheduleRequestResponse> getByTrainer(UUID trainerId, Pageable pageable) {
         return scheduleRequestRepository.findByTrainerId(trainerId, pageable).map(ScheduleRequestResponse::from);
     }
 
+    @Transactional(readOnly = true)
     public ScheduleRequestResponse getById(UUID id) {
         ScheduleRequest request = scheduleRequestRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("ScheduleRequest", id));

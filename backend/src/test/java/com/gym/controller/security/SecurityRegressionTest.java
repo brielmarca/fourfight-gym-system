@@ -4,9 +4,13 @@ import com.gym.entity.User;
 import com.gym.entity.Plan;
 import com.gym.entity.Membership;
 import com.gym.entity.Payment;
+import com.gym.entity.ScheduleRequest;
+import com.gym.entity.Trainer;
 import com.gym.repository.PaymentRepository;
 import com.gym.repository.PlanRepository;
 import com.gym.repository.MembershipRepository;
+import com.gym.repository.ScheduleRequestRepository;
+import com.gym.repository.TrainerRepository;
 import com.gym.repository.UserRepository;
 import com.gym.security.JwtUtil;
 import com.gym.service.AuthService;
@@ -66,6 +70,12 @@ class SecurityRegressionTest {
     @Autowired
     private MembershipRepository membershipRepository;
 
+    @Autowired
+    private ScheduleRequestRepository scheduleRequestRepository;
+
+    @Autowired
+    private TrainerRepository trainerRepository;
+
     private static final String TEST_EMAIL = "test@test.com";
     private static final String ADMIN_EMAIL = "admin@test.com";
     private static final String CLIENT_PASSWORD = "Pass12345";
@@ -83,6 +93,8 @@ class SecurityRegressionTest {
     private UUID otherMembershipId;
     private UUID testPaymentId;
     private UUID testCheckoutId;
+    private UUID ownScheduleRequestId;
+    private UUID otherScheduleRequestId;
 
     @BeforeEach
     void setUp() {
@@ -131,6 +143,24 @@ class SecurityRegressionTest {
             user.setIsActive(true);
             return userRepository.save(user);
         });
+
+        User trainerUser = userRepository.findByEmail("trainer@test.com").orElseGet(() -> {
+            User user = new User();
+            user.setId(UUID.randomUUID());
+            user.setName("Trainer User");
+            user.setEmail("trainer@test.com");
+            user.setPasswordHash(passwordEncoder.encode("TrainerPass123!"));
+            user.setRole(User.Role.TRAINER);
+            user.setIsActive(true);
+            return userRepository.save(user);
+        });
+
+        Trainer trainer = trainerRepository.findByUserId(trainerUser.getId()).orElseGet(() -> trainerRepository.save(Trainer.builder()
+                .user(trainerUser)
+                .bio("Security test trainer")
+                .specialties("MMA")
+                .isActive(true)
+                .build()));
 
         testUserId = testUser.getId();
         adminUserId = adminUser.getId();
@@ -189,6 +219,24 @@ class SecurityRegressionTest {
                         .status(Payment.PaymentStatus.PENDING)
                         .build()));
 
+        ScheduleRequest ownScheduleRequest = scheduleRequestRepository.findByUserId(testUser.getId(), org.springframework.data.domain.PageRequest.of(0, 1))
+                .stream().findFirst().orElseGet(() -> scheduleRequestRepository.save(ScheduleRequest.builder()
+                        .user(testUser)
+                        .trainer(trainer)
+                        .preferredAt(LocalDateTime.now().plusDays(1))
+                        .notes("Own request")
+                        .status(ScheduleRequest.RequestStatus.PENDING)
+                        .build()));
+
+        ScheduleRequest otherScheduleRequest = scheduleRequestRepository.findByUserId(otherUser.getId(), org.springframework.data.domain.PageRequest.of(0, 1))
+                .stream().findFirst().orElseGet(() -> scheduleRequestRepository.save(ScheduleRequest.builder()
+                        .user(otherUser)
+                        .trainer(trainer)
+                        .preferredAt(LocalDateTime.now().plusDays(2))
+                        .notes("Other request")
+                        .status(ScheduleRequest.RequestStatus.PENDING)
+                        .build()));
+
         validUserToken = jwtUtil.generateAccessToken(
                 testUserId, TEST_EMAIL, "CLIENT"
         );
@@ -201,6 +249,8 @@ class SecurityRegressionTest {
         testPaymentId = ownPayment.getId();
         otherUserPaymentId = otherPayment.getId();
         testCheckoutId = UUID.randomUUID();
+        ownScheduleRequestId = ownScheduleRequest.getId();
+        otherScheduleRequestId = otherScheduleRequest.getId();
     }
 
     // ===== TEST 1: JWT Validation =====
@@ -405,6 +455,62 @@ class SecurityRegressionTest {
     void unauthenticatedCannotAccessMembershipById() throws Exception {
         mockMvc.perform(get("/api/memberships/" + ownMembershipId))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Unauthenticated cannot access schedule request by id")
+    void unauthenticatedCannotAccessScheduleRequestById() throws Exception {
+        mockMvc.perform(get("/api/schedule-requests/" + ownScheduleRequestId))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Client can access own schedule request by id")
+    void clientCanAccessOwnScheduleRequestById() throws Exception {
+        mockMvc.perform(get("/api/schedule-requests/" + ownScheduleRequestId)
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(testUserId.toString())));
+    }
+
+    @Test
+    @DisplayName("Client cannot access another user's schedule request by id")
+    void clientCannotAccessAnotherUsersScheduleRequestById() throws Exception {
+        mockMvc.perform(get("/api/schedule-requests/" + otherScheduleRequestId)
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Client cannot delete another user's schedule request")
+    void clientCannotDeleteAnotherUsersScheduleRequest() throws Exception {
+        mockMvc.perform(delete("/api/schedule-requests/" + otherScheduleRequestId)
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Admin can access another user's schedule request by id")
+    void adminCanAccessAnotherUsersScheduleRequestById() throws Exception {
+        mockMvc.perform(get("/api/schedule-requests/" + otherScheduleRequestId)
+                        .header("Authorization", "Bearer " + validAdminToken))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Manager schedule-request list access remains allowed")
+    void managerCanAccessScheduleRequestList() throws Exception {
+        mockMvc.perform(get("/api/schedule-requests")
+                        .header("Authorization", "Bearer " + validManagerToken))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Client schedule-request list remains role-denied")
+    void clientScheduleRequestListIsRoleDenied() throws Exception {
+        mockMvc.perform(get("/api/schedule-requests")
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isForbidden());
     }
 
     // ===== TEST 4: Endpoint Exists =====

@@ -30,7 +30,9 @@ function RegisterPage() {
     name: "",
     email: "",
     phone: "",
-    birthDate: "",
+    birthDay: "",
+    birthMonth: "",
+    birthYear: "",
     parishOrArea: "",
     password: "",
     confirmPassword: "",
@@ -57,9 +59,35 @@ function RegisterPage() {
   const normalizeText = (value: string) => value.trim();
   const normalizeEmail = (value: string) => value.trim().toLowerCase();
 
-  const calculateAge = (birthDate: string): number | null => {
-    if (!birthDate) return null;
-    const date = new Date(`${birthDate}T00:00:00`);
+  const buildBirthDateIso = (dayRaw: string, monthRaw: string, yearRaw: string): string | null => {
+    const day = Number(dayRaw);
+    const month = Number(monthRaw);
+    const year = Number(yearRaw);
+
+    if (!Number.isInteger(day) || !Number.isInteger(month) || !Number.isInteger(year)) return null;
+    if (day < 1 || month < 1 || month > 12 || year < 1900 || year > 9999) return null;
+
+    const date = new Date(year, month - 1, day);
+    if (
+      date.getFullYear() !== year ||
+      date.getMonth() !== month - 1 ||
+      date.getDate() !== day
+    ) {
+      return null;
+    }
+
+    return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  };
+
+  const calculateAge = (birthDateIso: string | null): number | null => {
+    if (!birthDateIso) return null;
+    const [yearStr, monthStr, dayStr] = birthDateIso.split("-");
+    const year = Number(yearStr);
+    const month = Number(monthStr);
+    const day = Number(dayStr);
+    if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) return null;
+
+    const date = new Date(year, month - 1, day);
     if (Number.isNaN(date.getTime())) return null;
 
     const today = new Date();
@@ -71,25 +99,31 @@ function RegisterPage() {
     return age;
   };
 
-  const getBirthDateError = (birthDate: string): string | null => {
-    if (!birthDate) return "A data de nascimento é obrigatória.";
+  const getBirthDateError = (): string | null => {
+    if (!formData.birthDay || !formData.birthMonth || !formData.birthYear) {
+      return "A data de nascimento é obrigatória.";
+    }
 
-    const date = new Date(`${birthDate}T00:00:00`);
-    if (Number.isNaN(date.getTime())) return "Data de nascimento inválida.";
+    const dateIso = buildBirthDateIso(formData.birthDay, formData.birthMonth, formData.birthYear);
+    if (!dateIso) return "Insere uma data de nascimento válida.";
+
+    const [year, month, day] = dateIso.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (date > today) return "A data de nascimento não pode ser no futuro.";
 
-    const age = calculateAge(birthDate);
+    const age = calculateAge(dateIso);
     if (age === null || age < 3 || age > 100) {
-      return "A idade calculada deve estar entre 3 e 100 anos.";
+      return "A idade deve estar entre 3 e 100 anos.";
     }
 
     return null;
   };
 
-  const calculatedAge = calculateAge(formData.birthDate);
+  const birthDateIso = buildBirthDateIso(formData.birthDay, formData.birthMonth, formData.birthYear);
+  const calculatedAge = calculateAge(birthDateIso);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -114,7 +148,7 @@ function RegisterPage() {
       return;
     }
 
-    const birthDateError = getBirthDateError(formData.birthDate);
+    const birthDateError = getBirthDateError();
     if (birthDateError) {
       setError(birthDateError);
       return;
@@ -143,7 +177,7 @@ function RegisterPage() {
         email: normalizeEmail(formData.email),
         password: formData.password,
         phone: normalizeText(formData.phone),
-        dateOfBirth: formData.birthDate,
+        dateOfBirth: birthDateIso as string,
         age: calculatedAge as number,
         parishOrArea: normalizeText(formData.parishOrArea),
         hasMartialArtsExperience: formData.hasMartialArtsExperience === "SIM",
@@ -223,16 +257,54 @@ function RegisterPage() {
                   <div className="space-y-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Telemóvel</label><Input name="phone" type="tel" value={formData.phone} onChange={handleChange} required maxLength={20} className="bg-surface-2 border-border-subtle h-12" /></div>
                   <div className="space-y-2">
                     <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Data de nascimento</label>
-                    <Input
-                      name="birthDate"
-                      type="date"
-                      max={new Date().toISOString().split("T")[0]}
-                      value={formData.birthDate}
-                      onChange={handleChange}
-                      required
-                      className="bg-surface-2 border-border-subtle h-12"
-                    />
-                    {formData.birthDate && calculatedAge !== null && calculatedAge >= 0 && (
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-[10px] tracking-[0.12em] uppercase text-text-secondary">Dia</label>
+                        <Input
+                          name="birthDay"
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          placeholder="DD"
+                          maxLength={2}
+                          value={formData.birthDay}
+                          onChange={handleChange}
+                          required
+                          className="bg-surface-2 border-border-subtle h-12"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] tracking-[0.12em] uppercase text-text-secondary">Mês</label>
+                        <Input
+                          name="birthMonth"
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          placeholder="MM"
+                          maxLength={2}
+                          value={formData.birthMonth}
+                          onChange={handleChange}
+                          required
+                          className="bg-surface-2 border-border-subtle h-12"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] tracking-[0.12em] uppercase text-text-secondary">Ano</label>
+                        <Input
+                          name="birthYear"
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          placeholder="AAAA"
+                          maxLength={4}
+                          value={formData.birthYear}
+                          onChange={handleChange}
+                          required
+                          className="bg-surface-2 border-border-subtle h-12"
+                        />
+                      </div>
+                    </div>
+                    {birthDateIso && calculatedAge !== null && calculatedAge >= 0 && (
                       <p className="text-xs text-text-secondary">Idade calculada: {calculatedAge} anos</p>
                     )}
                   </div>

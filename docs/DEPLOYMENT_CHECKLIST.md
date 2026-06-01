@@ -43,6 +43,22 @@ curl -i https://api.4fourfight.com/api/health
 - [ ] Login/registro continuam funcionais
 - [ ] Endpoint privado sem token continua nao autorizado
 
+## 4.1) Follow-up pos-deploy autenticado (quando houver credenciais aprovadas)
+
+- [ ] Executar apenas com credenciais de producao aprovadas para smoke test
+- [ ] Validar login
+- [ ] Validar fluxo de refresh token
+- [ ] Validar registro somente se existir processo aprovado para smoke-user
+- [ ] Validar acesso de `ADMIN`/`MANAGER` a listagem de memberships
+- [ ] Validar que `CLIENT` nao consegue listar todos os memberships
+- [ ] Validar que `CLIENT` consegue acessar apenas o proprio membership
+- [ ] Validar que owner de notification acessa notificacao propria
+- [ ] Validar que non-owner em notification by-id recebe `404`
+- [ ] Validar comportamento owner/non-owner em schedule requests
+- [ ] Evitar testes agressivos de rate limit em producao
+- [ ] Nao expor credenciais, tokens ou cookies em logs/screenshots
+- [ ] Nao modificar dados de producao fora de dados de smoke test aprovados
+
 ## 5) Troubleshooting
 
 - [ ] Se houver `502` inicial, aguardar 20-30s e testar health novamente

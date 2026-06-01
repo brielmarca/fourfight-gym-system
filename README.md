@@ -1,93 +1,112 @@
 # Four Fight Gym System
 
-A full-stack gym management system for Four Fight Academy - a martial arts academy.
+Plataforma web completa da 4Four Fight Academy, com site publico, area de aluno, area administrativa, autenticacao JWT, gestao de planos, base para pagamentos e operacao em producao.
 
-## Structure
+## Producao atual
 
+- Frontend: `https://4fourfight.com`
+- API: `https://api.4fourfight.com/api`
+- Health check: `https://api.4fourfight.com/api/health`
+- Infra principal: Cloudflare Pages (frontend) + VPS Ubuntu/Hetzner (backend) + Docker Compose + Caddy
+
+## Escopo funcional
+
+- Site institucional da academia
+- Login, registro, pre-registro e recuperacao de senha por email
+- Area de aluno
+- Area administrativa
+- Estrutura de area de professor
+- Gestao de planos e base para fluxo de pagamentos
+- Integracoes operacionais (WhatsApp, email, paginas legais)
+
+## Stack oficial
+
+- Frontend: React, TypeScript, Vite, Tailwind, TanStack Router/Query, Radix/shadcn-like, Framer Motion
+- Backend: Spring Boot 3.3, Java 21, Spring Security, JWT, Flyway
+- Banco: PostgreSQL (Supabase)
+- Infra: Docker Compose, Caddy reverse proxy, HTTPS, Cloudflare
+- Email transacional: Resend
+
+## Arquitetura e regras imutaveis
+
+- Backend e a fonte de verdade; frontend nao decide role, ownership, preco, plano ou idade
+- Fluxo backend: Controller -> Service -> Repository -> Entity
+- Nao confiar em `userId` vindo do frontend para operacoes sensiveis
+- Nao expor segredos, nao commitar `.env`, nao commitar chaves `.pem`
+- Endpoints privados devem permanecer protegidos por JWT + RBAC + ownership checks
+- Manter rate limiting nos endpoints de autenticacao e fluxos sensiveis
+
+## Deploy
+
+### Frontend
+
+- Plataforma: Cloudflare Pages
+- Deploy: automatico em push para `main`
+- Variavel obrigatoria: `VITE_API_URL=https://api.4fourfight.com/api`
+- Nao usar `VITE_API_BASE_URL`
+
+### Backend
+
+- Host: VPS Ubuntu (`178.105.215.50`)
+- Repo na VPS: `/opt/fourfight/fourfight-gym-system`
+- Stack runtime: `/opt/fourfight` com `docker compose`
+
+Fluxo de atualizacao backend:
+
+```bash
+ssh root@178.105.215.50
+cd /opt/fourfight/fourfight-gym-system
+git pull origin main
+cd /opt/fourfight
+docker compose up -d --build
+sleep 25
+curl -i http://127.0.0.1:10000/api/health
+curl -i https://api.4fourfight.com/api/health
 ```
-fourfight-gym-system/
-├── backend/          # Spring Boot backend
-│   ├── src/main/java/com/gym/
-│   │   ├── config/       # Spring configuration
-│   │   ├── controller/   # REST API endpoints
-│   │   ├── dto/          # Data transfer objects
-│   │   ├── entity/       # JPA entities
-│   │   ├── security/     # JWT auth, rate limiting
-│   │   └── service/      # Business logic
-│   └── docker-compose.yml
-├── frontend/         # React/Vite frontend
-│   └── src/
-│       ├── contexts/     # Auth context (global state)
-│       ├── queries/      # TanStack Query hooks (API data)
-│       ├── providers/    # Query provider
-│       ├── types/        # Centralized TypeScript types
-│       ├── routes/       # File-based routes
-│       ├── components/   # UI components
-│       └── lib/          # API client, utilities
-├── media/            # Media assets
-├── logs/             # Runtime logs
-├── docs/             # Documentation
-├── scripts/          # Start/stop scripts
-├── archive/          # Old/unused items
-├── package.json      # Root scripts
-└── README.md
-```
 
-## Quick Start
+Observacao: `502` logo apos deploy pode ser apenas boot do backend; aguardar 20-30s e testar novamente.
 
-### Prerequisites
+## Execucao local
+
+Pre-requisitos:
+
 - Java 21+
 - Node.js 18+
 - Maven 3.8+
-- MySQL 8+
 
-### Start the System
-
-```bash
-# From fourfight-gym-system directory
-./scripts/start-local.sh
-```
-
-Or use npm scripts:
+Comandos:
 
 ```bash
-npm run dev:full    # Start both frontend and backend
-npm run dev:frontend  # Start only frontend
-npm run dev:backend   # Start only backend
+npm install
+npm run dev:full
 ```
 
-### Stop the System
+Ou separado:
 
 ```bash
-./scripts/stop-local.sh
+npm run dev:backend
+npm run dev:frontend
 ```
 
-## Services
+## Operacao segura de repositorio
 
-- **Backend**: http://localhost:8080
-- **Frontend**: http://localhost:5173
-- **Health Check**: http://localhost:8080/actuator/health
+- Revisar staged files antes de commit
+- Nao usar `git add .` sem verificacao
+- Garantir `.gitignore` cobrindo segredos e artefatos locais
+- Se alguma chave privada ja entrou em historico, rotacionar imediatamente
 
-## Frontend Architecture
+## Documentacao oficial
 
-The frontend uses a clear state management strategy:
+Ordem e status da documentacao em `docs/INDEX.md`.
 
-| Layer | Tool | Purpose |
-|-------|------|---------|
-| Auth State | React Context (`useAuth`) | Logged user, login, logout, roles |
-| API Data | TanStack Query | All server data (plans, memberships, classes, etc.) |
-| UI State | Local `useState` | Forms, modals, filters, loading states |
+Leitura recomendada:
 
-See `frontend/README.md` for full details.
+1. `docs/INDEX.md`
+2. `docs/DEPLOYMENT.md`
+3. `docs/DEPLOYMENT_CHECKLIST.md`
+4. `SECURITY_FIXES.md` (quando aplicavel a hardening)
+5. `CONTEXTUALIZAR_TUDO.md`
 
-## Documentation
+## Nota de manutencao
 
-See `docs/` directory:
-- `PROJECT_CONTEXT.md` - Full project context
-- `DEV_SETUP.md` - Development setup guide
-
-## Testing
-
-```bash
-./scripts/test-dev-setup.sh
-```
+Este README e documento-mestre. Qualquer arquivo `.md` novo deve evitar duplicacao e apontar para a fonte canonica no `docs/INDEX.md`.

@@ -1,6 +1,6 @@
-# 4Four Fight Academy - Sistema de Adesao
+# 4Four Fight Academy - Frontend
 
-Plataforma SaaS para gestao de adesoes de ginasia, incluindo seleccao de planos, registo de utilizadores e processamento de pagamentos.
+Aplicacao web do Four Fight Gym System, cobrindo site publico, autenticacao, area de aluno, area administrativa e fluxos de planos/checkout.
 
 ## Tecnologias
 
@@ -14,7 +14,7 @@ Plataforma SaaS para gestao de adesoes de ginasia, incluindo seleccao de planos,
 
 ## Como executar localmente
 
-1. Clonar o repositorio
+1. Entrar na pasta `frontend/`
 2. Instalar dependencias: `npm install`
 3. Iniciar servidor de desenvolvimento: `npm run dev`
 4. Aceder a aplicacao em `http://localhost:5173`

@@ -33,7 +33,6 @@ Este arquivo define a ordem de leitura, a funcao de cada documento e qual arquiv
 | `CONTEXTUALIZAR_TUDO.md` | Contexto amplo de referencia | Legado controlado | Referencia, nao runbook |
 | `docs/TECH_DECISION_TEMPLATE.md` | Padrao de decisao tecnica | Ativo | Preencher em mudancas estruturais/sensiveis |
 | `frontend/README.md` | Guia da aplicacao frontend | Ativo | Manter alinhado com rotas e estrutura atual |
-| `frontend/README_NAVIGATION_CHANGES.md` | Historico de mudancas de navegacao | Legado controlado | Nao usar como documentacao operacional atual |
 
 ## Regras de escrita para novos .md
 

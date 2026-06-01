@@ -28,14 +28,17 @@ public class PaymentService {
     private final UserRepository userRepository;
     private final MembershipRepository membershipRepository;
 
-    public Page<PaymentResponse> getAll(Pageable pageable) {
+    @Transactional(readOnly = true)
+    public Page<PaymentResponse> getAllForAdmin(Pageable pageable) {
         return paymentRepository.findAll(pageable).map(PaymentResponse::from);
     }
 
-    public Page<PaymentResponse> getByUser(UUID userId, Pageable pageable) {
+    @Transactional(readOnly = true)
+    public Page<PaymentResponse> getPaymentsForCurrentUser(UUID userId, Pageable pageable) {
         return paymentRepository.findByUserId(userId, pageable).map(PaymentResponse::from);
     }
 
+    @Transactional(readOnly = true)
     public PaymentResponse getById(UUID id) {
         Payment payment = paymentRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Payment", id));
@@ -43,9 +46,13 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentResponse create(CreatePaymentRequest request) {
+    public PaymentResponse create(CreatePaymentRequest request, UUID actorId, String actorRole) {
         Membership membership = membershipRepository.findById(request.membershipId())
                 .orElseThrow(() -> new ResourceNotFoundException("Membership", request.membershipId()));
+
+        if (!isAdminOrManager(actorRole) && !membership.getUser().getId().equals(actorId)) {
+            throw new ResourceNotFoundException("Membership", request.membershipId());
+        }
 
         Payment payment = Payment.builder()
                 .user(membership.getUser())
@@ -90,5 +97,9 @@ public class PaymentService {
     public java.math.BigDecimal getRevenueMTD() {
         java.time.LocalDateTime startOfMonth = java.time.LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
         return paymentRepository.sumCompletedSince(startOfMonth);
+    }
+
+    private boolean isAdminOrManager(String role) {
+        return "ADMIN".equals(role) || "MANAGER".equals(role);
     }
 }

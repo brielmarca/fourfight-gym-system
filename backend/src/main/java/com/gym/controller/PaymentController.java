@@ -31,8 +31,14 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @GetMapping
-    public ResponseEntity<Page<PaymentResponse>> getAll(@PageableDefault(size = 20) Pageable pageable) {
-        return ResponseEntity.ok(paymentService.getAll(pageable));
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Page<PaymentResponse>> getAll(
+            @PageableDefault(size = 20) Pageable pageable,
+            @AuthenticationPrincipal JwtUserPrincipal principal) {
+        if ("ADMIN".equals(principal.role()) || "MANAGER".equals(principal.role())) {
+            return ResponseEntity.ok(paymentService.getAllForAdmin(pageable));
+        }
+        return ResponseEntity.ok(paymentService.getPaymentsForCurrentUser(principal.id(), pageable));
     }
 
     @GetMapping("/{id}")
@@ -41,18 +47,24 @@ public class PaymentController {
             @AuthenticationPrincipal JwtUserPrincipal principal) {
         PaymentResponse payment = paymentService.getById(id);
         // IDOR fix: check ownership or admin role
-        if (!payment.userId().equals(principal.id()) && !"ADMIN".equals(principal.role())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (!payment.userId().equals(principal.id())
+                && !"ADMIN".equals(principal.role())
+                && !"MANAGER".equals(principal.role())) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.ok(payment);
     }
 
     @PostMapping
-    public ResponseEntity<PaymentResponse> create(@Valid @RequestBody CreatePaymentRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.create(request));
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<PaymentResponse> create(
+            @Valid @RequestBody CreatePaymentRequest request,
+            @AuthenticationPrincipal JwtUserPrincipal principal) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.create(request, principal.id(), principal.role()));
     }
 
     @PatchMapping("/{id}/complete")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<PaymentResponse> complete(@PathVariable UUID id, @RequestParam String gatewayRef) {
         return ResponseEntity.ok(paymentService.complete(id, gatewayRef, null));
     }

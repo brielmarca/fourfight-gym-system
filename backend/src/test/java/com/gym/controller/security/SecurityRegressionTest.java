@@ -1,6 +1,12 @@
 package com.gym.controller.security;
 
 import com.gym.entity.User;
+import com.gym.entity.Plan;
+import com.gym.entity.Membership;
+import com.gym.entity.Payment;
+import com.gym.repository.PaymentRepository;
+import com.gym.repository.PlanRepository;
+import com.gym.repository.MembershipRepository;
 import com.gym.repository.UserRepository;
 import com.gym.security.JwtUtil;
 import com.gym.service.AuthService;
@@ -15,6 +21,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.nio.charset.StandardCharsets;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.UUID;
@@ -49,6 +57,15 @@ class SecurityRegressionTest {
     @Autowired
     private AuthService authService;
 
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private PlanRepository planRepository;
+
+    @Autowired
+    private MembershipRepository membershipRepository;
+
     private static final String TEST_EMAIL = "test@test.com";
     private static final String ADMIN_EMAIL = "admin@test.com";
     private static final String CLIENT_PASSWORD = "Pass12345";
@@ -56,6 +73,11 @@ class SecurityRegressionTest {
 
     private String validUserToken;
     private String validAdminToken;
+    private UUID testUserId;
+    private UUID adminUserId;
+    private UUID otherUserPaymentId;
+    private UUID ownMembershipId;
+    private UUID otherMembershipId;
     private UUID testPaymentId;
     private UUID testCheckoutId;
 
@@ -63,7 +85,7 @@ class SecurityRegressionTest {
     void setUp() {
         authService.unlockAccountLockout(ADMIN_EMAIL);
 
-        userRepository.findByEmail(TEST_EMAIL).orElseGet(() -> {
+        User testUser = userRepository.findByEmail(TEST_EMAIL).orElseGet(() -> {
             User user = new User();
             user.setId(UUID.randomUUID());
             user.setName("Test User");
@@ -74,7 +96,7 @@ class SecurityRegressionTest {
             return userRepository.save(user);
         });
 
-        userRepository.findByEmail(ADMIN_EMAIL).orElseGet(() -> {
+        User adminUser = userRepository.findByEmail(ADMIN_EMAIL).orElseGet(() -> {
             User user = new User();
             user.setId(UUID.randomUUID());
             user.setName("Admin User");
@@ -85,13 +107,82 @@ class SecurityRegressionTest {
             return userRepository.save(user);
         });
 
+        User otherUser = userRepository.findByEmail("other@test.com").orElseGet(() -> {
+            User user = new User();
+            user.setId(UUID.randomUUID());
+            user.setName("Other User");
+            user.setEmail("other@test.com");
+            user.setPasswordHash(passwordEncoder.encode("OtherPass123!"));
+            user.setRole(User.Role.CLIENT);
+            user.setIsActive(true);
+            return userRepository.save(user);
+        });
+
+        testUserId = testUser.getId();
+        adminUserId = adminUser.getId();
+
+        Plan plan = planRepository.findAll().stream().findFirst().orElseGet(() -> {
+            Plan newPlan = Plan.builder()
+                    .name("Security Test Plan")
+                    .description("Security baseline plan")
+                    .price(new BigDecimal("99.90"))
+                    .currency("BRL")
+                    .durationDays(30)
+                    .isActive(true)
+                    .build();
+            return planRepository.save(newPlan);
+        });
+
+        Membership ownMembership = membershipRepository.findTopByUserIdAndStatusOrderByCreatedAtDesc(testUser.getId(), Membership.MembershipStatus.ACTIVE)
+                .orElseGet(() -> membershipRepository.save(Membership.builder()
+                        .user(testUser)
+                        .plan(plan)
+                        .startDate(LocalDate.now())
+                        .endDate(LocalDate.now().plusDays(30))
+                        .status(Membership.MembershipStatus.ACTIVE)
+                        .autoRenew(false)
+                        .build()));
+        ownMembershipId = ownMembership.getId();
+
+        Membership otherMembership = membershipRepository.findTopByUserIdAndStatusOrderByCreatedAtDesc(otherUser.getId(), Membership.MembershipStatus.ACTIVE)
+                .orElseGet(() -> membershipRepository.save(Membership.builder()
+                        .user(otherUser)
+                        .plan(plan)
+                        .startDate(LocalDate.now())
+                        .endDate(LocalDate.now().plusDays(30))
+                        .status(Membership.MembershipStatus.ACTIVE)
+                        .autoRenew(false)
+                        .build()));
+        otherMembershipId = otherMembership.getId();
+
+        Payment ownPayment = paymentRepository.findByUserId(testUser.getId(), org.springframework.data.domain.PageRequest.of(0, 1))
+                .stream().findFirst().orElseGet(() -> paymentRepository.save(Payment.builder()
+                        .user(testUser)
+                        .membership(ownMembership)
+                        .amount(new BigDecimal("50.00"))
+                        .currency("BRL")
+                        .method(Payment.PaymentMethod.CARD)
+                        .status(Payment.PaymentStatus.PENDING)
+                        .build()));
+
+        Payment otherPayment = paymentRepository.findByUserId(otherUser.getId(), org.springframework.data.domain.PageRequest.of(0, 1))
+                .stream().findFirst().orElseGet(() -> paymentRepository.save(Payment.builder()
+                        .user(otherUser)
+                        .membership(otherMembership)
+                        .amount(new BigDecimal("75.00"))
+                        .currency("BRL")
+                        .method(Payment.PaymentMethod.CARD)
+                        .status(Payment.PaymentStatus.PENDING)
+                        .build()));
+
         validUserToken = jwtUtil.generateAccessToken(
-                UUID.randomUUID(), TEST_EMAIL, "CLIENT"
+                testUserId, TEST_EMAIL, "CLIENT"
         );
         validAdminToken = jwtUtil.generateAccessToken(
-                UUID.randomUUID(), "admin@test.com", "ADMIN"
+                adminUserId, "admin@test.com", "ADMIN"
         );
-        testPaymentId = UUID.randomUUID();
+        testPaymentId = ownPayment.getId();
+        otherUserPaymentId = otherPayment.getId();
         testCheckoutId = UUID.randomUUID();
     }
 
@@ -179,6 +270,44 @@ class SecurityRegressionTest {
         mockMvc.perform(patch("/api/admin/pre-registrations/" + leadId + "/accept")
                         .header("Authorization", "Bearer " + validUserToken))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Client cannot complete payments manually")
+    void clientCannotCompletePaymentManually() throws Exception {
+        mockMvc.perform(patch("/api/payments/" + testPaymentId + "/complete")
+                        .header("Authorization", "Bearer " + validUserToken)
+                        .param("gatewayRef", "manual-test"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Client cannot read another user's payment")
+    void clientCannotReadAnotherUsersPayment() throws Exception {
+        mockMvc.perform(get("/api/payments/" + otherUserPaymentId)
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Client cannot create payment for another user's membership")
+    void clientCannotCreatePaymentForAnotherMembership() throws Exception {
+        String json = "{\"membershipId\":\"" + otherMembershipId + "\",\"amount\":50.00,\"currency\":\"BRL\",\"method\":\"CARD\"}";
+        mockMvc.perform(post("/api/payments")
+                        .header("Authorization", "Bearer " + validUserToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Client list endpoint returns only own payments")
+    void clientListReturnsOnlyOwnPayments() throws Exception {
+        mockMvc.perform(get("/api/payments")
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(testUserId.toString())))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString(otherUserPaymentId.toString()))));
     }
 
     // ===== TEST 4: Endpoint Exists =====

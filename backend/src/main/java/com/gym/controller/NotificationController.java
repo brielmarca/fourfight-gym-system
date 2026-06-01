@@ -32,18 +32,24 @@ public class NotificationController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<NotificationResponse> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok(notificationService.getById(id));
+    public ResponseEntity<NotificationResponse> getById(
+            @AuthenticationPrincipal JwtUserPrincipal principal,
+            @PathVariable UUID id) {
+        return ResponseEntity.ok(notificationService.getById(principal.id(), id));
     }
 
     @PatchMapping("/{id}/read")
-    public ResponseEntity<NotificationResponse> markAsRead(@PathVariable UUID id) {
-        return ResponseEntity.ok(notificationService.markAsRead(id));
+    public ResponseEntity<NotificationResponse> markAsRead(
+            @AuthenticationPrincipal JwtUserPrincipal principal,
+            @PathVariable UUID id) {
+        return ResponseEntity.ok(notificationService.markAsRead(principal.id(), id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        notificationService.delete(id);
+    public ResponseEntity<Void> delete(
+            @AuthenticationPrincipal JwtUserPrincipal principal,
+            @PathVariable UUID id) {
+        notificationService.delete(principal.id(), id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -1,5 +1,8 @@
 # Development Setup
 
+> Status: Ativo
+> Fonte canonica de ordem: `docs/INDEX.md`
+
 ## Quick Start
 
 ### Option 1: Using npm (Recommended)
@@ -13,7 +16,7 @@ npm run dev:full
 
 ### Option 2: Using bash script
 ```bash
-./start.sh
+./scripts/start-local.sh
 ```
 
 ## What This Does
@@ -43,10 +46,10 @@ npm run dev:full
 
 ### Frontend won't start
 - Ensure Node.js is installed: `node -version`
-- Delete `node_modules` and run `npm install` in `forge-instinct-site-main`
+- Delete `node_modules` and run `npm install` in `frontend/`
 
 ### Port already in use
-- Backend (8080): The start.sh script handles this automatically
+- Backend (8080): `scripts/start-local.sh` handles this automatically
 - Frontend (5173): Vite will use next available port
 
 ## Vite Proxy Configuration
@@ -54,4 +57,4 @@ npm run dev:full
 The frontend proxies API requests to the backend:
 - `/api/*` → `http://localhost:8080/api/*`
 
-This is configured in `forge-instinct-site-main/vite.config.ts`
+This is configured in `frontend/vite.config.ts`

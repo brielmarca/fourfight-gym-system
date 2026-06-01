@@ -59,6 +59,7 @@ public class MembershipService {
                 .orElseThrow(() -> new ResourceNotFoundException("Membership", userId));
     }
 
+    @Transactional(readOnly = true)
     public MembershipResponse getById(UUID id) {
         Membership membership = membershipRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Membership", id));

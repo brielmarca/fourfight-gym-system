@@ -43,7 +43,7 @@ public class ScheduleRequestController {
         ScheduleRequestResponse response = scheduleRequestService.getById(id);
         // IDOR fix: check ownership or admin role
         if (!response.userId().equals(principal.id()) && !"ADMIN".equals(principal.role())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.ok(response);
     }
@@ -74,7 +74,7 @@ public class ScheduleRequestController {
         // IDOR fix: check ownership or admin role
         ScheduleRequestResponse response = scheduleRequestService.getById(id);
         if (!response.userId().equals(principal.id()) && !"ADMIN".equals(principal.role())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         scheduleRequestService.delete(id);
         return ResponseEntity.noContent().build();

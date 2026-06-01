@@ -1,5 +1,6 @@
 # Environment
 .env
+.env.*
 .env.local
 .env.*.local
 
@@ -48,6 +49,7 @@ certs/
 
 # AI agent tools (local only)
 .agents/
+.opencode/
 .claude/
 skills/
 skills-lock.json

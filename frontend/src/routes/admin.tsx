@@ -62,9 +62,11 @@ export const Route = createFileRoute("/admin")({
 function AdminPage() {
   const navigate = useNavigate();
   const { user, hasRole, logout } = useAuth();
+  const studentsPageSize = 50;
+  const [studentsPage, setStudentsPage] = useState(0);
   const { data: graduations = [], isLoading: graduationsLoading } = useAdminGraduations(hasRole(["ADMIN", "MANAGER"]));
   const updateGraduation = useUpdateAdminGraduation();
-  const { data: membershipsData, isLoading: membershipsLoading, error: membershipsError } = useAdminStudents(0, 50);
+  const { data: membershipsData, isLoading: membershipsLoading, error: membershipsError } = useAdminStudents(studentsPage, studentsPageSize);
   const { data: plans = [], isLoading: plansLoading } = usePlans();
   const canManageReception = hasRole(["ADMIN"]);
   const canManageProfessors = hasRole(["ADMIN", "MANAGER"]);
@@ -191,6 +193,8 @@ function AdminPage() {
   const memberships = membershipsData as {
     content?: MembershipItem[];
     totalElements?: number;
+    totalPages?: number;
+    number?: number;
   } | null;
 
   const includedStudentStatuses = ["ACTIVE", "REGISTERED", "CANCELLED", "EXPIRED"] as const;
@@ -200,28 +204,6 @@ function AdminPage() {
 
   const isDeveloperMembership = (membership: { userEmail: string }) => {
     return normalizeText(membership.userEmail) === "brielmarca@gmail.com";
-  };
-
-  const isTestMembership = (membership: { userName: string; userEmail: string }) => {
-    if (isDeveloperMembership(membership)) {
-      return false;
-    }
-
-    const searchableText = `${membership.userName} ${membership.userEmail}`.toLowerCase();
-    const testMarkers = [
-      "example.com",
-      "postlive",
-      "eurcheck",
-      "payer",
-      "payerx",
-      "audit",
-      "stripe.test",
-      "livecheck",
-      "program prune",
-      "test",
-    ];
-
-    return testMarkers.some((marker) => searchableText.includes(marker));
   };
 
   const getMembershipPriority = (status: string) => {
@@ -272,8 +254,7 @@ function AdminPage() {
     memberships?.content?.filter(
       (membership) =>
         includedStudentStatuses.includes(membership.status as (typeof includedStudentStatuses)[number]) &&
-        !excludedStudentStatuses.includes(membership.status as (typeof excludedStudentStatuses)[number]) &&
-        !isTestMembership(membership),
+        !excludedStudentStatuses.includes(membership.status as (typeof excludedStudentStatuses)[number]),
     ) ?? [];
 
   const dedupedVisibleStudents = getBestMembershipPerUser(visibleStudents);
@@ -332,6 +313,9 @@ function AdminPage() {
               : studentsFilter === "STANDARD"
                 ? standardStudents
                 : premiumStudents;
+
+  const studentsTotalPages = Math.max(memberships?.totalPages ?? 1, 1);
+  const studentsCurrentPage = memberships?.number ?? studentsPage;
 
   const graduationLabels: Record<string, string[]> = {
     JIU_JITSU: ["Branca", "Azul", "Roxa", "Castanha", "Preta"],
@@ -758,6 +742,27 @@ function AdminPage() {
                   <Button size="sm" variant={studentsFilter === "BASIC" ? "default" : "outline"} onClick={() => setStudentsFilter("BASIC")}>Basic</Button>
                   <Button size="sm" variant={studentsFilter === "STANDARD" ? "default" : "outline"} onClick={() => setStudentsFilter("STANDARD")}>Standard</Button>
                   <Button size="sm" variant={studentsFilter === "PREMIUM" ? "default" : "outline"} onClick={() => setStudentsFilter("PREMIUM")}>Premium</Button>
+                </div>
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-xs text-text-secondary">
+                  <span>Página {studentsCurrentPage + 1} de {studentsTotalPages}</span>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={studentsCurrentPage <= 0 || membershipsLoading}
+                      onClick={() => setStudentsPage((page) => Math.max(page - 1, 0))}
+                    >
+                      Anterior
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={studentsCurrentPage >= studentsTotalPages - 1 || membershipsLoading}
+                      onClick={() => setStudentsPage((page) => page + 1)}
+                    >
+                      Seguinte
+                    </Button>
+                  </div>
                 </div>
                 <div className="overflow-x-auto">
                   <Table>

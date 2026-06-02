@@ -12,7 +12,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -87,7 +89,11 @@ public class AdminService {
 
     @Transactional(readOnly = true)
     public Page<AdminStudentResponse> getStudents(Pageable pageable) {
-        return userRepository.findByActiveRole(User.Role.CLIENT, pageable)
+        Pageable effectivePageable = pageable.getSort().isSorted()
+            ? pageable
+            : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        return userRepository.findByActiveRole(User.Role.CLIENT, effectivePageable)
             .map(user -> {
                 Membership latestMembership = membershipRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId())
                     .stream()

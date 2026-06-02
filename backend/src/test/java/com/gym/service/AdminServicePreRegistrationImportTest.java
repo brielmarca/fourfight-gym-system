@@ -3,8 +3,10 @@ package com.gym.service;
 import com.gym.dto.response.PreRegistrationLeadImportResponse;
 import com.gym.entity.PreRegistrationLead;
 import com.gym.repository.AuditLogRepository;
+import com.gym.repository.MembershipRepository;
 import com.gym.repository.PreRegistrationLeadRepository;
 import com.gym.repository.PreRegistrationProfileRepository;
+import com.gym.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +38,8 @@ class AdminServicePreRegistrationImportTest {
     @Mock private AuditLogRepository auditLogRepository;
     @Mock private PreRegistrationProfileRepository preRegistrationProfileRepository;
     @Mock private PreRegistrationLeadRepository preRegistrationLeadRepository;
+    @Mock private UserRepository userRepository;
+    @Mock private MembershipRepository membershipRepository;
 
     private AdminService adminService;
 
@@ -49,7 +53,9 @@ class AdminServicePreRegistrationImportTest {
             paymentService,
             auditLogRepository,
             preRegistrationProfileRepository,
-            preRegistrationLeadRepository
+            preRegistrationLeadRepository,
+            userRepository,
+            membershipRepository
         );
 
         lenient().when(preRegistrationLeadRepository.findAllByStatusNotAndPhoneIsNotNull(anyString())).thenReturn(List.of());

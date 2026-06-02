@@ -28,6 +28,7 @@ import com.gym.dto.response.AdminPreRegistrationLeadDetailResponse;
 import com.gym.dto.response.AdminPreRegistrationLeadListItemResponse;
 import com.gym.dto.response.AdminProfessorAssignmentResponse;
 import com.gym.dto.response.AdminProfessorResponse;
+import com.gym.dto.response.AdminStudentResponse;
 import com.gym.dto.response.AdminStudentGraduationResponse;
 import com.gym.dto.response.AuditLogResponse;
 import com.gym.dto.response.DashboardResponse;
@@ -56,6 +57,12 @@ public class AdminController {
     @GetMapping("/audit-logs")
     public ResponseEntity<Page<AuditLogResponse>> getAuditLogs(@PageableDefault(size = 50) Pageable pageable) {
         return ResponseEntity.ok(adminService.getAuditLogs(pageable));
+    }
+
+    @GetMapping("/students")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<Page<AdminStudentResponse>> getStudents(@PageableDefault(size = 50) Pageable pageable) {
+        return ResponseEntity.ok(adminService.getStudents(pageable));
     }
 
     @GetMapping("/reports/revenue")

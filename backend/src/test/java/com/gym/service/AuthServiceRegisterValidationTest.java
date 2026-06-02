@@ -104,9 +104,15 @@ class AuthServiceRegisterValidationTest {
 
         authService.register(request);
 
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(userCaptor.capture());
+        assertThat(userCaptor.getValue().getRole()).isEqualTo(User.Role.CLIENT);
+        assertThat(userCaptor.getValue().getIsActive()).isTrue();
+
         ArgumentCaptor<PreRegistrationProfile> profileCaptor = ArgumentCaptor.forClass(PreRegistrationProfile.class);
         verify(preRegistrationProfileRepository).save(profileCaptor.capture());
         assertThat(profileCaptor.getValue().getAge()).isEqualTo(calculatedAge);
+        assertThat(profileCaptor.getValue().getUser()).isSameAs(userCaptor.getValue());
     }
 
     private RegisterRequest validRequest(LocalDate dateOfBirth, int age) {

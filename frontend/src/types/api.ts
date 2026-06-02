@@ -159,6 +159,20 @@ export interface Membership {
   cancelAtPeriodEnd?: boolean | null;
 }
 
+export interface AdminStudent {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  planId?: string | null;
+  planName?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  status: "ACTIVE" | "EXPIRED" | "CANCELLED" | "SUSPENDED" | "PENDING_PAYMENT" | "PENDING_APPROVAL" | "REJECTED" | "REGISTERED";
+  createdAt?: string | null;
+  updatedAt?: string | null;
+}
+
 export interface Plan {
   id: string;
   name: string;

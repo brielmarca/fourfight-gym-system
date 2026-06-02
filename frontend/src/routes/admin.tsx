@@ -5,7 +5,7 @@ import { isAuthenticated, getUser } from "@/lib/api";
 import {
   useApproveReceptionRequest,
   useAdminGraduations,
-  useMemberships,
+  useAdminStudents,
   usePendingReceptionRequests,
   usePlans,
   useRejectReceptionRequest,
@@ -64,7 +64,7 @@ function AdminPage() {
   const { user, hasRole, logout } = useAuth();
   const { data: graduations = [], isLoading: graduationsLoading } = useAdminGraduations(hasRole(["ADMIN", "MANAGER"]));
   const updateGraduation = useUpdateAdminGraduation();
-  const { data: membershipsData, isLoading: membershipsLoading, error: membershipsError } = useMemberships(0, 50);
+  const { data: membershipsData, isLoading: membershipsLoading, error: membershipsError } = useAdminStudents(0, 50);
   const { data: plans = [], isLoading: plansLoading } = usePlans();
   const canManageReception = hasRole(["ADMIN"]);
   const canManageProfessors = hasRole(["ADMIN", "MANAGER"]);
@@ -87,7 +87,7 @@ function AdminPage() {
   const updateSchedule = useUpdateScheduleEntry();
   const deactivateSchedule = useDeactivateScheduleEntry();
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [studentsFilter, setStudentsFilter] = useState<"ACTIVE" | "CANCELLED" | "BASIC" | "STANDARD" | "PREMIUM">("ACTIVE");
+  const [studentsFilter, setStudentsFilter] = useState<"ALL" | "ACTIVE" | "REGISTERED" | "CANCELLED" | "BASIC" | "STANDARD" | "PREMIUM">("ALL");
   const [selectedPreRegistrationId, setSelectedPreRegistrationId] = useState<string>("");
   const [selectedCsvFile, setSelectedCsvFile] = useState<File | null>(null);
   const [graduationFilter, setGraduationFilter] = useState<"ALL" | "JIU_JITSU" | "BOXE_KICKBOXING" | "CAPOEIRA" | "MMA">("ALL");
@@ -182,9 +182,9 @@ function AdminPage() {
     userId: string;
     userName: string;
     userEmail: string;
-    planName: string;
-    startDate: string;
-    endDate: string;
+    planName?: string | null;
+    startDate?: string | null;
+    endDate?: string | null;
     status: string;
   };
 
@@ -193,7 +193,7 @@ function AdminPage() {
     totalElements?: number;
   } | null;
 
-  const includedStudentStatuses = ["ACTIVE", "CANCELLED", "EXPIRED"] as const;
+  const includedStudentStatuses = ["ACTIVE", "REGISTERED", "CANCELLED", "EXPIRED"] as const;
   const excludedStudentStatuses = ["PENDING_PAYMENT", "REJECTED"] as const;
 
   const normalizeText = (value?: string) => value?.trim().toLowerCase() ?? "";
@@ -280,10 +280,11 @@ function AdminPage() {
   const businessStudents = dedupedVisibleStudents.filter((membership) => !isDeveloperMembership(membership));
 
   const activeVisibleStudents = dedupedVisibleStudents.filter((m) => m.status === "ACTIVE");
+  const registeredVisibleStudents = dedupedVisibleStudents.filter((m) => m.status === "REGISTERED");
   const cancelledVisibleStudents = dedupedVisibleStudents.filter((m) => m.status === "CANCELLED");
-  const basicStudents = activeVisibleStudents.filter((m) => normalizeText(m.planName) === "basic");
-  const standardStudents = activeVisibleStudents.filter((m) => normalizeText(m.planName) === "standard");
-  const premiumStudents = activeVisibleStudents.filter((m) => normalizeText(m.planName) === "premium");
+  const basicStudents = activeVisibleStudents.filter((m) => normalizeText(m.planName ?? undefined) === "basic");
+  const standardStudents = activeVisibleStudents.filter((m) => normalizeText(m.planName ?? undefined) === "standard");
+  const premiumStudents = activeVisibleStudents.filter((m) => normalizeText(m.planName ?? undefined) === "premium");
   const activeBusinessStudents = businessStudents.filter((m) => m.status === "ACTIVE");
   const cancelledBusinessStudents = businessStudents.filter((m) => m.status === "CANCELLED");
   const preRegistrationsCount =
@@ -293,7 +294,7 @@ function AdminPage() {
   const plansByName = new Map(plans.map((plan) => [normalizeText(plan.name), plan]));
 
   const estimatedMonthlyRevenue = activeBusinessStudents.reduce((total, membership) => {
-    const plan = plansByName.get(normalizeText(membership.planName));
+    const plan = plansByName.get(normalizeText(membership.planName ?? undefined));
     return total + (plan?.price ?? 0);
   }, 0);
 
@@ -318,15 +319,19 @@ function AdminPage() {
       : "Sem dados";
 
   const studentsByFilter =
-    studentsFilter === "ACTIVE"
-      ? activeVisibleStudents
-      : studentsFilter === "CANCELLED"
-        ? cancelledVisibleStudents
-        : studentsFilter === "BASIC"
-          ? basicStudents
-          : studentsFilter === "STANDARD"
-            ? standardStudents
-            : premiumStudents;
+    studentsFilter === "ALL"
+      ? dedupedVisibleStudents
+      : studentsFilter === "ACTIVE"
+        ? activeVisibleStudents
+        : studentsFilter === "REGISTERED"
+          ? registeredVisibleStudents
+          : studentsFilter === "CANCELLED"
+            ? cancelledVisibleStudents
+            : studentsFilter === "BASIC"
+              ? basicStudents
+              : studentsFilter === "STANDARD"
+                ? standardStudents
+                : premiumStudents;
 
   const graduationLabels: Record<string, string[]> = {
     JIU_JITSU: ["Branca", "Azul", "Roxa", "Castanha", "Preta"],
@@ -369,15 +374,19 @@ function AdminPage() {
   };
 
   const studentsEmptyMessage =
-    studentsFilter === "ACTIVE"
-      ? "Nenhum aluno ativo encontrado."
-      : studentsFilter === "CANCELLED"
-        ? "Nenhum aluno cancelado encontrado."
-        : studentsFilter === "BASIC"
-          ? "Nenhum aluno ativo no plano Basic."
-          : studentsFilter === "STANDARD"
-            ? "Nenhum aluno ativo no plano Standard."
-            : "Nenhum aluno ativo no plano Premium.";
+    studentsFilter === "ALL"
+      ? "Nenhum aluno encontrado."
+      : studentsFilter === "ACTIVE"
+        ? "Nenhum aluno ativo encontrado."
+        : studentsFilter === "REGISTERED"
+          ? "Nenhum aluno registado sem plano encontrado."
+          : studentsFilter === "CANCELLED"
+            ? "Nenhum aluno cancelado encontrado."
+            : studentsFilter === "BASIC"
+              ? "Nenhum aluno ativo no plano Basic."
+              : studentsFilter === "STANDARD"
+                ? "Nenhum aluno ativo no plano Standard."
+                : "Nenhum aluno ativo no plano Premium.";
 
   const handleImportCsv = async () => {
     if (!selectedCsvFile) {
@@ -742,7 +751,9 @@ function AdminPage() {
               </CardHeader>
               <CardContent>
                 <div className="mb-4 flex flex-wrap gap-2">
+                  <Button size="sm" variant={studentsFilter === "ALL" ? "default" : "outline"} onClick={() => setStudentsFilter("ALL")}>Todos</Button>
                   <Button size="sm" variant={studentsFilter === "ACTIVE" ? "default" : "outline"} onClick={() => setStudentsFilter("ACTIVE")}>Ativos</Button>
+                  <Button size="sm" variant={studentsFilter === "REGISTERED" ? "default" : "outline"} onClick={() => setStudentsFilter("REGISTERED")}>Registados</Button>
                   <Button size="sm" variant={studentsFilter === "CANCELLED" ? "default" : "outline"} onClick={() => setStudentsFilter("CANCELLED")}>Cancelados</Button>
                   <Button size="sm" variant={studentsFilter === "BASIC" ? "default" : "outline"} onClick={() => setStudentsFilter("BASIC")}>Basic</Button>
                   <Button size="sm" variant={studentsFilter === "STANDARD" ? "default" : "outline"} onClick={() => setStudentsFilter("STANDARD")}>Standard</Button>
@@ -783,23 +794,25 @@ function AdminPage() {
                               </div>
                               <div className="text-xs text-text-secondary">{m.userEmail || "-"}</div>
                             </TableCell>
-                            <TableCell>{m.planName}</TableCell>
+                            <TableCell>{m.planName || "Sem plano"}</TableCell>
                             <TableCell>
-                              {new Date(m.startDate).toLocaleDateString("pt-PT")}
+                              {m.startDate ? new Date(m.startDate).toLocaleDateString("pt-PT") : "-"}
                             </TableCell>
-                            <TableCell>{new Date(m.endDate).toLocaleDateString("pt-PT")}</TableCell>
+                            <TableCell>{m.endDate ? new Date(m.endDate).toLocaleDateString("pt-PT") : "-"}</TableCell>
                             <TableCell>
                               <Badge
                                 variant="outline"
                                 className={
                                   m.status === "ACTIVE"
                                     ? "border-primary/30 bg-primary/10 text-primary"
-                                    : m.status === "EXPIRED"
-                                      ? "border-destructive/30 bg-destructive/10 text-destructive"
-                                      : "border-border-subtle bg-surface-2 text-text-secondary"
+                                      : m.status === "EXPIRED"
+                                        ? "border-destructive/30 bg-destructive/10 text-destructive"
+                                        : m.status === "REGISTERED"
+                                          ? "border-blue-500/40 bg-blue-500/10 text-blue-300"
+                                          : "border-border-subtle bg-surface-2 text-text-secondary"
                                 }
                               >
-                                {m.status === "ACTIVE" ? "Ativo" : m.status === "EXPIRED" ? "Expirado" : "Cancelado"}
+                                {m.status === "ACTIVE" ? "Ativo" : m.status === "EXPIRED" ? "Expirado" : m.status === "REGISTERED" ? "Registado" : "Cancelado"}
                               </Badge>
                             </TableCell>
                           </TableRow>

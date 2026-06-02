@@ -50,6 +50,22 @@ function StudentAreaPage() {
 
   const loading = profileLoading || membershipLoading || attendanceLoading || enrollmentsLoading;
 
+  const readyActiveLessons = useMemo(
+    () =>
+      videoLessons.filter(
+        (lesson) =>
+          (lesson.status ? lesson.status === "READY" : true) &&
+          (typeof lesson.isActive === "boolean" ? lesson.isActive : (lesson.active ?? true)),
+      ),
+    [videoLessons],
+  );
+
+  useEffect(() => {
+    return () => {
+      Object.values(videoBlobUrlById).forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [videoBlobUrlById]);
+
   if (user && hasRole(["ADMIN", "MANAGER"])) {
     void navigate({ to: "/admin", replace: true });
     return null;
@@ -79,22 +95,6 @@ function StudentAreaPage() {
   const attendanceProgress = membership?.plan?.maxClasses
     ? Math.min(100, (monthlyAttendance / membership.plan.maxClasses) * 100)
     : Math.min(100, (monthlyAttendance / 12) * 100);
-
-  const readyActiveLessons = useMemo(
-    () =>
-      videoLessons.filter(
-        (lesson) =>
-          (lesson.status ? lesson.status === "READY" : true) &&
-          (typeof lesson.isActive === "boolean" ? lesson.isActive : (lesson.active ?? true)),
-      ),
-    [videoLessons],
-  );
-
-  useEffect(() => {
-    return () => {
-      Object.values(videoBlobUrlById).forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, [videoBlobUrlById]);
 
   const loadVideoBlob = async (lessonId: string) => {
     if (videoBlobUrlById[lessonId]) {

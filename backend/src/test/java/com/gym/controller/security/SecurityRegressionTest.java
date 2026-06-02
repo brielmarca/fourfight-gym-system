@@ -388,6 +388,39 @@ class SecurityRegressionTest {
     }
 
     @Test
+    @DisplayName("Admin student listing defaults to newest clients first")
+    void adminStudentListingDefaultsToNewestClientsFirst() throws Exception {
+        String olderEmail = "older-admin-student-" + UUID.randomUUID() + "@test.com";
+        String newestEmail = "newest-admin-student-" + UUID.randomUUID() + "@test.com";
+
+        userRepository.save(User.builder()
+                .name("Older Admin Student")
+                .email(olderEmail)
+                .passwordHash(passwordEncoder.encode("OlderPass123!"))
+                .role(User.Role.CLIENT)
+                .isActive(true)
+                .createdAt(LocalDateTime.now().minusDays(2))
+                .updatedAt(LocalDateTime.now().minusDays(2))
+                .build());
+
+        userRepository.save(User.builder()
+                .name("Newest Admin Student")
+                .email(newestEmail)
+                .passwordHash(passwordEncoder.encode("NewestPass123!"))
+                .role(User.Role.CLIENT)
+                .isActive(true)
+                .createdAt(LocalDateTime.now().plusDays(2))
+                .updatedAt(LocalDateTime.now().plusDays(2))
+                .build());
+
+        mockMvc.perform(get("/api/admin/students?size=1")
+                        .header("Authorization", "Bearer " + validAdminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].userEmail").value(newestEmail))
+                .andExpect(jsonPath("$.content[0].status").value("REGISTERED"));
+    }
+
+    @Test
     @DisplayName("Manager endpoints require authentication")
     void managerEndpointsRequireAuth() throws Exception {
         mockMvc.perform(get("/api/manager/stats"))

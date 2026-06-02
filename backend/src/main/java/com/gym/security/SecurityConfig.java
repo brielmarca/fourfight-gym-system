@@ -68,7 +68,7 @@ public class SecurityConfig {
                 // Actuator health (public)
                 .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
                 .requestMatchers("/actuator/**").hasRole("ADMIN")
-                .requestMatchers("/api/admin/professors/**", "/api/admin/professor-assignments/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers("/api/admin/students/**", "/api/admin/professors/**", "/api/admin/professor-assignments/**").hasAnyRole("ADMIN", "MANAGER")
                 // Admin: full access
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 // Manager: admin and manager access

@@ -77,7 +77,7 @@ public class PreRegistrationProfile {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "pre_registration_profile_days", joinColumns = @JoinColumn(name = "profile_id"))
     @Enumerated(EnumType.STRING)
-    @Column(name = "day", nullable = false, length = 20)
+    @Column(name = "\"day\"", nullable = false, length = 20)
     @Builder.Default
     private Set<PreferredTrainingDay> preferredTrainingDays = new HashSet<>();
 

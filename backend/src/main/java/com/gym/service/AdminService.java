@@ -18,16 +18,21 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import com.gym.dto.response.AdminPreRegistrationLeadDetailResponse;
 import com.gym.dto.response.AdminPreRegistrationLeadListItemResponse;
+import com.gym.dto.response.AdminStudentResponse;
 import com.gym.dto.response.AuditLogResponse;
 import com.gym.dto.response.DashboardResponse;
 import com.gym.dto.response.PreRegistrationLeadImportResponse;
 import com.gym.dto.response.RevenueReportResponse.MonthlyRevenue;
 import com.gym.dto.response.RevenueReportResponse;
+import com.gym.entity.Membership;
 import com.gym.entity.PreRegistrationLead;
+import com.gym.entity.User;
 import com.gym.exception.ResourceNotFoundException;
 import com.gym.repository.AuditLogRepository;
+import com.gym.repository.MembershipRepository;
 import com.gym.repository.PreRegistrationLeadRepository;
 import com.gym.repository.PreRegistrationProfileRepository;
+import com.gym.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -42,6 +47,8 @@ public class AdminService {
     private final AuditLogRepository auditLogRepository;
     private final PreRegistrationProfileRepository preRegistrationProfileRepository;
     private final PreRegistrationLeadRepository preRegistrationLeadRepository;
+    private final UserRepository userRepository;
+    private final MembershipRepository membershipRepository;
 
     private static final String LEAD_SOURCE = "GOOGLE_FORMS_IMPORT";
     private static final String LEAD_STATUS = "PRE_REGISTERED";
@@ -76,6 +83,18 @@ public class AdminService {
 
     public Page<AuditLogResponse> getAuditLogs(Pageable pageable) {
         return auditLogRepository.findAllOrderByCreatedAtDesc(pageable).map(AuditLogResponse::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AdminStudentResponse> getStudents(Pageable pageable) {
+        return userRepository.findByActiveRole(User.Role.CLIENT, pageable)
+            .map(user -> {
+                Membership latestMembership = membershipRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId())
+                    .stream()
+                    .findFirst()
+                    .orElse(null);
+                return AdminStudentResponse.from(user, latestMembership);
+            });
     }
 
     public RevenueReportResponse getRevenueReport() {

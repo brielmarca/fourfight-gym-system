@@ -3,8 +3,10 @@ package com.gym.service;
 import com.gym.dto.response.AdminPreRegistrationLeadDetailResponse;
 import com.gym.entity.PreRegistrationLead;
 import com.gym.repository.AuditLogRepository;
+import com.gym.repository.MembershipRepository;
 import com.gym.repository.PreRegistrationLeadRepository;
 import com.gym.repository.PreRegistrationProfileRepository;
+import com.gym.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,6 +33,8 @@ class AdminServicePreRegistrationLeadStatusTest {
     @Mock private AuditLogRepository auditLogRepository;
     @Mock private PreRegistrationProfileRepository preRegistrationProfileRepository;
     @Mock private PreRegistrationLeadRepository preRegistrationLeadRepository;
+    @Mock private UserRepository userRepository;
+    @Mock private MembershipRepository membershipRepository;
 
     @Test
     void acceptPreRegistration_updatesStatusWithoutMembershipOrPaymentSideEffects() {
@@ -42,7 +46,9 @@ class AdminServicePreRegistrationLeadStatusTest {
             paymentService,
             auditLogRepository,
             preRegistrationProfileRepository,
-            preRegistrationLeadRepository
+            preRegistrationLeadRepository,
+            userRepository,
+            membershipRepository
         );
 
         UUID leadId = UUID.randomUUID();
@@ -75,7 +81,9 @@ class AdminServicePreRegistrationLeadStatusTest {
             paymentService,
             auditLogRepository,
             preRegistrationProfileRepository,
-            preRegistrationLeadRepository
+            preRegistrationLeadRepository,
+            userRepository,
+            membershipRepository
         );
 
         UUID leadId = UUID.randomUUID();

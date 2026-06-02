@@ -23,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockCookie;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -30,9 +31,11 @@ import java.nio.charset.StandardCharsets;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.Base64;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -346,8 +349,42 @@ class SecurityRegressionTest {
     @Test
     @DisplayName("Admin endpoints require authentication")
     void adminEndpointsRequireAuth() throws Exception {
-        mockMvc.perform(get("/api/admin/users"))
+        mockMvc.perform(get("/api/admin/students"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("CLIENT cannot access admin student listing")
+    void clientCannotAccessAdminStudentListing() throws Exception {
+        mockMvc.perform(get("/api/admin/students")
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Registered CLIENT without membership appears in admin student listing")
+    @Sql(statements = "CREATE TABLE IF NOT EXISTS pre_registration_profile_days (profile_id UUID NOT NULL, \"day\" VARCHAR(20) NOT NULL, PRIMARY KEY (profile_id, \"day\"))")
+    void registeredClientWithoutMembershipAppearsInAdminStudentListing() throws Exception {
+        String email = "registered-" + UUID.randomUUID() + "@test.com";
+        LocalDate dob = LocalDate.now().minusYears(24).minusDays(2);
+        int age = Period.between(dob, LocalDate.now()).getYears();
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerJson(email, dob, age)))
+                .andExpect(status().isCreated())
+                .andExpect(content().string(containsString("\"role\":\"CLIENT\"")));
+
+        mockMvc.perform(get("/api/admin/students?size=100")
+                        .header("Authorization", "Bearer " + validAdminToken))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(email)))
+                .andExpect(content().string(containsString("\"status\":\"REGISTERED\"")));
+
+        mockMvc.perform(get("/api/admin/students?size=100")
+                        .header("Authorization", "Bearer " + validManagerToken))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(email)));
     }
 
     @Test
@@ -825,6 +862,29 @@ class SecurityRegressionTest {
             return null;
         }
         return json.substring(valueStart, valueEnd);
+    }
+
+    private static String registerJson(String email, LocalDate dateOfBirth, int age) {
+        return "{" +
+                "\"name\":\"Registered Client\"," +
+                "\"email\":\"" + email + "\"," +
+                "\"password\":\"RegisterPass123!\"," +
+                "\"phone\":\"+351912345679\"," +
+                "\"dateOfBirth\":\"" + dateOfBirth + "\"," +
+                "\"age\":" + age + "," +
+                "\"parishOrArea\":\"Lisboa\"," +
+                "\"hasMartialArtsExperience\":false," +
+                "\"martialArtsExperienceDetails\":null," +
+                "\"trainingGoal\":\"Melhorar condicionamento\"," +
+                "\"preferredModality\":\"JIU_JITSU\"," +
+                "\"preferredModalityOther\":null," +
+                "\"preferredTrainingTime\":\"NIGHT_AFTER_18\"," +
+                "\"preferredTrainingTimeOther\":null," +
+                "\"preferredTrainingDays\":[\"MONDAY\"]," +
+                "\"valuesMartialArtsPhilosophy\":true," +
+                "\"preferredContactMethod\":\"MESSAGE\"," +
+                "\"preferredContactMethodOther\":null" +
+                "}";
     }
 
     private static String extractRole(String jwt) {

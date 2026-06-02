@@ -531,6 +531,8 @@ export const api = {
       });
     },
     listGraduations: () => request<AdminGraduation[]>("/admin/graduations"),
+    listStudents: (page = 0, size = 50) =>
+      request<PageResponse<AdminStudent>>(`/admin/students?page=${page}&size=${size}`),
     updateGraduation: (data: UpdateAdminGraduationRequest) =>
       request<AdminGraduation>("/admin/graduations", {
         method: "PUT",
@@ -712,6 +714,7 @@ export type {
   UpdateScheduleEntryRequest,
   AdminPreRegistrationListItem,
   AdminPreRegistrationDetail,
+  AdminStudent,
   UserRole,
   Modality,
   ProfessorSummary,

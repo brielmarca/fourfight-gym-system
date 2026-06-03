@@ -100,6 +100,9 @@ public class StripeController {
         try {
             stripeWebhookService.handleWebhook(payload, sigHeader);
             return ResponseEntity.ok().build();
+        } catch (BusinessRuleException e) {
+            log.warn("Invalid Stripe webhook signature");
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             log.error("Webhook processing failed", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

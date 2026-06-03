@@ -94,7 +94,7 @@ public class StripeWebhookService {
         switch (event.getType()) {
             case "checkout.session.completed" -> handleCheckoutSessionCompleted(event);
             case "customer.subscription.created" -> handleSubscriptionCreated(event);
-            case "invoice.paid" -> handleInvoicePaid(event);
+            case "invoice.paid", "invoice.payment_succeeded" -> handleInvoicePaid(event);
             case "invoice.payment_failed" -> handleInvoicePaymentFailed(event);
             case "customer.subscription.deleted" -> handleSubscriptionDeleted(event);
             case "customer.subscription.updated" -> handleSubscriptionUpdated(event);
@@ -261,18 +261,24 @@ public class StripeWebhookService {
 
         BigDecimal amount = BigDecimal.valueOf(invoice.getAmountDue()).divide(BigDecimal.valueOf(100));
 
-        Payment payment = Payment.builder()
-                .user(membership.getUser())
-                .membership(membership)
-                .amount(amount)
-                .currency(invoice.getCurrency() != null ? invoice.getCurrency().toUpperCase() : "EUR")
-                .method(Payment.PaymentMethod.STRIPE)
-                .status(Payment.PaymentStatus.FAILED)
-                .gatewayRef(invoice.getId())
-                .gatewayResponse("Payment failed: " + (invoice.getLastFinalizationError() != null ? invoice.getLastFinalizationError().getMessage() : "unknown"))
-                .build();
+        if (invoice.getId() != null && paymentRepository.existsByStripeInvoiceId(invoice.getId())) {
+            log.info("Skipping duplicate failed Stripe payment insert for invoice {}", invoice.getId());
+        } else {
+            Payment payment = Payment.builder()
+                    .user(membership.getUser())
+                    .membership(membership)
+                    .amount(amount)
+                    .currency(invoice.getCurrency() != null ? invoice.getCurrency().toUpperCase() : "EUR")
+                    .method(Payment.PaymentMethod.STRIPE)
+                    .status(Payment.PaymentStatus.FAILED)
+                    .gatewayRef(invoice.getId())
+                    .gatewayResponse("Payment failed: " + (invoice.getLastFinalizationError() != null ? invoice.getLastFinalizationError().getMessage() : "unknown"))
+                    .stripePaymentIntentId(invoice.getPaymentIntent())
+                    .stripeInvoiceId(invoice.getId())
+                    .build();
 
-        paymentRepository.save(payment);
+            paymentRepository.save(payment);
+        }
         membership.setStatus(Membership.MembershipStatus.SUSPENDED);
         membershipRepository.save(membership);
         log.warn("Invoice payment failed for membership: {}", membership.getId());
@@ -325,14 +331,42 @@ public class StripeWebhookService {
 
         membership.setCancelAtPeriodEnd(subscription.getCancelAtPeriodEnd());
 
-        if (subscription.getCurrentPeriodEnd() != null) {
-            membership.setCurrentPeriodEnd(
-                    LocalDate.ofInstant(Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()), java.time.ZoneId.systemDefault())
-            );
+        if (subscription.getCurrentPeriodStart() != null) {
+            membership.setCurrentPeriodStart(toLocalDate(subscription.getCurrentPeriodStart()));
         }
+
+        if (subscription.getCurrentPeriodEnd() != null) {
+            LocalDate periodEnd = toLocalDate(subscription.getCurrentPeriodEnd());
+            membership.setCurrentPeriodEnd(periodEnd);
+            membership.setEndDate(periodEnd);
+        }
+
+        syncMembershipStatusFromSubscription(membership, subscription.getStatus());
 
         membershipRepository.save(membership);
         log.info("Membership subscription updated: {} (cancelAtPeriodEnd: {})", membership.getId(), subscription.getCancelAtPeriodEnd());
+    }
+
+    private void syncMembershipStatusFromSubscription(Membership membership, String stripeStatus) {
+        if (stripeStatus == null || stripeStatus.isBlank()) {
+            return;
+        }
+
+        switch (stripeStatus) {
+            case "active", "trialing" -> {
+                if (membership.getStatus() != Membership.MembershipStatus.PENDING_APPROVAL) {
+                    membership.setStatus(Membership.MembershipStatus.ACTIVE);
+                }
+            }
+            case "past_due", "unpaid" -> membership.setStatus(Membership.MembershipStatus.SUSPENDED);
+            case "incomplete", "incomplete_expired" -> membership.setStatus(Membership.MembershipStatus.PENDING_PAYMENT);
+            case "canceled" -> membership.setStatus(Membership.MembershipStatus.CANCELLED);
+            default -> log.info("Ignoring unmapped Stripe subscription status: {}", stripeStatus);
+        }
+    }
+
+    private LocalDate toLocalDate(Long epochSeconds) {
+        return LocalDate.ofInstant(Instant.ofEpochSecond(epochSeconds), java.time.ZoneId.systemDefault());
     }
 
     private boolean isPortugalCustomer(Session session) {

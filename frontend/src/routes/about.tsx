@@ -33,9 +33,9 @@ const features = [
 ];
 
 const facilities = [
-  { src: "/assets/DSC06344.webp", label: "ÁREA PRINCIPAL DE TREINO" },
-  { src: "/assets/DSC06357.webp", label: "GINÁSIO & CONDICIONAMENTO" },
-  { src: "/assets/DSC06369(1).webp", label: "BALNEÁRIO & RECUPERAÇÃO" },
+  { src: "/assets/optimized/gallery/dsc06344-training-area.webp", label: "ÁREA PRINCIPAL DE TREINO" },
+  { src: "/assets/optimized/gallery/dsc06357-conditioning-area.webp", label: "GINÁSIO & CONDICIONAMENTO" },
+  { src: "/assets/optimized/gallery/dsc06369-recovery-area.webp", label: "BALNEÁRIO & RECUPERAÇÃO" },
 ];
 
 const stats = [

@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/auth-context";
 import { Activity, ArrowRight, Clock3, Dumbbell, Shield, Swords, Target, Zap } from "lucide-react";
-import mmaHero from "@/assets/gymlutas/jiu-jitsu-3.webp";
+
+const mmaHero = "/assets/optimized/jiu-jitsu/dsc06312-jiu-jitsu-hero.webp";
 
 export const Route = createFileRoute("/programas/mma")({
   component: MMAPage,

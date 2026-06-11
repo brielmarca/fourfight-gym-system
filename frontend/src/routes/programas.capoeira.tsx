@@ -3,7 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
 import { ArrowRight, Circle, Drum, Shield, Sparkles, Users, Waves } from "lucide-react";
-import capoeiraHero from "@/assets/gymlutas/jiu-jitsu-2.webp";
+
+const capoeiraHero = "/assets/optimized/gallery/espaco-pv-2-academy-hero.webp";
 
 export const Route = createFileRoute("/programas/capoeira")({
   component: CapoeiraPage,

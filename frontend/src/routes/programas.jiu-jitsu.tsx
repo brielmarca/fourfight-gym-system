@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { useSchedule } from "@/queries";
 import { useAuth } from "@/contexts/auth-context";
 import { Shield, Target, Users, Heart } from "lucide-react";
-import jiuJitsuHero from "@/assets/gymlutas/jiu-jitsu-1.webp";
-import jiuJitsuAbout from "@/assets/gymlutas/jiu-jitsu-3.webp";
+
+const jiuJitsuHero = "/assets/optimized/jiu-jitsu/dsc06312-jiu-jitsu-hero.webp";
+const jiuJitsuAbout = "/assets/optimized/jiu-jitsu/dsc06300-jiu-jitsu-training.webp";
 
 export const Route = createFileRoute("/programas/jiu-jitsu")({
   component: JiuJitsuPage,

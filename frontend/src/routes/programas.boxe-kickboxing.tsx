@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { useSchedule } from "@/queries";
 import { useAuth } from "@/contexts/auth-context";
 import { Dumbbell, Flame, Shield, Target } from "lucide-react";
-import boxeHero from "@/assets/gymlutas/jiu-jitsu-3.webp";
-import boxeAbout from "@/assets/gymlutas/jiu-jitsu-2.webp";
+
+const boxeHero = "/assets/optimized/boxe/espaco-pv-2-boxe-kickboxing-hero.webp";
+const boxeAbout = "/assets/optimized/boxe/espaco-pv-4-striking-area.webp";
 
 export const Route = createFileRoute("/programas/boxe-kickboxing")({
   component: BoxeKickboxingPage,

@@ -220,7 +220,7 @@ function CapoeiraPage() {
                 >
                   {benefit.title}
                 </h3>
-                <p className="text-sm" style={{ color: "#666", lineHeight: 1.8 }}>
+                <p className="text-sm" style={{ color: "#B8B8B8", lineHeight: 1.8 }}>
                   {benefit.desc}
                 </p>
               </div>
@@ -290,7 +290,7 @@ function CapoeiraPage() {
               </h2>
               <p
                 className="text-lg mb-8 mx-auto max-w-md"
-                style={{ color: "#666", lineHeight: 1.8 }}
+                style={{ color: "#B8B8B8", lineHeight: 1.8 }}
               >
                 Escolhe um plano e entra na roda com acompanhamento estruturado.
               </p>

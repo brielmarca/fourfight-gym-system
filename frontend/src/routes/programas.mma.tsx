@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/auth-context";
 import { Activity, ArrowRight, Clock3, Dumbbell, Shield, Swords, Target, Zap } from "lucide-react";
 
-const mmaHero = "/assets/optimized/jiu-jitsu/dsc06312-jiu-jitsu-hero.webp";
+const mmaHero = "/assets/optimized/gallery/espaco-pv-2-academy-hero.webp";
 
 export const Route = createFileRoute("/programas/mma")({
   component: MMAPage,

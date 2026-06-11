@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
-import { ArrowRight, Circle, Drum, Shield, Sparkles, Users, Waves } from "lucide-react";
+import { Circle, Drum, Shield, Sparkles, Users, Waves } from "lucide-react";
 
 const capoeiraHero = "/assets/optimized/gallery/espaco-pv-2-academy-hero.webp";
 
@@ -13,43 +13,28 @@ export const Route = createFileRoute("/programas/capoeira")({
 const trainingContent = [
   {
     icon: Drum,
-    title: "Ginga e Ritmo",
-    items: [
-      "Ginga base e variações",
-      "Leitura do ritmo",
-      "Coordenação com o movimento",
-      "Controlo de distância",
-    ],
-  },
-  {
-    icon: Waves,
-    title: "Mobilidade e Acrobacia",
-    items: [
-      "Mobilidade articular",
-      "Equilíbrio e controlo corporal",
-      "Movimentos acrobáticos base",
-      "Transições fluidas",
-    ],
+    title: "Ginga e movimentação",
+    desc: "Base da capoeira: ritmo, esquiva, equilíbrio, coordenação e controle corporal.",
   },
   {
     icon: Shield,
-    title: "Defesa e Jogo",
-    items: [
-      "Esquivas e desvios",
-      "Ataques e contra-ataques",
-      "Leitura do parceiro",
-      "Estratégia dentro da roda",
-    ],
+    title: "Esquivas e defesa",
+    desc: "Aprenda a sair da linha de ataque com fluidez, leitura de jogo e proteção.",
   },
   {
     icon: Sparkles,
-    title: "Preparação Física",
-    items: [
-      "Força funcional",
-      "Resistência e coordenação",
-      "Flexibilidade ativa",
-      "Consistência de treino",
-    ],
+    title: "Chutes e ataques",
+    desc: "Técnicas como meia-lua, armada, martelo e benção, com segurança e progressão.",
+  },
+  {
+    icon: Users,
+    title: "Ritmo, musicalidade e roda",
+    desc: "Entenda a energia da roda, chamada, resposta, timing e expressão corporal.",
+  },
+  {
+    icon: Waves,
+    title: "Condicionamento e mobilidade",
+    desc: "Força, flexibilidade, resistência, mobilidade e consciência corporal.",
   },
 ];
 
@@ -169,10 +154,10 @@ function CapoeiraPage() {
             {trainingContent.map((section, idx) => (
               <Card
                 key={section.title}
-                className="reveal bg-surface border-border-subtle transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_20px_rgba(193,18,31,0.2)]"
+                className="bg-surface border-border-subtle transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_20px_rgba(193,18,31,0.2)]"
                 style={{ transitionDelay: `${idx * 100}ms` }}
               >
-                <CardContent className="pt-8">
+                <CardContent className="pt-8 pb-8">
                   <section.icon
                     size={32}
                     strokeWidth={1.5}
@@ -184,16 +169,9 @@ function CapoeiraPage() {
                   >
                     {section.title}
                   </h3>
-                  <ul className="space-y-3">
-                    {section.items.map((item) => (
-                      <li key={item} className="flex items-start gap-3">
-                        <ArrowRight size={16} strokeWidth={2} style={{ color: "#C1121F", marginTop: "4px" }} />
-                        <span className="text-sm" style={{ color: "#888", lineHeight: 1.6 }}>
-                          {item}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+                  <p className="text-sm" style={{ color: "#B8B8B8", lineHeight: 1.8 }}>
+                    {section.desc}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -223,7 +201,7 @@ function CapoeiraPage() {
             {benefits.map((benefit, idx) => (
               <div
                 key={benefit.title}
-                className="reveal text-center py-8 px-6 transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_20px_rgba(193,18,31,0.18)]"
+                className="text-center py-8 px-6 transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_20px_rgba(193,18,31,0.18)]"
                 style={{
                   background: "#111111",
                   border: "1px solid #1E1E1E",

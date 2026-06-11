@@ -36,6 +36,7 @@ let failedQueue: Array<{
 }> = [];
 let restorePromise: Promise<boolean> | null = null;
 const authTokenListeners = new Set<() => void>();
+const AUTH_SESSION_HINT_KEY = "fourfight.auth.hasSession";
 
 const publicAuthEndpoints = new Set([
   "/auth/login",
@@ -238,6 +239,7 @@ let memoryAccessToken: string | null = null;
 function setTokens(accessToken: string, refreshToken?: string | null) {
   if (typeof window !== "undefined") {
     memoryAccessToken = accessToken;
+    setAuthSessionHint();
     void refreshToken;
     authTokenListeners.forEach((listener) => listener());
   }
@@ -246,7 +248,35 @@ function setTokens(accessToken: string, refreshToken?: string | null) {
 function clearTokens() {
   if (typeof window !== "undefined") {
     memoryAccessToken = null;
+    clearAuthSessionHint();
     authTokenListeners.forEach((listener) => listener());
+  }
+}
+
+function setAuthSessionHint() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(AUTH_SESSION_HINT_KEY, "true");
+  } catch {
+    // The hint is non-critical; auth remains cookie/token based.
+  }
+}
+
+function clearAuthSessionHint() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(AUTH_SESSION_HINT_KEY);
+  } catch {
+    // The hint is non-critical; auth remains cookie/token based.
+  }
+}
+
+function hasAuthSessionHint(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(AUTH_SESSION_HINT_KEY) === "true";
+  } catch {
+    return false;
   }
 }
 
@@ -306,12 +336,14 @@ async function restoreAuthSession(): Promise<boolean> {
 
         if (!response.ok) {
           memoryAccessToken = null;
+          clearAuthSessionHint();
           return false;
         }
 
         const data = (await response.json()) as TokenResponse;
         if (!data?.accessToken) {
           memoryAccessToken = null;
+          clearAuthSessionHint();
           return false;
         }
 
@@ -319,6 +351,7 @@ async function restoreAuthSession(): Promise<boolean> {
         return true;
       } catch {
         memoryAccessToken = null;
+        clearAuthSessionHint();
         return false;
       } finally {
         restorePromise = null;
@@ -346,10 +379,20 @@ export const api = {
       });
     },
     me: () => request<UserResponse>("/auth/me"),
-    refresh: () =>
-      request<TokenResponse>("/auth/refresh", {
-        method: "POST",
-      }),
+    refresh: async () => {
+      try {
+        const response = await request<TokenResponse>("/auth/refresh", {
+          method: "POST",
+        });
+        if (response.accessToken) {
+          setTokens(response.accessToken);
+        }
+        return response;
+      } catch (error) {
+        clearTokens();
+        throw error;
+      }
+    },
     logout: async () => {
       try {
         await request("/auth/logout", { method: "POST" });
@@ -677,6 +720,7 @@ export {
   getUser,
   isAuthenticated,
   hasRole,
+  hasAuthSessionHint,
   restoreAuthSession,
 };
 

@@ -1,15 +1,38 @@
-import { createContext, useContext, useCallback, useRef, useState, useEffect, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useCallback,
+  useRef,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   api,
   setTokens,
   clearTokens,
   getUser,
+  hasAuthSessionHint,
   onAuthTokenChange,
   restoreAuthSession,
   isAuthenticated as checkIsAuthenticated,
 } from "@/lib/api";
 import type { RegisterRequest, User } from "@/types";
+
+const protectedRoutePrefixes = [
+  "/admin",
+  "/student-area",
+  "/professor",
+  "/checkout",
+  "/membership",
+];
+
+function isProtectedRoute(pathname: string): boolean {
+  return protectedRoutePrefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}
 
 interface AuthContextValue {
   user: User | null;
@@ -34,7 +57,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number, fallback: T): Promise<T> => {
+    const withTimeout = async <T,>(
+      promise: Promise<T>,
+      timeoutMs: number,
+      fallback: T,
+    ): Promise<T> => {
       let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
       const timeoutPromise = new Promise<T>((resolve) => {
@@ -52,28 +79,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const restore = async () => {
       const restoreVersion = resetVersionRef.current;
+      const shouldAttemptRestore =
+        checkIsAuthenticated() ||
+        hasAuthSessionHint() ||
+        (typeof window !== "undefined" && isProtectedRoute(window.location.pathname));
+
+      if (!shouldAttemptRestore) {
+        clearTokens();
+        setUser(null);
+        if (mounted) {
+          setIsLoading(false);
+        }
+        return;
+      }
+
       try {
         await withTimeout(restoreAuthSession(), 4500, false);
       } catch {
         clearTokens();
         setUser(null);
-      } finally {
-        if (!mounted) return;
-        if (restoreVersion !== resetVersionRef.current) {
-          clearTokens();
-          setUser(null);
-          setIsLoading(false);
-          return;
-        }
-        const restoredUser = getUser();
-        if (!restoredUser || !checkIsAuthenticated()) {
-          clearTokens();
-          setUser(null);
-        } else {
-          setUser(restoredUser);
-        }
-        setIsLoading(false);
       }
+
+      if (!mounted) return;
+      if (restoreVersion !== resetVersionRef.current) {
+        clearTokens();
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
+
+      const restoredUser = getUser();
+      if (!restoredUser || !checkIsAuthenticated()) {
+        clearTokens();
+        setUser(null);
+      } else {
+        setUser(restoredUser);
+      }
+      setIsLoading(false);
     };
 
     void restore();

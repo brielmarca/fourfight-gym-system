@@ -20,10 +20,12 @@ declare module "@tanstack/react-router" {
 
 const rootElement = document.getElementById("root");
 
-const protectedPrefixes = ["/admin", "/student-area", "/checkout", "/membership"];
+const protectedPrefixes = ["/admin", "/student-area", "/professor", "/checkout", "/membership"];
 
 function shouldBlockForAuthRestore(pathname: string): boolean {
-  return protectedPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+  return protectedPrefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
 }
 
 function registerServiceWorker() {

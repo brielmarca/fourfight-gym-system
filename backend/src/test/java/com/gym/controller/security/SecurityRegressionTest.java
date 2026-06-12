@@ -525,6 +525,172 @@ class SecurityRegressionTest {
     }
 
     @Test
+    @DisplayName("Unauthenticated user cannot deactivate student")
+    void unauthenticatedCannotDeactivateStudent() throws Exception {
+        User student = createTestUser("deactivate-unauth-" + UUID.randomUUID() + "@test.com", User.Role.CLIENT, true);
+
+        mockMvc.perform(post("/api/admin/students/" + student.getId() + "/deactivate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(deactivateJson("No longer active")))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("CLIENT cannot deactivate student")
+    void clientCannotDeactivateStudent() throws Exception {
+        User student = createTestUser("deactivate-client-" + UUID.randomUUID() + "@test.com", User.Role.CLIENT, true);
+
+        mockMvc.perform(post("/api/admin/students/" + student.getId() + "/deactivate")
+                        .header("Authorization", "Bearer " + validUserToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(deactivateJson("No longer active")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("MANAGER cannot deactivate student")
+    void managerCannotDeactivateStudent() throws Exception {
+        User student = createTestUser("deactivate-manager-" + UUID.randomUUID() + "@test.com", User.Role.CLIENT, true);
+
+        mockMvc.perform(post("/api/admin/students/" + student.getId() + "/deactivate")
+                        .header("Authorization", "Bearer " + validManagerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(deactivateJson("No longer active")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Admin can deactivate CLIENT with required reason and preserve history")
+    void adminCanDeactivateClientWithReasonAndPreserveHistory() throws Exception {
+        User student = createTestUser("deactivate-admin-" + UUID.randomUUID() + "@test.com", User.Role.CLIENT, true);
+        Plan plan = planRepository.findById(firstPlanId()).orElseThrow();
+        Membership membership = membershipRepository.save(Membership.builder()
+                .user(student)
+                .plan(plan)
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now().plusDays(30))
+                .status(Membership.MembershipStatus.ACTIVE)
+                .autoRenew(false)
+                .build());
+        Payment payment = paymentRepository.save(Payment.builder()
+                .user(student)
+                .membership(membership)
+                .amount(new BigDecimal("50.00"))
+                .currency("BRL")
+                .method(Payment.PaymentMethod.CARD)
+                .status(Payment.PaymentStatus.PENDING)
+                .build());
+
+        mockMvc.perform(post("/api/admin/students/" + student.getId() + "/deactivate")
+                        .header("Authorization", "Bearer " + validAdminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(deactivateJson("  Repeated bad behavior  ")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(student.getId().toString()))
+                .andExpect(jsonPath("$.email").value(student.getEmail()))
+                .andExpect(jsonPath("$.name").value(student.getName()))
+                .andExpect(jsonPath("$.isActive").value(false))
+                .andExpect(jsonPath("$.deactivatedBy").value(adminUserId.toString()))
+                .andExpect(jsonPath("$.deactivationReason").value("Repeated bad behavior"));
+
+        User deactivated = userRepository.findById(student.getId()).orElseThrow();
+        Assertions.assertFalse(deactivated.getIsActive());
+        Assertions.assertNotNull(deactivated.getDeactivatedAt());
+        Assertions.assertEquals(adminUserId, deactivated.getDeactivatedBy().getId());
+        Assertions.assertEquals("Repeated bad behavior", deactivated.getDeactivationReason());
+        Assertions.assertNull(deactivated.getDeletedAt());
+        Assertions.assertTrue(membershipRepository.existsById(membership.getId()));
+        Assertions.assertTrue(paymentRepository.existsById(payment.getId()));
+    }
+
+    @Test
+    @DisplayName("Deactivation reason is required")
+    void deactivationReasonIsRequired() throws Exception {
+        User student = createTestUser("deactivate-reason-" + UUID.randomUUID() + "@test.com", User.Role.CLIENT, true);
+
+        mockMvc.perform(post("/api/admin/students/" + student.getId() + "/deactivate")
+                        .header("Authorization", "Bearer " + validAdminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(deactivateJson("   ")))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Admin cannot deactivate self")
+    void adminCannotDeactivateSelf() throws Exception {
+        mockMvc.perform(post("/api/admin/students/" + adminUserId + "/deactivate")
+                        .header("Authorization", "Bearer " + validAdminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(deactivateJson("Self deactivate")))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    @DisplayName("Admin cannot deactivate another ADMIN")
+    void adminCannotDeactivateAnotherAdmin() throws Exception {
+        User otherAdmin = createTestUser("other-admin-" + UUID.randomUUID() + "@test.com", User.Role.ADMIN, true);
+
+        mockMvc.perform(post("/api/admin/students/" + otherAdmin.getId() + "/deactivate")
+                        .header("Authorization", "Bearer " + validAdminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(deactivateJson("Not allowed")))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    @DisplayName("Repeated deactivation returns clear validation error")
+    void repeatedDeactivationReturnsClearValidationError() throws Exception {
+        User student = createTestUser("deactivate-repeat-" + UUID.randomUUID() + "@test.com", User.Role.CLIENT, true);
+
+        mockMvc.perform(post("/api/admin/students/" + student.getId() + "/deactivate")
+                        .header("Authorization", "Bearer " + validAdminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(deactivateJson("First reason")))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/admin/students/" + student.getId() + "/deactivate")
+                        .header("Authorization", "Bearer " + validAdminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(deactivateJson("Second reason")))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(content().string(containsString("already inactive")));
+    }
+
+    @Test
+    @DisplayName("Deactivated user cannot use old access token or refresh session")
+    void deactivatedUserCannotUseOldAccessTokenOrRefreshSession() throws Exception {
+        String email = "deactivate-session-" + UUID.randomUUID() + "@test.com";
+        createTestUser(email, User.Role.CLIENT, true);
+
+        MvcResult login = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"" + email + "\",\"password\":\"TestPass123!\"}"))
+                .andExpect(status().isOk())
+                .andReturn();
+        String accessToken = extractField(login.getResponse().getContentAsString(), "accessToken");
+        String setCookie = login.getResponse().getHeader("Set-Cookie");
+        Assertions.assertNotNull(accessToken);
+        Assertions.assertNotNull(setCookie);
+        MockCookie refreshCookie = new MockCookie("refreshToken", extractRefreshCookieValue(setCookie));
+        User student = userRepository.findByEmailIgnoreCase(email).orElseThrow();
+
+        mockMvc.perform(post("/api/admin/students/" + student.getId() + "/deactivate")
+                        .header("Authorization", "Bearer " + validAdminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(deactivateJson("Session revocation")))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/user/me")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(post("/api/auth/refresh")
+                        .cookie(refreshCookie)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     @DisplayName("Manager endpoints require authentication")
     void managerEndpointsRequireAuth() throws Exception {
         mockMvc.perform(get("/api/manager/stats"))
@@ -1101,6 +1267,20 @@ class SecurityRegressionTest {
                 "\"startDate\":\"" + LocalDate.now() + "\"," +
                 "\"autoRenew\":false" +
                 "}";
+    }
+
+    private User createTestUser(String email, User.Role role, boolean active) {
+        return userRepository.save(User.builder()
+                .name("Lifecycle Test User")
+                .email(email)
+                .passwordHash(passwordEncoder.encode("TestPass123!"))
+                .role(role)
+                .isActive(active)
+                .build());
+    }
+
+    private static String deactivateJson(String reason) {
+        return "{\"reason\":\"" + reason + "\"}";
     }
 
     private static String extractRole(String jwt) {

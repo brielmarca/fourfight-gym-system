@@ -27,6 +27,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("SELECT COUNT(u) FROM User u WHERE u.isActive = true AND u.role = 'CLIENT'")
     long countActiveClients();
 
+    @Query("SELECT COUNT(u) FROM User u WHERE u.isActive = true AND u.role = 'ADMIN'")
+    long countActiveAdmins();
+
     @Query("SELECT COUNT(u) FROM User u WHERE u.isActive = true AND u.role = 'CLIENT' AND u.createdAt >= :since")
     long countNewClientsSince(@Param("since") java.time.LocalDateTime since);
 }

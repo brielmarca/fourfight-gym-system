@@ -1,5 +1,7 @@
 package com.gym.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -8,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -18,6 +21,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import com.gym.dto.request.AdminDeactivateStudentRequest;
+import com.gym.dto.response.AdminDeactivateStudentResponse;
 import com.gym.dto.response.AdminPreRegistrationLeadDetailResponse;
 import com.gym.dto.response.AdminPreRegistrationLeadListItemResponse;
 import com.gym.dto.response.AdminStudentResponse;
@@ -26,10 +31,13 @@ import com.gym.dto.response.DashboardResponse;
 import com.gym.dto.response.PreRegistrationLeadImportResponse;
 import com.gym.dto.response.RevenueReportResponse.MonthlyRevenue;
 import com.gym.dto.response.RevenueReportResponse;
+import com.gym.entity.AuditLog;
 import com.gym.entity.Membership;
 import com.gym.entity.PreRegistrationLead;
 import com.gym.entity.User;
+import com.gym.exception.BusinessRuleException;
 import com.gym.exception.ResourceNotFoundException;
+import com.gym.exception.ValidationException;
 import com.gym.repository.AuditLogRepository;
 import com.gym.repository.MembershipRepository;
 import com.gym.repository.PreRegistrationLeadRepository;
@@ -51,6 +59,8 @@ public class AdminService {
     private final PreRegistrationLeadRepository preRegistrationLeadRepository;
     private final UserRepository userRepository;
     private final MembershipRepository membershipRepository;
+    private final AuthService authService;
+    private final ObjectMapper objectMapper;
 
     private static final String LEAD_SOURCE = "GOOGLE_FORMS_IMPORT";
     private static final String LEAD_STATUS = "PRE_REGISTERED";
@@ -101,6 +111,60 @@ public class AdminService {
                     .orElse(null);
                 return AdminStudentResponse.from(user, latestMembership);
             });
+    }
+
+    @Transactional
+    public AdminDeactivateStudentResponse deactivateStudent(UUID targetUserId, UUID actorUserId, AdminDeactivateStudentRequest request) {
+        String reason = request == null || request.reason() == null ? "" : request.reason().trim();
+        if (reason.isBlank()) {
+            throw new ValidationException("Deactivation reason is required");
+        }
+        if (reason.length() > 1000) {
+            throw new ValidationException(Map.of("reason", "Reason must be at most 1000 characters"));
+        }
+
+        User actor = userRepository.findById(actorUserId)
+            .orElseThrow(() -> new ResourceNotFoundException("User", actorUserId));
+        if (actor.getRole() != User.Role.ADMIN) {
+            throw new BusinessRuleException("ADMIN_REQUIRED", "Only admins can deactivate students");
+        }
+        if (targetUserId.equals(actorUserId)) {
+            throw new BusinessRuleException("CANNOT_DEACTIVATE_SELF", "Admins cannot deactivate themselves");
+        }
+
+        User target = userRepository.findById(targetUserId)
+            .orElseThrow(() -> new ResourceNotFoundException("User", targetUserId));
+        if (target.getRole() == User.Role.ADMIN) {
+            if (Boolean.TRUE.equals(target.getIsActive()) && userRepository.countActiveAdmins() <= 1) {
+                throw new BusinessRuleException("LAST_ACTIVE_ADMIN", "Cannot deactivate the last active admin");
+            }
+            throw new BusinessRuleException("CANNOT_DEACTIVATE_ADMIN", "Admins cannot deactivate another admin");
+        }
+        if (target.getRole() != User.Role.CLIENT) {
+            throw new BusinessRuleException("STUDENT_ONLY", "Only client student accounts can be deactivated");
+        }
+        if (!Boolean.TRUE.equals(target.getIsActive())) {
+            throw new BusinessRuleException("ALREADY_DEACTIVATED", "Student account is already inactive");
+        }
+
+        ObjectNode beforeJson = buildStudentDeactivationAuditJson(target, null);
+        LocalDateTime now = LocalDateTime.now();
+        target.setIsActive(false);
+        target.setDeactivatedAt(now);
+        target.setDeactivatedBy(actor);
+        target.setDeactivationReason(reason);
+        User saved = userRepository.save(target);
+
+        authService.revokeRefreshTokensForUser(saved.getId());
+        auditLogRepository.save(AuditLog.builder()
+            .actor(actor)
+            .action(AuditLog.AuditAction.UPDATE)
+            .entityType("User")
+            .entityId(saved.getId())
+            .diffJson(buildDiffJson(beforeJson, buildStudentDeactivationAuditJson(saved, reason)))
+            .build());
+
+        return AdminDeactivateStudentResponse.from(saved);
     }
 
     public RevenueReportResponse getRevenueReport() {
@@ -308,6 +372,30 @@ public class AdminService {
 
         String decomposed = Normalizer.normalize(collapsed, Normalizer.Form.NFD);
         return decomposed.replaceAll("\\p{M}+", "");
+    }
+
+    private ObjectNode buildStudentDeactivationAuditJson(User user, String reason) {
+        ObjectNode node = objectMapper.createObjectNode();
+        node.put("id", user.getId().toString());
+        node.put("role", user.getRole().name());
+        node.put("isActive", Boolean.TRUE.equals(user.getIsActive()));
+        if (user.getDeactivatedAt() != null) {
+            node.put("deactivatedAt", user.getDeactivatedAt().toString());
+        }
+        if (user.getDeactivatedBy() != null) {
+            node.put("deactivatedBy", user.getDeactivatedBy().getId().toString());
+        }
+        if (reason != null) {
+            node.put("deactivationReason", reason);
+        }
+        return node;
+    }
+
+    private String buildDiffJson(ObjectNode beforeJson, ObjectNode afterJson) {
+        ObjectNode node = objectMapper.createObjectNode();
+        node.set("before", beforeJson);
+        node.set("after", afterJson);
+        return node.toString();
     }
 
     private List<List<String>> parseCsv(String content) {

@@ -1,5 +1,6 @@
 package com.gym.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gym.dto.response.AdminPreRegistrationLeadDetailResponse;
 import com.gym.entity.PreRegistrationLead;
 import com.gym.repository.AuditLogRepository;
@@ -35,6 +36,7 @@ class AdminServicePreRegistrationLeadStatusTest {
     @Mock private PreRegistrationLeadRepository preRegistrationLeadRepository;
     @Mock private UserRepository userRepository;
     @Mock private MembershipRepository membershipRepository;
+    @Mock private AuthService authService;
 
     @Test
     void acceptPreRegistration_updatesStatusWithoutMembershipOrPaymentSideEffects() {
@@ -48,7 +50,9 @@ class AdminServicePreRegistrationLeadStatusTest {
             preRegistrationProfileRepository,
             preRegistrationLeadRepository,
             userRepository,
-            membershipRepository
+            membershipRepository,
+            authService,
+            new ObjectMapper()
         );
 
         UUID leadId = UUID.randomUUID();
@@ -83,7 +87,9 @@ class AdminServicePreRegistrationLeadStatusTest {
             preRegistrationProfileRepository,
             preRegistrationLeadRepository,
             userRepository,
-            membershipRepository
+            membershipRepository,
+            authService,
+            new ObjectMapper()
         );
 
         UUID leadId = UUID.randomUUID();

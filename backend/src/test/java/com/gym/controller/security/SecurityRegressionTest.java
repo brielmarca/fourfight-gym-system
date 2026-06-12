@@ -323,6 +323,32 @@ class SecurityRegressionTest {
     }
 
     @Test
+    @DisplayName("Client can read own checkout status")
+    void clientCanReadOwnCheckoutStatus() throws Exception {
+        mockMvc.perform(get("/api/checkout/" + testPaymentId + "/status")
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(testUserId.toString())));
+    }
+
+    @Test
+    @DisplayName("Client cannot read another user's checkout status")
+    void clientCannotReadAnotherUsersCheckoutStatus() throws Exception {
+        mockMvc.perform(get("/api/checkout/" + otherUserPaymentId + "/status")
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Admin can read another user's checkout status")
+    void adminCanReadAnotherUsersCheckoutStatus() throws Exception {
+        mockMvc.perform(get("/api/checkout/" + otherUserPaymentId + "/status")
+                        .header("Authorization", "Bearer " + validAdminToken))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(otherUserPaymentId.toString())));
+    }
+
+    @Test
     @DisplayName("POST /api/checkout/{id}/payment requires authentication - returns 401")
     void checkoutPaymentRequiresAuth() throws Exception {
         mockMvc.perform(post("/api/checkout/" + testCheckoutId + "/payment"))
@@ -342,6 +368,84 @@ class SecurityRegressionTest {
                         throw new AssertionError("Expected non-5xx status, got " + status);
                     }
                 });
+    }
+
+    // ===== TEST 2B: Plan Mutation Protection =====
+
+    @Test
+    @DisplayName("Plan read endpoints remain public")
+    void planReadEndpointsRemainPublic() throws Exception {
+        UUID planId = firstPlanId();
+
+        mockMvc.perform(get("/api/plans"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/plans/" + planId))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Unauthenticated user cannot mutate plans")
+    void unauthenticatedCannotMutatePlans() throws Exception {
+        UUID planId = firstPlanId();
+
+        mockMvc.perform(post("/api/plans")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createPlanJson("Unauth Plan")))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(put("/api/plans/" + planId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updatePlanJson("Unauth Update")))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(delete("/api/plans/" + planId))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Client cannot mutate plans")
+    void clientCannotMutatePlans() throws Exception {
+        UUID planId = firstPlanId();
+
+        mockMvc.perform(post("/api/plans")
+                        .header("Authorization", "Bearer " + validUserToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createPlanJson("Client Plan")))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(put("/api/plans/" + planId)
+                        .header("Authorization", "Bearer " + validUserToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updatePlanJson("Client Update")))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(delete("/api/plans/" + planId)
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Admin can mutate plans")
+    void adminCanMutatePlans() throws Exception {
+        MvcResult createResult = mockMvc.perform(post("/api/plans")
+                        .header("Authorization", "Bearer " + validAdminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createPlanJson("Admin Security Plan")))
+                .andExpect(status().isCreated())
+                .andReturn();
+        UUID createdPlanId = UUID.fromString(extractField(createResult.getResponse().getContentAsString(), "id"));
+
+        mockMvc.perform(put("/api/plans/" + createdPlanId)
+                        .header("Authorization", "Bearer " + validAdminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updatePlanJson("Admin Security Plan Updated")))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Admin Security Plan Updated")));
+
+        mockMvc.perform(delete("/api/plans/" + createdPlanId)
+                        .header("Authorization", "Bearer " + validAdminToken))
+                .andExpect(status().isNoContent());
     }
 
     // ===== TEST 3: Protected Endpoints =====
@@ -503,6 +607,44 @@ class SecurityRegressionTest {
     void unauthenticatedCannotAccessFullMembershipListing() throws Exception {
         mockMvc.perform(get("/api/memberships"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Client cannot create arbitrary membership")
+    void clientCannotCreateArbitraryMembership() throws Exception {
+        String json = createMembershipJson(testUserId, firstPlanId());
+
+        mockMvc.perform(post("/api/memberships")
+                        .header("Authorization", "Bearer " + validUserToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Admin can create membership through existing admin operation")
+    void adminCanCreateMembership() throws Exception {
+        String json = createMembershipJson(testUserId, firstPlanId());
+
+        mockMvc.perform(post("/api/memberships")
+                        .header("Authorization", "Bearer " + validAdminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isCreated())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(testUserId.toString())));
+    }
+
+    @Test
+    @DisplayName("Manager can create membership through existing manager operation")
+    void managerCanCreateMembership() throws Exception {
+        String json = createMembershipJson(testUserId, firstPlanId());
+
+        mockMvc.perform(post("/api/memberships")
+                        .header("Authorization", "Bearer " + validManagerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isCreated())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(testUserId.toString())));
     }
 
     @Test
@@ -917,6 +1059,47 @@ class SecurityRegressionTest {
                 "\"valuesMartialArtsPhilosophy\":true," +
                 "\"preferredContactMethod\":\"MESSAGE\"," +
                 "\"preferredContactMethodOther\":null" +
+                "}";
+    }
+
+    private UUID firstPlanId() {
+        return planRepository.findAll().stream()
+                .findFirst()
+                .orElseThrow()
+                .getId();
+    }
+
+    private static String createPlanJson(String name) {
+        return "{" +
+                "\"name\":\"" + name + "\"," +
+                "\"description\":\"Security regression plan\"," +
+                "\"price\":49.90," +
+                "\"durationDays\":30," +
+                "\"maxClasses\":12," +
+                "\"features\":[\"Security test\"]," +
+                "\"level\":\"all\"," +
+                "\"instructor\":\"Test\"," +
+                "\"schedule\":[\"Monday\"]" +
+                "}";
+    }
+
+    private static String updatePlanJson(String name) {
+        return "{" +
+                "\"name\":\"" + name + "\"," +
+                "\"description\":\"Updated security regression plan\"," +
+                "\"price\":59.90," +
+                "\"durationDays\":30," +
+                "\"maxClasses\":16," +
+                "\"isActive\":true" +
+                "}";
+    }
+
+    private static String createMembershipJson(UUID userId, UUID planId) {
+        return "{" +
+                "\"userId\":\"" + userId + "\"," +
+                "\"planId\":\"" + planId + "\"," +
+                "\"startDate\":\"" + LocalDate.now() + "\"," +
+                "\"autoRenew\":false" +
                 "}";
     }
 

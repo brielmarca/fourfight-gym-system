@@ -16,6 +16,7 @@ import com.gym.entity.Plan;
 import com.gym.entity.Student;
 import com.gym.entity.User;
 import com.gym.exception.BusinessRuleException;
+import com.gym.exception.ResourceNotFoundException;
 import com.gym.repository.MembershipRepository;
 import com.gym.repository.PaymentRepository;
 import com.gym.repository.PlanRepository;
@@ -162,9 +163,16 @@ public class CheckoutServiceImp implements CheckoutService {
     }
 
     @Override
-    public CheckoutResponse getCheckoutStatus(String paymentId) {
+    @Transactional(readOnly = true)
+    public CheckoutResponse getCheckoutStatus(String paymentId, JwtUserPrincipal principal) {
         Payment payment = paymentRepository.findById(UUID.fromString(paymentId))
-                .orElseThrow(() -> new IllegalArgumentException("Payment not found: " + paymentId));
+                .orElseThrow(() -> new ResourceNotFoundException("Payment", paymentId));
+
+        boolean isOwner = payment.getUser().getId().equals(principal.id());
+        boolean isAdmin = "ADMIN".equals(principal.role());
+        if (!isOwner && !isAdmin) {
+            throw new ResourceNotFoundException("Payment", paymentId);
+        }
 
         return CheckoutResponse.builder()
                 .id(payment.getId())

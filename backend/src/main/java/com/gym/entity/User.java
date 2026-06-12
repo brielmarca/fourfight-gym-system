@@ -78,6 +78,26 @@ public class User {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Column(name = "deactivated_at")
+    private LocalDateTime deactivatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deactivated_by")
+    private User deactivatedBy;
+
+    @Column(name = "deactivation_reason", columnDefinition = "TEXT")
+    private String deactivationReason;
+
+    @Column(name = "reactivated_at")
+    private LocalDateTime reactivatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reactivated_by")
+    private User reactivatedBy;
+
+    @Column(name = "reactivation_reason", columnDefinition = "TEXT")
+    private String reactivationReason;
+
     @PrePersist
     protected void onCreate() {
         if (id == null) id = UUID.randomUUID();

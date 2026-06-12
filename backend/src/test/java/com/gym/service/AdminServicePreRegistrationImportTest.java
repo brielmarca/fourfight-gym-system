@@ -1,5 +1,6 @@
 package com.gym.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gym.dto.response.PreRegistrationLeadImportResponse;
 import com.gym.entity.PreRegistrationLead;
 import com.gym.repository.AuditLogRepository;
@@ -40,6 +41,7 @@ class AdminServicePreRegistrationImportTest {
     @Mock private PreRegistrationLeadRepository preRegistrationLeadRepository;
     @Mock private UserRepository userRepository;
     @Mock private MembershipRepository membershipRepository;
+    @Mock private AuthService authService;
 
     private AdminService adminService;
 
@@ -55,7 +57,9 @@ class AdminServicePreRegistrationImportTest {
             preRegistrationProfileRepository,
             preRegistrationLeadRepository,
             userRepository,
-            membershipRepository
+            membershipRepository,
+            authService,
+            new ObjectMapper()
         );
 
         lenient().when(preRegistrationLeadRepository.findAllByStatusNotAndPhoneIsNotNull(anyString())).thenReturn(List.of());

@@ -355,9 +355,14 @@ public class AuthService {
         return TokenPairResponse.of(accessToken, refreshToken, jwtUtil.getExpirationMs());
     }
 
+    @Transactional
+    public void revokeRefreshTokensForUser(UUID userId) {
+        revokeAllUserTokens(userId);
+    }
+
     private void revokeAllUserTokens(UUID userId) {
-        refreshTokenRepository.findValidByUserId(userId)
-            .ifPresent(token -> {
+        refreshTokenRepository.findAllValidByUserId(userId)
+            .forEach(token -> {
                 token.setRevoked(true);
                 refreshTokenRepository.save(token);
             });

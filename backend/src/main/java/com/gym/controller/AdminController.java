@@ -20,10 +20,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import com.gym.dto.request.AdminDeactivateStudentRequest;
 import com.gym.dto.request.AdminUpdateStudentGraduationRequest;
 import com.gym.dto.request.AdminCreateProfessorAssignmentRequest;
 import com.gym.dto.request.AdminCreateProfessorRequest;
 import com.gym.dto.request.AdminUpdateProfessorModalitiesRequest;
+import com.gym.dto.response.AdminDeactivateStudentResponse;
 import com.gym.dto.response.AdminPreRegistrationLeadDetailResponse;
 import com.gym.dto.response.AdminPreRegistrationLeadListItemResponse;
 import com.gym.dto.response.AdminProfessorAssignmentResponse;
@@ -63,6 +65,16 @@ public class AdminController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Page<AdminStudentResponse>> getStudents(@PageableDefault(size = 50) Pageable pageable) {
         return ResponseEntity.ok(adminService.getStudents(pageable));
+    }
+
+    @PostMapping("/students/{userId}/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AdminDeactivateStudentResponse> deactivateStudent(
+        @PathVariable UUID userId,
+        @Valid @RequestBody AdminDeactivateStudentRequest request,
+        @AuthenticationPrincipal JwtUserPrincipal principal
+    ) {
+        return ResponseEntity.ok(adminService.deactivateStudent(userId, principal.id(), request));
     }
 
     @GetMapping("/reports/revenue")

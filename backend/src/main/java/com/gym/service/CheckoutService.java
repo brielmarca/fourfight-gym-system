@@ -8,5 +8,5 @@ import com.gym.security.GymUserDetailsService.JwtUserPrincipal;
 public interface CheckoutService {
     CheckoutResponse processCheckout(CheckoutRequest request, JwtUserPrincipal principal);
     CheckoutResponse processPaymentForm(String paymentId, PaymentFormRequest formRequest, JwtUserPrincipal principal);
-    CheckoutResponse getCheckoutStatus(String paymentId);
+    CheckoutResponse getCheckoutStatus(String paymentId, JwtUserPrincipal principal);
 }

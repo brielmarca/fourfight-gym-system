@@ -61,7 +61,11 @@ public class SecurityConfig {
                 // Stripe webhook (no auth header from Stripe)
                 .requestMatchers(HttpMethod.POST, "/api/stripe/webhook").permitAll()
                 // Public read-only data
-                .requestMatchers("/api/plans/**", "/api/classes/**", "/api/programs/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/plans", "/api/plans/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/plans", "/api/plans/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/plans", "/api/plans/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/plans", "/api/plans/**").hasRole("ADMIN")
+                .requestMatchers("/api/classes/**", "/api/programs/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/schedule").permitAll()
                 // Checkout session status
                 .requestMatchers("/api/checkout/**").authenticated()

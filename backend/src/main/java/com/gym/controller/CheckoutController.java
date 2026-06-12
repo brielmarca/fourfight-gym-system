@@ -42,8 +42,10 @@ public class CheckoutController {
     }
     
     @GetMapping("/{paymentId}/status")
-    public ResponseEntity<CheckoutResponse> getStatus(@PathVariable String paymentId) {
-        CheckoutResponse response = checkoutService.getCheckoutStatus(paymentId);
+    public ResponseEntity<CheckoutResponse> getStatus(
+            @PathVariable String paymentId,
+            @AuthenticationPrincipal JwtUserPrincipal principal) {
+        CheckoutResponse response = checkoutService.getCheckoutStatus(paymentId, principal);
         return ResponseEntity.ok(response);
     }
 }

@@ -52,6 +52,7 @@ public class MembershipController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<MembershipResponse> create(@Valid @RequestBody CreateMembershipRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(membershipService.create(request));
     }

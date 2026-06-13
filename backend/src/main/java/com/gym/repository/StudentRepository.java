@@ -18,4 +18,5 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
     long countByPlanIdAndIsActiveTrue(UUID planId);
 
     Optional<Student> findByEmail(String email);
+    Optional<Student> findByEmailIgnoreCase(String email);
 }

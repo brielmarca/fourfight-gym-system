@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.gym.dto.request.AdminDeactivateStudentRequest;
+import com.gym.dto.request.AdminUpdateStudentGraduationByUserRequest;
 import com.gym.dto.request.AdminUpdateStudentGraduationRequest;
 import com.gym.dto.request.AdminCreateProfessorAssignmentRequest;
 import com.gym.dto.request.AdminCreateProfessorRequest;
@@ -32,6 +33,7 @@ import com.gym.dto.response.AdminProfessorAssignmentResponse;
 import com.gym.dto.response.AdminProfessorResponse;
 import com.gym.dto.response.AdminStudentResponse;
 import com.gym.dto.response.AdminStudentGraduationResponse;
+import com.gym.dto.response.AdminStudentGraduationUpdateResponse;
 import com.gym.dto.response.AuditLogResponse;
 import com.gym.dto.response.DashboardResponse;
 import com.gym.dto.response.PreRegistrationLeadImportResponse;
@@ -75,6 +77,16 @@ public class AdminController {
         @AuthenticationPrincipal JwtUserPrincipal principal
     ) {
         return ResponseEntity.ok(adminService.deactivateStudent(userId, principal.id(), request));
+    }
+
+    @PatchMapping("/students/{userId}/graduation")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AdminStudentGraduationUpdateResponse> updateStudentGraduation(
+        @PathVariable UUID userId,
+        @Valid @RequestBody AdminUpdateStudentGraduationByUserRequest request,
+        @AuthenticationPrincipal JwtUserPrincipal principal
+    ) {
+        return ResponseEntity.ok(adminGraduationService.updateStudentGraduation(userId, principal.id(), request));
     }
 
     @GetMapping("/reports/revenue")

@@ -61,6 +61,10 @@ const queryKeys = {
     all: ["graduations"] as const,
     list: () => [...queryKeys.graduations.all, "list"] as const,
   },
+  graduationOptions: {
+    all: ["graduationOptions"] as const,
+    list: () => [...queryKeys.graduationOptions.all, "list"] as const,
+  },
   adminStudents: {
     all: ["adminStudents"] as const,
     list: (page: number, size: number) => [...queryKeys.adminStudents.all, "list", page, size] as const,

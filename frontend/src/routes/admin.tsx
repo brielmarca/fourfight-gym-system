@@ -30,6 +30,8 @@ import {
   useUpdateVideoLesson,
   useDeactivateVideoLesson,
   useDeactivateAdminStudent,
+  useAdminGraduationOptions,
+  useUpdateAdminStudentGraduation,
 } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -47,7 +49,7 @@ import { Loader2, LogOut, Users, Shield, CreditCard, Clock, MoreHorizontal } fro
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import type { CreateScheduleEntryRequest, Modality } from "@/types";
+import type { CreateScheduleEntryRequest, GraduationModality, Modality } from "@/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -94,6 +96,8 @@ function AdminPage() {
   const updateGraduation = useUpdateAdminGraduation();
   const { data: membershipsData, isLoading: membershipsLoading, error: membershipsError } = useAdminStudents(studentsPage, studentsPageSize);
   const deactivateAdminStudent = useDeactivateAdminStudent();
+  const { data: graduationOptions = [] } = useAdminGraduationOptions(hasRole(["ADMIN"]));
+  const updateStudentGraduation = useUpdateAdminStudentGraduation();
   const { data: plans = [], isLoading: plansLoading } = usePlans();
   const canManageReception = hasRole(["ADMIN"]);
   const canDeactivateStudents = hasRole(["ADMIN"]);
@@ -135,6 +139,11 @@ function AdminPage() {
   const [studentToDeactivate, setStudentToDeactivate] = useState<MembershipItem | null>(null);
   const [deactivationReason, setDeactivationReason] = useState("");
   const [deactivationFeedback, setDeactivationFeedback] = useState<string | null>(null);
+  const [studentToEditGraduation, setStudentToEditGraduation] = useState<MembershipItem | null>(null);
+  const [editGraduationModality, setEditGraduationModality] = useState<string>("");
+  const [editGraduationId, setEditGraduationId] = useState<string>("");
+  const [editGraduationReason, setEditGraduationReason] = useState("");
+  const [editGraduationFeedback, setEditGraduationFeedback] = useState<string | null>(null);
   const [editingVideoLessonId, setEditingVideoLessonId] = useState<string | null>(null);
   const [videoLessonFeedback, setVideoLessonFeedback] = useState<string | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -391,6 +400,39 @@ function AdminPage() {
       setDeactivationFeedback(error instanceof Error ? error.message : "Nao foi possivel desativar o aluno.");
     }
   };
+
+  const openEditGraduationDialog = (student: MembershipItem) => {
+    setStudentToEditGraduation(student);
+    setEditGraduationModality("");
+    setEditGraduationId("");
+    setEditGraduationReason("");
+    setEditGraduationFeedback(null);
+  };
+
+  const handleUpdateStudentGraduation = async () => {
+    if (!studentToEditGraduation || !editGraduationModality || !editGraduationId || !editGraduationReason.trim()) {
+      return;
+    }
+
+    setEditGraduationFeedback(null);
+    try {
+      await updateStudentGraduation.mutateAsync({
+        userId: studentToEditGraduation.userId,
+        payload: {
+          modality: editGraduationModality as GraduationModality,
+          graduationId: editGraduationId,
+          reason: editGraduationReason.trim(),
+        },
+      });
+      setEditGraduationFeedback("Graduação atualizada com sucesso.");
+    } catch (error) {
+      setEditGraduationFeedback(error instanceof Error ? error.message : "Não foi possível atualizar a graduação.");
+    }
+  };
+
+  const filteredGraduationOptions = editGraduationModality
+    ? graduationOptions.filter((opt) => opt.modality === editGraduationModality)
+    : [];
 
   const handleSaveGraduation = async (studentEmail: string, modality: "JIU_JITSU" | "BOXE_KICKBOXING" | "CAPOEIRA" | "MMA", currentFallback: string) => {
     const key = graduationKey(studentEmail, modality);
@@ -877,6 +919,11 @@ function AdminPage() {
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end" className="bg-surface border-border-subtle">
                                     <DropdownMenuItem
+                                      onSelect={() => openEditGraduationDialog(m)}
+                                    >
+                                      Editar graduação
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
                                       className="text-destructive focus:text-destructive"
                                       onSelect={() => openDeactivateStudentDialog(m)}
                                     >
@@ -898,6 +945,130 @@ function AdminPage() {
                     </TableBody>
                   </Table>
                 </div>
+                <Dialog
+                  open={!!studentToEditGraduation}
+                  onOpenChange={(open) => {
+                    if (open || updateStudentGraduation.isPending) return;
+                    setStudentToEditGraduation(null);
+                    setEditGraduationModality("");
+                    setEditGraduationId("");
+                    setEditGraduationReason("");
+                    setEditGraduationFeedback(null);
+                  }}
+                >
+                  <DialogContent className="border-border-subtle bg-surface text-foreground sm:max-w-xl">
+                    <DialogHeader>
+                      <DialogTitle className="font-display tracking-wider">Editar graduação</DialogTitle>
+                      <DialogDescription>
+                        Atualize a graduação de {studentToEditGraduation?.userName || "este aluno"}.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="rounded-md border border-border-subtle bg-background/50 p-3 text-sm">
+                        <p className="font-medium">{studentToEditGraduation?.userName || "Aluno"}</p>
+                        <p className="text-xs text-text-secondary">{studentToEditGraduation?.userEmail || "Sem email"}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs uppercase tracking-[0.2em] text-text-secondary">
+                          Modalidade
+                        </label>
+                        <Select
+                          value={editGraduationModality}
+                          onValueChange={(value) => {
+                            setEditGraduationModality(value);
+                            setEditGraduationId("");
+                          }}
+                          disabled={updateStudentGraduation.isPending || !!editGraduationFeedback}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecionar modalidade" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {modalityOptions.map((mod) => (
+                              <SelectItem key={mod} value={mod}>{modalityLabels[mod]}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs uppercase tracking-[0.2em] text-text-secondary">
+                          Nova graduação
+                        </label>
+                        <Select
+                          value={editGraduationId}
+                          onValueChange={setEditGraduationId}
+                          disabled={!editGraduationModality || updateStudentGraduation.isPending || !!editGraduationFeedback}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={editGraduationModality ? "Selecionar graduação" : "Selecione primeiro a modalidade"} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {filteredGraduationOptions.map((opt) => (
+                              <SelectItem key={opt.id} value={opt.id}>{opt.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="edit-graduation-reason" className="text-xs uppercase tracking-[0.2em] text-text-secondary">
+                          Motivo da alteração
+                        </label>
+                        <Textarea
+                          id="edit-graduation-reason"
+                          maxLength={1000}
+                          placeholder="Descreva o motivo da alteração de graduação."
+                          value={editGraduationReason}
+                          disabled={updateStudentGraduation.isPending || editGraduationFeedback === "Graduação atualizada com sucesso."}
+                          onChange={(event) => setEditGraduationReason(event.target.value)}
+                        />
+                        <div className="flex justify-between gap-3 text-xs text-text-secondary">
+                          <span>Obrigatório. Máximo de 1000 caracteres.</span>
+                          <span>{editGraduationReason.length}/1000</span>
+                        </div>
+                      </div>
+                      {editGraduationFeedback && (
+                        <p
+                          className={
+                            editGraduationFeedback === "Graduação atualizada com sucesso."
+                              ? "text-sm text-emerald-400"
+                              : "text-sm text-destructive"
+                          }
+                        >
+                          {editGraduationFeedback}
+                        </p>
+                      )}
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        disabled={updateStudentGraduation.isPending}
+                        onClick={() => {
+                          setStudentToEditGraduation(null);
+                          setEditGraduationModality("");
+                          setEditGraduationId("");
+                          setEditGraduationReason("");
+                          setEditGraduationFeedback(null);
+                        }}
+                      >
+                        {editGraduationFeedback === "Graduação atualizada com sucesso." ? "Fechar" : "Cancelar"}
+                      </Button>
+                      {editGraduationFeedback !== "Graduação atualizada com sucesso." && (
+                        <Button
+                          disabled={
+                            updateStudentGraduation.isPending ||
+                            !editGraduationModality ||
+                            !editGraduationId ||
+                            !editGraduationReason.trim() ||
+                            editGraduationReason.length > 1000
+                          }
+                          onClick={handleUpdateStudentGraduation}
+                        >
+                          {updateStudentGraduation.isPending ? "A atualizar..." : "Atualizar graduação"}
+                        </Button>
+                      )}
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
                 <Dialog
                   open={!!studentToDeactivate}
                   onOpenChange={(open) => {

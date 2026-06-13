@@ -363,6 +363,21 @@ export interface UpdateAdminGraduationRequest {
   currentLevel: string;
 }
 
+export interface AdminGraduationOption {
+  id: string;
+  name: string;
+  levelOrder: number;
+  modality: GraduationModality;
+  martialArtId: string;
+  martialArtName: string;
+}
+
+export interface UpdateStudentGraduationRequest {
+  modality: GraduationModality;
+  graduationId: string;
+  reason: string;
+}
+
 export interface UpdateUserRequest {
   name?: string;
   phone?: string;

@@ -581,10 +581,16 @@ export const api = {
         method: "POST",
         body: JSON.stringify(data),
       }),
+    listGraduationOptions: () => request<AdminGraduationOption[]>("/admin/graduation-options"),
     updateGraduation: (data: UpdateAdminGraduationRequest) =>
       request<AdminGraduation>("/admin/graduations", {
         method: "PUT",
         body: JSON.stringify(data),
+      }),
+    updateStudentGraduation: (userId: string, payload: UpdateStudentGraduationRequest) =>
+      request<void>(`/admin/students/${userId}/graduation`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
       }),
     getProfessors: () => request<ProfessorSummary[]>("/admin/professors"),
     promoteProfessor: (payload: PromoteProfessorRequest) =>

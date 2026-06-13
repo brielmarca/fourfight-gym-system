@@ -173,6 +173,10 @@ export interface AdminStudent {
   updatedAt?: string | null;
 }
 
+export interface DeactivateStudentRequest {
+  reason: string;
+}
+
 export interface Plan {
   id: string;
   name: string;

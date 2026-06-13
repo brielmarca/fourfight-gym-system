@@ -73,7 +73,7 @@ export {
   useArchivePreRegistration,
 } from "./pre-registrations";
 export { useAdminGraduations, useUpdateAdminGraduation } from "./graduations";
-export { useAdminStudents } from "./admin-students";
+export { useAdminStudents, useDeactivateAdminStudent } from "./admin-students";
 export {
   useProfessors,
   usePromoteProfessor,

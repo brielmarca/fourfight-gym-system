@@ -576,6 +576,11 @@ export const api = {
     listGraduations: () => request<AdminGraduation[]>("/admin/graduations"),
     listStudents: (page = 0, size = 50) =>
       request<PageResponse<AdminStudent>>(`/admin/students?page=${page}&size=${size}`),
+    deactivateStudent: (userId: string, data: DeactivateStudentRequest) =>
+      request<void>(`/admin/students/${userId}/deactivate`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
     updateGraduation: (data: UpdateAdminGraduationRequest) =>
       request<AdminGraduation>("/admin/graduations", {
         method: "PUT",

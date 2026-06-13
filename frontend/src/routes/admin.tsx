@@ -29,6 +29,7 @@ import {
   useCreateVideoLesson,
   useUpdateVideoLesson,
   useDeactivateVideoLesson,
+  useDeactivateAdminStudent,
 } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,13 +43,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, LogOut, Users, Shield, CreditCard, Clock } from "lucide-react";
+import { Loader2, LogOut, Users, Shield, CreditCard, Clock, MoreHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import type { CreateScheduleEntryRequest, Modality } from "@/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: () => {
@@ -59,6 +74,17 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
+type MembershipItem = {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  planName?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  status: string;
+};
+
 function AdminPage() {
   const navigate = useNavigate();
   const { user, hasRole, logout } = useAuth();
@@ -67,8 +93,10 @@ function AdminPage() {
   const { data: graduations = [], isLoading: graduationsLoading } = useAdminGraduations(hasRole(["ADMIN", "MANAGER"]));
   const updateGraduation = useUpdateAdminGraduation();
   const { data: membershipsData, isLoading: membershipsLoading, error: membershipsError } = useAdminStudents(studentsPage, studentsPageSize);
+  const deactivateAdminStudent = useDeactivateAdminStudent();
   const { data: plans = [], isLoading: plansLoading } = usePlans();
   const canManageReception = hasRole(["ADMIN"]);
+  const canDeactivateStudents = hasRole(["ADMIN"]);
   const canManageProfessors = hasRole(["ADMIN", "MANAGER"]);
   const { data: pendingReception = [], isLoading: pendingReceptionLoading } =
     usePendingReceptionRequests(canManageReception);
@@ -104,6 +132,9 @@ function AdminPage() {
   const [assignmentNotes, setAssignmentNotes] = useState("");
   const [professorFeedback, setProfessorFeedback] = useState<string | null>(null);
   const [assignmentFeedback, setAssignmentFeedback] = useState<string | null>(null);
+  const [studentToDeactivate, setStudentToDeactivate] = useState<MembershipItem | null>(null);
+  const [deactivationReason, setDeactivationReason] = useState("");
+  const [deactivationFeedback, setDeactivationFeedback] = useState<string | null>(null);
   const [editingVideoLessonId, setEditingVideoLessonId] = useState<string | null>(null);
   const [videoLessonFeedback, setVideoLessonFeedback] = useState<string | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -178,17 +209,6 @@ function AdminPage() {
       </div>
     );
   }
-
-  type MembershipItem = {
-    id: string;
-    userId: string;
-    userName: string;
-    userEmail: string;
-    planName?: string | null;
-    startDate?: string | null;
-    endDate?: string | null;
-    status: string;
-  };
 
   const memberships = membershipsData as {
     content?: MembershipItem[];
@@ -346,6 +366,31 @@ function AdminPage() {
   );
 
   const graduationKey = (studentEmail: string, modality: string) => `${studentEmail}::${modality}`;
+
+  const openDeactivateStudentDialog = (student: MembershipItem) => {
+    setStudentToDeactivate(student);
+    setDeactivationReason("");
+    setDeactivationFeedback(null);
+  };
+
+  const handleDeactivateStudent = async () => {
+    const reason = deactivationReason.trim();
+    if (!studentToDeactivate || !reason || reason.length > 1000) {
+      return;
+    }
+
+    setDeactivationFeedback(null);
+    try {
+      await deactivateAdminStudent.mutateAsync({
+        userId: studentToDeactivate.userId,
+        payload: { reason },
+      });
+      setDeactivationReason("");
+      setDeactivationFeedback("Aluno desativado com sucesso. A lista foi atualizada.");
+    } catch (error) {
+      setDeactivationFeedback(error instanceof Error ? error.message : "Nao foi possivel desativar o aluno.");
+    }
+  };
 
   const handleSaveGraduation = async (studentEmail: string, modality: "JIU_JITSU" | "BOXE_KICKBOXING" | "CAPOEIRA" | "MMA", currentFallback: string) => {
     const key = graduationKey(studentEmail, modality);
@@ -773,12 +818,13 @@ function AdminPage() {
                         <TableHead className="text-text-secondary">Início</TableHead>
                         <TableHead className="text-text-secondary">Validade</TableHead>
                         <TableHead className="text-text-secondary">Status</TableHead>
+                        {canDeactivateStudents && <TableHead className="text-right text-text-secondary">Ações</TableHead>}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {membershipsError ? (
                         <TableRow className="hover:bg-transparent">
-                          <TableCell colSpan={5} className="text-center py-12 text-destructive">
+                          <TableCell colSpan={canDeactivateStudents ? 6 : 5} className="text-center py-12 text-destructive">
                             Falha ao carregar alunos. {(membershipsError as Error).message}
                           </TableCell>
                         </TableRow>
@@ -820,11 +866,31 @@ function AdminPage() {
                                 {m.status === "ACTIVE" ? "Ativo" : m.status === "EXPIRED" ? "Expirado" : m.status === "REGISTERED" ? "Registado" : "Cancelado"}
                               </Badge>
                             </TableCell>
+                            {canDeactivateStudents && (
+                              <TableCell className="text-right">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                      <span className="sr-only">Abrir ações</span>
+                                      <MoreHorizontal size={16} />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="bg-surface border-border-subtle">
+                                    <DropdownMenuItem
+                                      className="text-destructive focus:text-destructive"
+                                      onSelect={() => openDeactivateStudentDialog(m)}
+                                    >
+                                      Desativar aluno
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </TableCell>
+                            )}
                           </TableRow>
                         ))
                       ) : (
                         <TableRow className="hover:bg-transparent">
-                          <TableCell colSpan={5} className="text-center py-12 text-text-secondary">
+                          <TableCell colSpan={canDeactivateStudents ? 6 : 5} className="text-center py-12 text-text-secondary">
                             {studentsEmptyMessage}
                           </TableCell>
                         </TableRow>
@@ -832,6 +898,81 @@ function AdminPage() {
                     </TableBody>
                   </Table>
                 </div>
+                <Dialog
+                  open={!!studentToDeactivate}
+                  onOpenChange={(open) => {
+                    if (open || deactivateAdminStudent.isPending) return;
+                    setStudentToDeactivate(null);
+                    setDeactivationReason("");
+                    setDeactivationFeedback(null);
+                  }}
+                >
+                  <DialogContent className="border-border-subtle bg-surface text-foreground sm:max-w-xl">
+                    <DialogHeader>
+                      <DialogTitle className="font-display tracking-wider">Desativar aluno</DialogTitle>
+                      <DialogDescription>
+                        Esta ação desativa o acesso de {studentToDeactivate?.userName || "este aluno"}. O histórico,
+                        pagamentos, graduações e registos existentes serão preservados.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                      <div className="rounded-md border border-border-subtle bg-background/50 p-3 text-sm">
+                        <p className="font-medium">{studentToDeactivate?.userName || "Aluno"}</p>
+                        <p className="text-xs text-text-secondary">{studentToDeactivate?.userEmail || "Sem email"}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="deactivation-reason" className="text-xs uppercase tracking-[0.2em] text-text-secondary">
+                          Motivo da desativação
+                        </label>
+                        <Textarea
+                          id="deactivation-reason"
+                          maxLength={1000}
+                          placeholder="Descreva o motivo da desativação."
+                          value={deactivationReason}
+                          disabled={deactivateAdminStudent.isPending || deactivationFeedback?.startsWith("Aluno desativado")}
+                          onChange={(event) => setDeactivationReason(event.target.value)}
+                        />
+                        <div className="flex justify-between gap-3 text-xs text-text-secondary">
+                          <span>Obrigatório. Máximo de 1000 caracteres.</span>
+                          <span>{deactivationReason.length}/1000</span>
+                        </div>
+                      </div>
+                      {deactivationFeedback && (
+                        <p
+                          className={
+                            deactivationFeedback.startsWith("Aluno desativado")
+                              ? "text-sm text-emerald-400"
+                              : "text-sm text-destructive"
+                          }
+                        >
+                          {deactivationFeedback}
+                        </p>
+                      )}
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        disabled={deactivateAdminStudent.isPending}
+                        onClick={() => {
+                          setStudentToDeactivate(null);
+                          setDeactivationReason("");
+                          setDeactivationFeedback(null);
+                        }}
+                      >
+                        {deactivationFeedback?.startsWith("Aluno desativado") ? "Fechar" : "Cancelar"}
+                      </Button>
+                      {!deactivationFeedback?.startsWith("Aluno desativado") && (
+                        <Button
+                          variant="destructive"
+                          disabled={deactivateAdminStudent.isPending || !deactivationReason.trim() || deactivationReason.length > 1000}
+                          onClick={handleDeactivateStudent}
+                        >
+                          {deactivateAdminStudent.isPending ? "A desativar..." : "Desativar"}
+                        </Button>
+                      )}
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </CardContent>
             </Card>
           </TabsContent>

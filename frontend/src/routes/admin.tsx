@@ -96,7 +96,7 @@ function AdminPage() {
   const updateGraduation = useUpdateAdminGraduation();
   const { data: membershipsData, isLoading: membershipsLoading, error: membershipsError } = useAdminStudents(studentsPage, studentsPageSize);
   const deactivateAdminStudent = useDeactivateAdminStudent();
-  const { data: graduationOptions = [] } = useAdminGraduationOptions(hasRole(["ADMIN"]));
+  const { data: graduationOptions = [], isLoading: graduationOptionsLoading } = useAdminGraduationOptions(hasRole(["ADMIN"]));
   const updateStudentGraduation = useUpdateAdminStudentGraduation();
   const { data: plans = [], isLoading: plansLoading } = usePlans();
   const canManageReception = hasRole(["ADMIN"]);
@@ -431,7 +431,13 @@ function AdminPage() {
   };
 
   const filteredGraduationOptions = editGraduationModality
-    ? graduationOptions.filter((opt) => opt.modality === editGraduationModality)
+    ? graduationOptions
+        .filter((opt) => opt.modality === editGraduationModality)
+        .sort((a, b) => {
+          const orderDiff = (a.levelOrder ?? 0) - (b.levelOrder ?? 0);
+          if (orderDiff !== 0) return orderDiff;
+          return a.name.localeCompare(b.name);
+        })
     : [];
 
   const handleSaveGraduation = async (studentEmail: string, modality: "JIU_JITSU" | "BOXE_KICKBOXING" | "CAPOEIRA" | "MMA", currentFallback: string) => {
@@ -1003,9 +1009,19 @@ function AdminPage() {
                             <SelectValue placeholder={editGraduationModality ? "Selecionar graduação" : "Selecione primeiro a modalidade"} />
                           </SelectTrigger>
                           <SelectContent>
-                            {filteredGraduationOptions.map((opt) => (
-                              <SelectItem key={opt.id} value={opt.id}>{opt.name}</SelectItem>
-                            ))}
+                            {graduationOptionsLoading ? (
+                              <div className="px-2 py-4 text-center text-sm text-text-secondary">
+                                A carregar graduações...
+                              </div>
+                            ) : filteredGraduationOptions.length === 0 ? (
+                              <div className="px-2 py-4 text-center text-sm text-text-secondary">
+                                Nenhuma graduação cadastrada para esta modalidade.
+                              </div>
+                            ) : (
+                              filteredGraduationOptions.map((opt) => (
+                                <SelectItem key={opt.id} value={opt.id}>{opt.name}</SelectItem>
+                              ))
+                            )}
                           </SelectContent>
                         </Select>
                       </div>

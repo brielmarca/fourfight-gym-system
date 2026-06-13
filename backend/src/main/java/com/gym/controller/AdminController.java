@@ -27,6 +27,7 @@ import com.gym.dto.request.AdminCreateProfessorAssignmentRequest;
 import com.gym.dto.request.AdminCreateProfessorRequest;
 import com.gym.dto.request.AdminUpdateProfessorModalitiesRequest;
 import com.gym.dto.response.AdminDeactivateStudentResponse;
+import com.gym.dto.response.AdminGraduationOptionResponse;
 import com.gym.dto.response.AdminPreRegistrationLeadDetailResponse;
 import com.gym.dto.response.AdminPreRegistrationLeadListItemResponse;
 import com.gym.dto.response.AdminProfessorAssignmentResponse;
@@ -124,6 +125,12 @@ public class AdminController {
     @GetMapping("/graduations")
     public ResponseEntity<List<AdminStudentGraduationResponse>> getAdminGraduations() {
         return ResponseEntity.ok(adminGraduationService.listAdminGraduations());
+    }
+
+    @GetMapping("/graduation-options")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<AdminGraduationOptionResponse>> getGraduationOptions() {
+        return ResponseEntity.ok(adminGraduationService.listGraduationOptions());
     }
 
     @PutMapping("/graduations")

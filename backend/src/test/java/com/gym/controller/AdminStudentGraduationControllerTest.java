@@ -1,5 +1,6 @@
 package com.gym.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gym.entity.AuditLog;
 import com.gym.entity.Graduation;
@@ -268,6 +269,73 @@ class AdminStudentGraduationControllerTest {
             .andExpect(jsonPath("$[0].studentEmail").exists());
     }
 
+    @Test
+    void unauthenticatedCannotListGraduationOptions() throws Exception {
+        mockMvc.perform(get("/api/admin/graduation-options"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void clientCannotListGraduationOptions() throws Exception {
+        mockMvc.perform(get("/api/admin/graduation-options")
+                .header("Authorization", bearer(client)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void managerCannotListGraduationOptions() throws Exception {
+        mockMvc.perform(get("/api/admin/graduation-options")
+                .header("Authorization", bearer(manager)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminCanListGraduationOptionsWithIdsAndMetadata() throws Exception {
+        String response = mockMvc.perform(get("/api/admin/graduation-options")
+                .header("Authorization", bearer(admin)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").exists())
+            .andExpect(jsonPath("$[0].name").exists())
+            .andExpect(jsonPath("$[0].levelOrder").exists())
+            .andExpect(jsonPath("$[0].modality").exists())
+            .andExpect(jsonPath("$[0].martialArtId").exists())
+            .andExpect(jsonPath("$[0].martialArtName").exists())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        JsonNode options = objectMapper.readTree(response);
+        JsonNode jiuJitsuOption = findOptionById(options, whiteBelt.getId());
+        org.assertj.core.api.Assertions.assertThat(jiuJitsuOption).isNotNull();
+        org.assertj.core.api.Assertions.assertThat(jiuJitsuOption.get("name").asText()).isEqualTo("Branca");
+        org.assertj.core.api.Assertions.assertThat(jiuJitsuOption.get("levelOrder").asInt()).isEqualTo(1);
+        org.assertj.core.api.Assertions.assertThat(jiuJitsuOption.get("modality").asText()).isEqualTo("JIU_JITSU");
+        org.assertj.core.api.Assertions.assertThat(jiuJitsuOption.get("martialArtId").asText()).isEqualTo(jiuJitsu.getId().toString());
+        org.assertj.core.api.Assertions.assertThat(jiuJitsuOption.get("martialArtName").asText()).isEqualTo("Jiu-Jitsu");
+
+        JsonNode boxeOption = findOptionById(options, boxingBeginner.getId());
+        org.assertj.core.api.Assertions.assertThat(boxeOption).isNotNull();
+        org.assertj.core.api.Assertions.assertThat(boxeOption.get("modality").asText()).isEqualTo("BOXE_KICKBOXING");
+        org.assertj.core.api.Assertions.assertThat(boxeOption.get("martialArtName").asText()).isEqualTo("Boxe / Kickboxing");
+    }
+
+    @Test
+    void graduationOptionsAreStableSorted() throws Exception {
+        String response = mockMvc.perform(get("/api/admin/graduation-options")
+                .header("Authorization", bearer(admin)))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        JsonNode options = objectMapper.readTree(response);
+        for (int index = 1; index < options.size(); index++) {
+            JsonNode previous = options.get(index - 1);
+            JsonNode current = options.get(index);
+            org.assertj.core.api.Assertions.assertThat(compareOptionOrder(previous, current)).isLessThanOrEqualTo(0);
+        }
+    }
+
     private String validPayload(UUID graduationId, String modality) throws Exception {
         return objectMapper.writeValueAsString(Map.of(
             "modality", modality,
@@ -306,5 +374,41 @@ class AdminStudentGraduationControllerTest {
                 .levelOrder(levelOrder)
                 .martialArt(martialArt)
                 .build()));
+    }
+
+    private JsonNode findOptionById(JsonNode options, UUID id) {
+        for (JsonNode option : options) {
+            if (id.toString().equals(option.get("id").asText())) {
+                return option;
+            }
+        }
+        return null;
+    }
+
+    private int compareOptionOrder(JsonNode left, JsonNode right) {
+        int modalityCompare = Integer.compare(
+            modalitySortIndex(left.get("modality").asText()),
+            modalitySortIndex(right.get("modality").asText())
+        );
+        if (modalityCompare != 0) {
+            return modalityCompare;
+        }
+
+        int levelCompare = Integer.compare(left.get("levelOrder").asInt(), right.get("levelOrder").asInt());
+        if (levelCompare != 0) {
+            return levelCompare;
+        }
+
+        return left.get("name").asText().compareToIgnoreCase(right.get("name").asText());
+    }
+
+    private int modalitySortIndex(String modality) {
+        return switch (modality) {
+            case "JIU_JITSU" -> 0;
+            case "BOXE_KICKBOXING" -> 1;
+            case "CAPOEIRA" -> 2;
+            case "MMA" -> 3;
+            default -> 4;
+        };
     }
 }

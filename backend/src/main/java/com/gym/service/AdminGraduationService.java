@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gym.dto.request.AdminUpdateStudentGraduationByUserRequest;
 import com.gym.dto.request.AdminUpdateStudentGraduationRequest;
+import com.gym.dto.response.AdminGraduationOptionResponse;
 import com.gym.dto.response.AdminStudentGraduationResponse;
 import com.gym.dto.response.AdminStudentGraduationUpdateResponse;
 import com.gym.entity.AuditLog;
@@ -49,6 +50,13 @@ public class AdminGraduationService {
         "livecheck",
         "program prune",
         "test"
+    );
+
+    private static final List<String> MODALITY_ORDER = List.of(
+        "JIU_JITSU",
+        "BOXE_KICKBOXING",
+        "CAPOEIRA",
+        "MMA"
     );
 
     private final MembershipRepository membershipRepository;
@@ -116,6 +124,27 @@ public class AdminGraduationService {
 
         response.sort(Comparator.comparing(AdminStudentGraduationResponse::studentName, String.CASE_INSENSITIVE_ORDER));
         return response;
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdminGraduationOptionResponse> listGraduationOptions() {
+        return graduationRepository.findAll().stream()
+            .map(graduation -> {
+                MartialArt martialArt = graduation.getMartialArt();
+                return new AdminGraduationOptionResponse(
+                    graduation.getId(),
+                    graduation.getName(),
+                    graduation.getLevelOrder(),
+                    toModalityKey(martialArt.getName()),
+                    martialArt.getId(),
+                    martialArt.getName()
+                );
+            })
+            .sorted(Comparator
+                .comparingInt((AdminGraduationOptionResponse option) -> modalitySortIndex(option.modality()))
+                .thenComparing(AdminGraduationOptionResponse::levelOrder)
+                .thenComparing(AdminGraduationOptionResponse::name, String.CASE_INSENSITIVE_ORDER))
+            .toList();
     }
 
     @Transactional
@@ -315,5 +344,10 @@ public class AdminGraduationService {
             case "mma" -> "MMA";
             default -> martialArtName;
         };
+    }
+
+    private int modalitySortIndex(String modality) {
+        int index = MODALITY_ORDER.indexOf(modality);
+        return index >= 0 ? index : MODALITY_ORDER.size();
     }
 }

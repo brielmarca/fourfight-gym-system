@@ -1,25 +1,36 @@
 package com.gym.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.gym.dto.request.AdminUpdateStudentGraduationByUserRequest;
 import com.gym.dto.request.AdminUpdateStudentGraduationRequest;
 import com.gym.dto.response.AdminStudentGraduationResponse;
+import com.gym.dto.response.AdminStudentGraduationUpdateResponse;
+import com.gym.entity.AuditLog;
 import com.gym.entity.Graduation;
 import com.gym.entity.MartialArt;
 import com.gym.entity.Membership;
 import com.gym.entity.Student;
 import com.gym.entity.StudentMartialArt;
+import com.gym.entity.User;
+import com.gym.exception.BusinessRuleException;
 import com.gym.exception.ResourceNotFoundException;
 import com.gym.exception.ValidationException;
+import com.gym.repository.AuditLogRepository;
 import com.gym.repository.GraduationRepository;
 import com.gym.repository.MartialArtRepository;
 import com.gym.repository.MembershipRepository;
 import com.gym.repository.StudentMartialArtRepository;
 import com.gym.repository.StudentRepository;
+import com.gym.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,19 +56,28 @@ public class AdminGraduationService {
     private final MartialArtRepository martialArtRepository;
     private final GraduationRepository graduationRepository;
     private final StudentMartialArtRepository studentMartialArtRepository;
+    private final UserRepository userRepository;
+    private final AuditLogRepository auditLogRepository;
+    private final ObjectMapper objectMapper;
 
     public AdminGraduationService(
         MembershipRepository membershipRepository,
         StudentRepository studentRepository,
         MartialArtRepository martialArtRepository,
         GraduationRepository graduationRepository,
-        StudentMartialArtRepository studentMartialArtRepository
+        StudentMartialArtRepository studentMartialArtRepository,
+        UserRepository userRepository,
+        AuditLogRepository auditLogRepository,
+        ObjectMapper objectMapper
     ) {
         this.membershipRepository = membershipRepository;
         this.studentRepository = studentRepository;
         this.martialArtRepository = martialArtRepository;
         this.graduationRepository = graduationRepository;
         this.studentMartialArtRepository = studentMartialArtRepository;
+        this.userRepository = userRepository;
+        this.auditLogRepository = auditLogRepository;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional(readOnly = true)
@@ -104,8 +124,7 @@ public class AdminGraduationService {
         Student student = studentRepository.findByEmail(email)
             .orElseThrow(() -> new ResourceNotFoundException("Student", email));
 
-        MartialArt martialArt = martialArtRepository.findByName(toMartialArtName(request.modality()))
-            .orElseThrow(() -> new ValidationException("Modalidade inválida para graduação"));
+        MartialArt martialArt = findMartialArtByModality(request.modality());
 
         Graduation graduation = graduationRepository
             .findByMartialArtId(martialArt.getId(), PageRequest.of(0, 100))
@@ -132,6 +151,122 @@ public class AdminGraduationService {
         );
     }
 
+    @Transactional
+    public AdminStudentGraduationUpdateResponse updateStudentGraduation(
+        UUID targetUserId,
+        UUID actorUserId,
+        AdminUpdateStudentGraduationByUserRequest request
+    ) {
+        String reason = request.reason() == null ? "" : request.reason().trim();
+        if (reason.isBlank()) {
+            throw new ValidationException(Map.of("reason", "Reason is required"));
+        }
+        if (reason.length() > 1000) {
+            throw new ValidationException(Map.of("reason", "Reason must be at most 1000 characters"));
+        }
+
+        User actor = userRepository.findById(actorUserId)
+            .orElseThrow(() -> new ResourceNotFoundException("User", actorUserId));
+        if (actor.getRole() != User.Role.ADMIN) {
+            throw new BusinessRuleException("ADMIN_REQUIRED", "Only admins can update student graduation");
+        }
+
+        User target = userRepository.findById(targetUserId)
+            .orElseThrow(() -> new ResourceNotFoundException("User", targetUserId));
+        validateTargetStudent(target, targetUserId);
+
+        MartialArt martialArt = findMartialArtByModality(request.modality());
+        Graduation newGraduation = graduationRepository.findById(request.graduationId())
+            .orElseThrow(() -> new ResourceNotFoundException("Graduation", request.graduationId()));
+        if (!newGraduation.getMartialArt().getId().equals(martialArt.getId())) {
+            throw new ValidationException(Map.of("graduationId", "Graduation does not belong to selected modality"));
+        }
+
+        Student student = studentRepository.findByEmailIgnoreCase(target.getEmail())
+            .orElseThrow(() -> new ResourceNotFoundException("Student", target.getEmail()));
+        StudentMartialArt record = studentMartialArtRepository
+            .findByStudentIdAndMartialArtId(student.getId(), martialArt.getId())
+            .orElseThrow(() -> new ResourceNotFoundException("StudentMartialArt", student.getId()));
+
+        Graduation oldGraduation = record.getGraduation();
+        if (oldGraduation.getId().equals(newGraduation.getId())) {
+            return toUpdateResponse(target, student, request.modality(), oldGraduation, newGraduation, record.getUpdatedAt());
+        }
+
+        record.setGraduation(newGraduation);
+        StudentMartialArt saved = studentMartialArtRepository.save(record);
+        auditLogRepository.save(AuditLog.builder()
+            .actor(actor)
+            .action(AuditLog.AuditAction.UPDATE)
+            .entityType("StudentMartialArt")
+            .entityId(saved.getId())
+            .diffJson(buildGraduationAuditJson(actor, target, student, request.modality(), oldGraduation, newGraduation, reason))
+            .build());
+
+        return toUpdateResponse(target, student, request.modality(), oldGraduation, saved.getGraduation(), saved.getUpdatedAt());
+    }
+
+    private void validateTargetStudent(User target, UUID targetUserId) {
+        if (target.getRole() != User.Role.CLIENT) {
+            throw new BusinessRuleException("STUDENT_ONLY", "Only client student accounts can have graduation updated");
+        }
+        if (!Boolean.TRUE.equals(target.getIsActive())) {
+            throw new BusinessRuleException("INACTIVE_STUDENT", "Student account is inactive");
+        }
+        if (target.getDeactivatedAt() != null) {
+            throw new BusinessRuleException("DEACTIVATED_STUDENT", "Student account is deactivated");
+        }
+        if (target.getId() == null || !target.getId().equals(targetUserId)) {
+            throw new ValidationException("Invalid target student");
+        }
+    }
+
+    private AdminStudentGraduationUpdateResponse toUpdateResponse(
+        User target,
+        Student student,
+        String modality,
+        Graduation oldGraduation,
+        Graduation newGraduation,
+        java.time.LocalDateTime updatedAt
+    ) {
+        return new AdminStudentGraduationUpdateResponse(
+            target.getId(),
+            target.getEmail(),
+            student.getName(),
+            modality,
+            oldGraduation.getName(),
+            newGraduation.getName(),
+            updatedAt
+        );
+    }
+
+    private String buildGraduationAuditJson(
+        User actor,
+        User target,
+        Student student,
+        String modality,
+        Graduation oldGraduation,
+        Graduation newGraduation,
+        String reason
+    ) {
+        ObjectNode root = objectMapper.createObjectNode();
+        root.put("actorUserId", actor.getId().toString());
+        root.put("targetUserId", target.getId().toString());
+        root.put("studentId", student.getId().toString());
+        root.put("studentEmail", target.getEmail());
+        root.put("modality", modality);
+        root.put("oldGraduationId", oldGraduation.getId().toString());
+        root.put("oldGraduation", oldGraduation.getName());
+        root.put("newGraduationId", newGraduation.getId().toString());
+        root.put("newGraduation", newGraduation.getName());
+        root.put("reason", reason);
+        try {
+            return objectMapper.writeValueAsString(root);
+        } catch (JsonProcessingException ex) {
+            throw new IllegalStateException("Failed to build graduation audit log", ex);
+        }
+    }
+
     private String findNextGraduationName(java.util.UUID martialArtId, int currentOrder) {
         return graduationRepository
             .findByMartialArtId(martialArtId, PageRequest.of(0, 100))
@@ -151,12 +286,22 @@ public class AdminGraduationService {
         return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
     }
 
-    private String toMartialArtName(String modality) {
+    private MartialArt findMartialArtByModality(String modality) {
+        for (String name : martialArtNamesForModality(modality)) {
+            java.util.Optional<MartialArt> martialArt = martialArtRepository.findByName(name);
+            if (martialArt.isPresent()) {
+                return martialArt.get();
+            }
+        }
+        throw new ValidationException("Modalidade inválida para graduação");
+    }
+
+    private List<String> martialArtNamesForModality(String modality) {
         return switch (modality) {
-            case "JIU_JITSU" -> "Jiu-Jitsu";
-            case "BOXE_KICKBOXING" -> "Boxe/Kickboxing";
-            case "CAPOEIRA" -> "Capoeira";
-            case "MMA" -> "MMA";
+            case "JIU_JITSU" -> List.of("Jiu-Jitsu");
+            case "BOXE_KICKBOXING" -> List.of("Boxe / Kickboxing", "Boxe/Kickboxing");
+            case "CAPOEIRA" -> List.of("Capoeira");
+            case "MMA" -> List.of("MMA");
             default -> throw new ValidationException("Modalidade inválida");
         };
     }
@@ -165,7 +310,7 @@ public class AdminGraduationService {
         String normalized = martialArtName == null ? "" : martialArtName.trim().toLowerCase(Locale.ROOT);
         return switch (normalized) {
             case "jiu-jitsu" -> "JIU_JITSU";
-            case "boxe/kickboxing" -> "BOXE_KICKBOXING";
+            case "boxe/kickboxing", "boxe / kickboxing" -> "BOXE_KICKBOXING";
             case "capoeira" -> "CAPOEIRA";
             case "mma" -> "MMA";
             default -> martialArtName;

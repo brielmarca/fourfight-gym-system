@@ -31,7 +31,7 @@ curl -I https://4fourfight.com
 ## Deploy backend (VPS)
 
 ```bash
-ssh root@178.105.215.50
+ssh <deploy-user>@<vps-host>
 cd /opt/fourfight/fourfight-gym-system
 git pull origin main
 cd /opt/fourfight

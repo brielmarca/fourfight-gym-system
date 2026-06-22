@@ -5,7 +5,7 @@ spring:
   datasource:
     url: jdbc:postgresql://127.0.0.1:5432/gymdb
     username: ${DB_USERNAME:gymadmin}
-    password: ${DB_PASSWORD:gymsecretpassword}
+    password: ${DB_PASSWORD:}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -34,7 +34,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,beans,env
+        include: health,info
   endpoint:
     health:
       show-details: always

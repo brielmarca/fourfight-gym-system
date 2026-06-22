@@ -3,7 +3,6 @@ package com.gym.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,9 +38,6 @@ public class CheckoutServiceImp implements CheckoutService {
     private final PaymentRepository paymentRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
-
-    @Value("${admin.password:Admin123!}")
-    private String defaultAdminPassword;
 
     @Override
     @Transactional

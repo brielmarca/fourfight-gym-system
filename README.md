@@ -47,14 +47,14 @@ Plataforma web completa da 4Four Fight Academy, com site publico, area de aluno,
 
 ### Backend
 
-- Host: VPS Ubuntu (`178.105.215.50`)
+- Host: VPS Ubuntu (`<vps-host>`)
 - Repo na VPS: `/opt/fourfight/fourfight-gym-system`
 - Stack runtime: `/opt/fourfight` com `docker compose`
 
 Fluxo de atualizacao backend:
 
 ```bash
-ssh root@178.105.215.50
+ssh <deploy-user>@<vps-host>
 cd /opt/fourfight/fourfight-gym-system
 git pull origin main
 cd /opt/fourfight

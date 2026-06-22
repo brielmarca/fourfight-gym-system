@@ -7,15 +7,12 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import com.gym.entity.Graduation;
 import com.gym.entity.MartialArt;
 import com.gym.entity.Plan;
-import com.gym.entity.User;
 import com.gym.repository.GraduationRepository;
 import com.gym.repository.MartialArtRepository;
 import com.gym.repository.PlanRepository;
-import com.gym.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,9 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class DataInitializer {
 
-    private final UserRepository userRepository;
     private final PlanRepository planRepository;
-    private final PasswordEncoder passwordEncoder;
     private final MartialArtRepository martialArtRepository;
     private final GraduationRepository graduationRepository;
 
@@ -36,37 +31,15 @@ public class DataInitializer {
         log.info("[STARTUP] ========== DataInitializer bean created (NOT prod profile) ==========");
     }
 
-    private static final String ADMIN_EMAIL = "admin@gym.com";
-    private static final String ADMIN_PASSWORD = "Admin123!";
-
     @Bean
     CommandLineRunner initData() {
         return args -> {
             log.info("[STARTUP] ========== START CommandLineRunner initData ==========");
-            initAdminUser();
             initPlans();
             initMartialArts();
             initGraduations();
             log.info("[STARTUP] ========== END CommandLineRunner initData ==========");
         };
-    }
-
-    private void initAdminUser() {
-        log.info("[STARTUP] START initAdminUser");
-        if (userRepository.existsByEmail(ADMIN_EMAIL)) {
-            log.info("[STARTUP] Admin user already exists: {}", ADMIN_EMAIL);
-            return;
-        }
-
-        User admin = User.builder()
-                .name("System Admin")
-                .email(ADMIN_EMAIL)
-                .passwordHash(passwordEncoder.encode(ADMIN_PASSWORD))
-                .role(User.Role.ADMIN)
-                .isActive(true)
-                .build();
-        userRepository.save(admin);
-        log.info("[STARTUP] END initAdminUser - created admin: {}", ADMIN_EMAIL);
     }
 
     private void initPlans() {

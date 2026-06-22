@@ -11,8 +11,7 @@ import com.gym.security.GymUserDetailsService.JwtUserPrincipal;
 import com.gym.service.ReceptionCheckoutService;
 import com.gym.service.StripeCheckoutService;
 import com.gym.service.StripeWebhookService;
-import com.stripe.exception.StripeException;
-import com.stripe.model.Subscription;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -105,31 +104,6 @@ public class StripeController {
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             log.error("Webhook processing failed", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @PostMapping("/subscription/cancel")
-    public ResponseEntity<Void> cancelSubscription(@AuthenticationPrincipal JwtUserPrincipal principal) {
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        List<Membership> memberships = membershipRepository.findByUserIdAndStatus(
-                principal.id(), Membership.MembershipStatus.ACTIVE);
-        Membership membership = memberships.isEmpty() ? null : memberships.get(0);
-
-        if (membership == null || membership.getStripeSubscriptionId() == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        try {
-            Subscription subscription = Subscription.retrieve(membership.getStripeSubscriptionId());
-            subscription.cancel();
-            membership.setCancelAtPeriodEnd(true);
-            membershipRepository.save(membership);
-            return ResponseEntity.ok().build();
-        } catch (StripeException e) {
-            log.error("Failed to cancel Stripe subscription", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

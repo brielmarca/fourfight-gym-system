@@ -69,6 +69,15 @@ public class Membership {
     @Builder.Default
     private Boolean cancelAtPeriodEnd = false;
 
+    @Column(name = "cancellation_requested_at")
+    private LocalDateTime cancellationRequestedAt;
+
+    @Column(name = "cancellation_reason", length = 500)
+    private String cancellationReason;
+
+    @Column(name = "cancellation_source", length = 30)
+    private String cancellationSource;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreatedDate
     private LocalDateTime createdAt;
@@ -106,5 +115,9 @@ public class Membership {
 
     public enum MembershipStatus {
         ACTIVE, EXPIRED, CANCELLED, SUSPENDED, PENDING_APPROVAL, PENDING_PAYMENT, REJECTED
+    }
+
+    public enum CancellationSource {
+        STUDENT_SELF_SERVICE, ADMIN, STRIPE_WEBHOOK, SYSTEM
     }
 }

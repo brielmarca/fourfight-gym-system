@@ -18,6 +18,7 @@ export {
   useCreateMembership,
   useRenewMembership,
   useCancelMembership,
+  useCancelMyMembership,
 } from "./memberships";
 export {
   useClasses,
@@ -52,7 +53,6 @@ export { useCreateContact, useBookTrial } from "./contacts";
 export {
   useStripeCheckout,
   useStripeSubscription,
-  useCancelStripeSubscription,
   useCreateReceptionRequest,
   usePendingReceptionRequests,
   useApproveReceptionRequest,

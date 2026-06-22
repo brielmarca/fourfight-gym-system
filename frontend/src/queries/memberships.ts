@@ -4,6 +4,7 @@ import queryKeys from "./query-keys";
 import type {
   Membership,
   PageResponse,
+  CancelMyMembershipResponse,
   CreateMembershipRequest,
   CheckoutRequest,
   PaymentFormRequest,
@@ -78,6 +79,17 @@ export function useCancelMembership() {
 
   return useMutation({
     mutationFn: (id: string) => api.membership.cancel(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.memberships.my() });
+    },
+  });
+}
+
+export function useCancelMyMembership() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (reason?: string) => api.membership.cancelMy(reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.memberships.my() });
     },

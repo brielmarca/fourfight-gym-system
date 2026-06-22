@@ -43,18 +43,6 @@ export function useStripeSubscription() {
   });
 }
 
-export function useCancelStripeSubscription() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: () => api.stripe.cancelSubscription(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.stripe.subscription() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.memberships.my() });
-    },
-  });
-}
-
 export function useCreateReceptionRequest() {
   return useMutation({
     mutationFn: (planId: string) => api.stripe.createReceptionRequest(planId),

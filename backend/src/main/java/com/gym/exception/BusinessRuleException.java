@@ -17,6 +17,10 @@ public class BusinessRuleException extends RuntimeException {
         this.code = "BUSINESS_RULE";
     }
 
+    public String getCode() {
+        return code;
+    }
+
     public ProblemDetail toProblemDetail() {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, getMessage());
         problem.setTitle("Business Rule Violation");

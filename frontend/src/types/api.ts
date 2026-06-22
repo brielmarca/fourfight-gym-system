@@ -154,7 +154,7 @@ export interface Membership {
   endDate: string;
   status: "ACTIVE" | "EXPIRED" | "CANCELLED" | "SUSPENDED" | "PENDING_PAYMENT" | "PENDING_APPROVAL" | "REJECTED";
   autoRenew: boolean;
-  stripeSubscriptionId?: string | null;
+  stripePayment: boolean;
   currentPeriodEnd?: string | null;
   cancelAtPeriodEnd?: boolean | null;
 }
@@ -495,6 +495,13 @@ export interface PaymentFormRequest {
   expirationDate?: string;
   cvv?: string;
   paymentId: string;
+}
+
+export interface CancelMyMembershipResponse {
+  status: "ACTIVE" | "EXPIRED" | "CANCELLED" | "SUSPENDED" | "PENDING_PAYMENT" | "PENDING_APPROVAL" | "REJECTED";
+  cancellationScheduled: boolean;
+  accessUntil: string;
+  message: string;
 }
 
 export interface CheckoutResponse {

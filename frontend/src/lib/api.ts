@@ -492,6 +492,11 @@ export const api = {
       }),
     renew: (id: string) => request<Membership>(`/memberships/${id}/renew`, { method: "POST" }),
     cancel: (id: string) => request<Membership>(`/memberships/${id}/cancel`, { method: "POST" }),
+    cancelMy: (reason?: string) =>
+      request<CancelMyMembershipResponse>("/memberships/me/cancel", {
+        method: "POST",
+        body: reason ? JSON.stringify({ reason }) : "{}",
+      }),
     initiate: (data: CheckoutRequest) =>
       request<CheckoutResponse>("/checkout", {
         method: "POST",
@@ -714,10 +719,6 @@ export const api = {
         cancelAtPeriodEnd: boolean;
         stripeSubscriptionId: string;
       }>("/stripe/subscription"),
-    cancelSubscription: () =>
-      request<void>("/stripe/subscription/cancel", {
-        method: "POST",
-      }),
   },
 
   isAuthenticated,
@@ -780,4 +781,5 @@ export type {
   CreateProfessorAssignmentRequest,
   VideoLesson,
   UpsertVideoLessonRequest,
+  CancelMyMembershipResponse,
 } from "@/types/api";

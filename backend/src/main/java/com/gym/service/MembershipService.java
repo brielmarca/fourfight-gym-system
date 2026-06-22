@@ -127,6 +127,11 @@ public class MembershipService {
             throw new BusinessRuleException("NO_ACTIVE_MEMBERSHIP", "Nao tens uma mensalidade ativa para cancelar.");
         }
 
+        if (activeMemberships.size() > 1) {
+            log.warn("Multiple active memberships found for user {}; rejecting cancellation request", userId);
+            throw new BusinessRuleException("MULTIPLE_ACTIVE_MEMBERSHIPS", "Existem multiplas mensalidades ativas. Contacta a rececao para regularizar.");
+        }
+
         Membership membership = activeMemberships.get(0);
 
         if (Boolean.TRUE.equals(membership.getCancelAtPeriodEnd())) {

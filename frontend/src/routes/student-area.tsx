@@ -541,7 +541,7 @@ function MembershipTabContent({ membership }: { membership: Membership | undefin
               {membership.status === "ACTIVE" ? "Ativo" : "Inativo"}
             </Badge>
           </div>
-          {membership.stripeSubscriptionId && (
+          {membership.stripePayment && (
             <div className="flex justify-between py-2 border-b border-border-subtle">
               <span className="text-text-secondary">Pagamento</span>
               <Badge className="bg-primary/20 text-primary border-primary/30">
@@ -552,7 +552,7 @@ function MembershipTabContent({ membership }: { membership: Membership | undefin
           {accessUntil && (
             <div className="flex justify-between py-2 border-b border-border-subtle">
               <span className="text-text-secondary">
-                {membership.cancelAtPeriodEnd ? "Acesso até" : membership.stripeSubscriptionId ? "Próxima renovação" : "Fim do plano"}
+                {membership.cancelAtPeriodEnd ? "Acesso até" : membership.stripePayment ? "Próxima renovação" : "Fim do plano"}
               </span>
               <span>{formattedAccessUntil}</span>
             </div>

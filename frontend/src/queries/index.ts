@@ -53,7 +53,6 @@ export { useCreateContact, useBookTrial } from "./contacts";
 export {
   useStripeCheckout,
   useStripeSubscription,
-  useCancelStripeSubscription,
   useCreateReceptionRequest,
   usePendingReceptionRequests,
   useApproveReceptionRequest,

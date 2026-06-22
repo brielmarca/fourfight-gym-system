@@ -87,6 +87,11 @@ public class MembershipController {
             return ResponseEntity.ok(response);
         } catch (BusinessRuleException e) {
             log.warn("Membership cancellation rejected for user {}: {}", principal.id(), e.getMessage());
+            if ("STRIPE_ERROR".equals(e.getCode())) {
+                ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, e.getMessage());
+                problem.setTitle("Payment Provider Error");
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(problem);
+            }
             return ResponseEntity.unprocessableEntity().body(e.toProblemDetail());
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.toProblemDetail());

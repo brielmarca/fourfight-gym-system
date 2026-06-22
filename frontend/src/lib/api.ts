@@ -719,10 +719,6 @@ export const api = {
         cancelAtPeriodEnd: boolean;
         stripeSubscriptionId: string;
       }>("/stripe/subscription"),
-    cancelSubscription: () =>
-      request<void>("/stripe/subscription/cancel", {
-        method: "POST",
-      }),
   },
 
   isAuthenticated,

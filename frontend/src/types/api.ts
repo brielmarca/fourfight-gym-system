@@ -497,6 +497,13 @@ export interface PaymentFormRequest {
   paymentId: string;
 }
 
+export interface CancelMyMembershipResponse {
+  status: "ACTIVE" | "EXPIRED" | "CANCELLED" | "SUSPENDED" | "PENDING_PAYMENT" | "PENDING_APPROVAL" | "REJECTED";
+  cancellationScheduled: boolean;
+  accessUntil: string;
+  message: string;
+}
+
 export interface CheckoutResponse {
   id: string;
   name: string;

@@ -13,6 +13,7 @@ import com.gym.service.StripeCheckoutService;
 import com.gym.service.StripeWebhookService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Subscription;
+import com.stripe.exception.StripeException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -25,7 +26,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.BufferedReader;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -124,12 +127,23 @@ public class StripeController {
 
         try {
             Subscription subscription = Subscription.retrieve(membership.getStripeSubscriptionId());
-            subscription.cancel();
+            Map<String, Object> updateParams = new HashMap<>();
+            updateParams.put("cancel_at_period_end", true);
+            subscription.update(updateParams);
             membership.setCancelAtPeriodEnd(true);
+            membership.setAutoRenew(false);
+            if (subscription.getCurrentPeriodEnd() != null) {
+                membership.setCurrentPeriodEnd(
+                    java.time.LocalDate.ofInstant(
+                        java.time.Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()),
+                        java.time.ZoneId.systemDefault()
+                    )
+                );
+            }
             membershipRepository.save(membership);
             return ResponseEntity.ok().build();
         } catch (StripeException e) {
-            log.error("Failed to cancel Stripe subscription", e);
+            log.error("Failed to schedule Stripe subscription cancellation", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

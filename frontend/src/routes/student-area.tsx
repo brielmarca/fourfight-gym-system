@@ -2,12 +2,14 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { api, isAuthenticated } from "@/lib/api";
+import type { Membership } from "@/types";
 import {
   useMyStudentProfile,
   useMyMembership,
   useMyMonthlyAttendance,
   useMyEnrollments,
   useMyVideoLessons,
+  useCancelMyMembership,
 } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +17,17 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/ui/feedback";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   Loader2,
   LogOut,
@@ -26,6 +39,7 @@ import {
   Clock,
   Flame,
   TrendingUp,
+  AlertTriangle,
 } from "lucide-react";
 
 export const Route = createFileRoute("/student-area")({
@@ -388,77 +402,7 @@ function StudentAreaPage() {
           </TabsContent>
 
           <TabsContent value="membership">
-            <Card
-              className="bg-surface border-border-subtle"
-              style={{ borderTop: "2px solid #C1121F" }}
-            >
-              <CardHeader>
-                <CardTitle className="text-xs tracking-[0.2em] uppercase">
-                  Dados da Mensalidade
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {membership ? (
-                  <div className="space-y-4">
-                    <div className="flex justify-between py-2 border-b border-border-subtle">
-                      <span className="text-text-secondary">Plano</span>
-                      <span className="font-semibold">{membership.planName}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-border-subtle">
-                      <span className="text-text-secondary">Início</span>
-                      <span>{new Date(membership.startDate).toLocaleDateString("pt-PT")}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-border-subtle">
-                      <span className="text-text-secondary">Validade</span>
-                      <span>{new Date(membership.endDate).toLocaleDateString("pt-PT")}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-border-subtle">
-                      <span className="text-text-secondary">Status</span>
-                      <Badge
-                        variant="outline"
-                        className={
-                          membership.status === "ACTIVE"
-                            ? "border-primary/30 bg-primary/10 text-primary"
-                            : "border-destructive/30 bg-destructive/10 text-destructive"
-                        }
-                      >
-                        {membership.status === "ACTIVE" ? "Ativo" : "Inativo"}
-                      </Badge>
-                    </div>
-                    {membership.stripeSubscriptionId && (
-                      <>
-                        <div className="flex justify-between py-2 border-b border-border-subtle">
-                          <span className="text-text-secondary">Pagamento</span>
-                          <Badge className="bg-primary/20 text-primary border-primary/30">
-                            Stripe
-                          </Badge>
-                        </div>
-                        {membership.currentPeriodEnd && (
-                          <div className="flex justify-between py-2 border-b border-border-subtle">
-                            <span className="text-text-secondary">Próxima renovação</span>
-                            <span>
-                              {new Date(membership.currentPeriodEnd).toLocaleDateString("pt-PT")}
-                            </span>
-                          </div>
-                        )}
-                        {membership.cancelAtPeriodEnd && (
-                          <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 text-sm text-yellow-500">
-                            A tua subscrição será cancelada no fim do período atual.
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-6 space-y-4">
-                    <p className="text-text-secondary">Ainda não tens uma mensalidade ativa.</p>
-                    <Link to="/plans">
-                      <Button className="btn-red tracking-[0.2em] uppercase">Ver Planos</Button>
-                    </Link>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <MembershipTabContent membership={membership} />
           </TabsContent>
 
           <TabsContent value="video-lessons">
@@ -524,5 +468,165 @@ function StudentAreaPage() {
         </Tabs>
       </main>
     </div>
+  );
+}
+
+function MembershipTabContent({ membership }: { membership: Membership | undefined }) {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const cancelMutation = useCancelMyMembership();
+
+  const handleCancel = () => {
+    cancelMutation.mutate(undefined, {
+      onSuccess: () => {
+        setDialogOpen(false);
+      },
+    });
+  };
+
+  if (!membership) {
+    return (
+      <Card
+        className="bg-surface border-border-subtle"
+        style={{ borderTop: "2px solid #C1121F" }}
+      >
+        <CardContent>
+          <div className="text-center py-6 space-y-4">
+            <p className="text-text-secondary">Ainda não tens uma mensalidade ativa.</p>
+            <Link to="/plans">
+              <Button className="btn-red tracking-[0.2em] uppercase">Ver Planos</Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const accessUntil = membership.currentPeriodEnd || membership.endDate;
+  const formattedAccessUntil = new Date(accessUntil).toLocaleDateString("pt-PT");
+
+  return (
+    <Card
+      className="bg-surface border-border-subtle"
+      style={{ borderTop: "2px solid #C1121F" }}
+    >
+      <CardHeader>
+        <CardTitle className="text-xs tracking-[0.2em] uppercase">
+          Dados da Mensalidade
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="flex justify-between py-2 border-b border-border-subtle">
+            <span className="text-text-secondary">Plano</span>
+            <span className="font-semibold">{membership.planName}</span>
+          </div>
+          <div className="flex justify-between py-2 border-b border-border-subtle">
+            <span className="text-text-secondary">Início</span>
+            <span>{new Date(membership.startDate).toLocaleDateString("pt-PT")}</span>
+          </div>
+          <div className="flex justify-between py-2 border-b border-border-subtle">
+            <span className="text-text-secondary">Validade</span>
+            <span>{new Date(membership.endDate).toLocaleDateString("pt-PT")}</span>
+          </div>
+          <div className="flex justify-between py-2 border-b border-border-subtle">
+            <span className="text-text-secondary">Status</span>
+            <Badge
+              variant="outline"
+              className={
+                membership.status === "ACTIVE"
+                  ? "border-primary/30 bg-primary/10 text-primary"
+                  : "border-destructive/30 bg-destructive/10 text-destructive"
+              }
+            >
+              {membership.status === "ACTIVE" ? "Ativo" : "Inativo"}
+            </Badge>
+          </div>
+          {membership.stripeSubscriptionId && (
+            <div className="flex justify-between py-2 border-b border-border-subtle">
+              <span className="text-text-secondary">Pagamento</span>
+              <Badge className="bg-primary/20 text-primary border-primary/30">
+                Stripe
+              </Badge>
+            </div>
+          )}
+          {accessUntil && (
+            <div className="flex justify-between py-2 border-b border-border-subtle">
+              <span className="text-text-secondary">
+                {membership.cancelAtPeriodEnd ? "Acesso até" : membership.stripeSubscriptionId ? "Próxima renovação" : "Fim do plano"}
+              </span>
+              <span>{formattedAccessUntil}</span>
+            </div>
+          )}
+
+          {membership.cancelAtPeriodEnd ? (
+            <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-sm text-sm text-yellow-500 flex items-start gap-2">
+              <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+              <div>
+                <span className="font-semibold">Cancelamento agendado</span>
+                <p className="mt-1">O teu acesso continua ativo até {formattedAccessUntil}.</p>
+              </div>
+            </div>
+          ) : membership.status === "ACTIVE" ? (
+            <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full border-destructive/50 text-destructive hover:bg-destructive/10 tracking-[0.1em] uppercase text-xs"
+                >
+                  Cancelar mensalidade
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Cancelar mensalidade?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    A tua mensalidade continuará ativa até {formattedAccessUntil}. Depois dessa data, não haverá nova renovação automática.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={cancelMutation.isPending}>
+                    Voltar
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleCancel}
+                    disabled={cancelMutation.isPending}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {cancelMutation.isPending ? (
+                      <>
+                        <Loader2 size={14} className="animate-spin mr-1" />
+                        A cancelar...
+                      </>
+                    ) : (
+                      "Confirmar cancelamento"
+                    )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : null}
+
+          {cancelMutation.isError && (
+            <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-sm text-sm text-destructive">
+              {cancelMutation.error instanceof Error
+                ? cancelMutation.error.message
+                : "Ocorreu um erro ao cancelar a mensalidade."}
+            </div>
+          )}
+
+          {cancelMutation.isSuccess && (
+            <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-sm text-sm text-yellow-500 flex items-start gap-2">
+              <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+              <div>
+                <span className="font-semibold">Cancelamento agendado</span>
+                <p className="mt-1">
+                  {cancelMutation.data?.message || `O teu acesso continua ativo até ${formattedAccessUntil}.`}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

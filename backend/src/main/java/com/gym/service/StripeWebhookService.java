@@ -305,6 +305,10 @@ public class StripeWebhookService {
 
         membership.setStatus(Membership.MembershipStatus.CANCELLED);
         membership.setAutoRenew(false);
+        membership.setCancelAtPeriodEnd(false);
+        if (membership.getCancellationSource() == null) {
+            membership.setCancellationSource(Membership.CancellationSource.STRIPE_WEBHOOK.name());
+        }
         membershipRepository.save(membership);
 
         log.info("Membership cancelled via Stripe subscription deletion: {}", membership.getId());
@@ -329,6 +333,7 @@ public class StripeWebhookService {
             return;
         }
 
+        boolean wasCancelAtPeriodEnd = Boolean.TRUE.equals(membership.getCancelAtPeriodEnd());
         membership.setCancelAtPeriodEnd(subscription.getCancelAtPeriodEnd());
 
         if (subscription.getCurrentPeriodStart() != null) {
@@ -339,6 +344,14 @@ public class StripeWebhookService {
             LocalDate periodEnd = toLocalDate(subscription.getCurrentPeriodEnd());
             membership.setCurrentPeriodEnd(periodEnd);
             membership.setEndDate(periodEnd);
+        }
+
+        if (!wasCancelAtPeriodEnd && Boolean.TRUE.equals(subscription.getCancelAtPeriodEnd())) {
+            membership.setAutoRenew(false);
+            if (membership.getCancellationSource() == null) {
+                membership.setCancellationSource(Membership.CancellationSource.STRIPE_WEBHOOK.name());
+                membership.setCancellationRequestedAt(java.time.LocalDateTime.now());
+            }
         }
 
         syncMembershipStatusFromSubscription(membership, subscription.getStatus());

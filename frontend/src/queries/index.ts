@@ -18,6 +18,7 @@ export {
   useCreateMembership,
   useRenewMembership,
   useCancelMembership,
+  useCancelMyMembership,
 } from "./memberships";
 export {
   useClasses,

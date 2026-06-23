@@ -7,6 +7,7 @@ import com.gym.repository.MembershipRepository;
 import com.gym.repository.PlanRepository;
 import com.gym.repository.UserRepository;
 import com.gym.security.JwtUtil;
+import com.gym.security.RateLimitFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -40,6 +44,9 @@ class MembershipCancelSecurityTest {
     private JwtUtil jwtUtil;
 
     @Autowired
+    private RateLimitFilter rateLimitFilter;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -57,6 +64,7 @@ class MembershipCancelSecurityTest {
 
     @BeforeEach
     void setUp() {
+        rateLimitFilter.resetBuckets();
         User client = userRepository.findByEmail("cancel-test-client@test.com").orElseGet(() ->
                 userRepository.save(User.builder()
                         .id(UUID.randomUUID())
@@ -207,6 +215,27 @@ class MembershipCancelSecurityTest {
         mockMvc.perform(patch("/api/memberships/" + UUID.randomUUID() + "/cancel")
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Rate limit returns 429 after bucket exhaustion and recovers after reset")
+    void rateLimitReturns429AfterExhaustion() throws Exception {
+        int callCount;
+        for (callCount = 0; callCount < 200; callCount++) {
+            int status = mockMvc.perform(get("/api/rl-exhaust-test-" + callCount))
+                    .andReturn().getResponse().getStatus();
+            if (status == 429) {
+                break;
+            }
+        }
+        assertTrue(callCount < 200, "Rate limit should have been triggered within 200 calls");
+        assertTrue(callCount >= 100, "Should take at least 100 calls to exhaust general bucket");
+
+        rateLimitFilter.resetBuckets();
+
+        int statusAfterReset = mockMvc.perform(get("/api/rl-after-reset"))
+                .andReturn().getResponse().getStatus();
+        assertNotEquals(429, statusAfterReset, "Should not be 429 after bucket reset");
     }
 
     @Test

@@ -84,6 +84,6 @@ public class Subscription {
     }
     
     public enum SubscriptionStatus {
-        ACTIVE, EXPIRED, CANLLED, SUSPENDED
+        ACTIVE, EXPIRED, CANCELLED, SUSPENDED
     }
 }

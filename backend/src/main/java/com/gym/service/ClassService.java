@@ -35,10 +35,12 @@ public class ClassService {
     private final ClassEnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
 
+    @Transactional(readOnly = true)
     public Page<ClassResponse> getAll(Pageable pageable) {
         return classRepository.findAll(pageable).map(c -> ClassResponse.from(c, 0));
     }
 
+    @Transactional(readOnly = true)
     public Page<ClassResponse> getUpcoming(Pageable pageable) {
         return classRepository.findUpcoming(pageable).map(c -> {
             long count = enrollmentRepository.countActiveByClassId(c.getId());
@@ -46,6 +48,7 @@ public class ClassService {
         });
     }
 
+    @Transactional(readOnly = true)
     public ClassResponse getById(UUID id) {
         GymClass gymClass = classRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Class", id));
@@ -140,6 +143,7 @@ public class ClassService {
         log.info("User {} unenrolled from class {}", userId, classId);
     }
 
+    @Transactional(readOnly = true)
     public Page<ClassEnrollmentResponse> getRoster(UUID classId, Pageable pageable) {
         return new PageImpl<>(
             enrollmentRepository.findByClassId(classId),
@@ -148,6 +152,7 @@ public class ClassService {
         ).map(ClassEnrollmentResponse::from);
     }
 
+    @Transactional(readOnly = true)
     public long getTodayClassCount(java.time.LocalDateTime start, java.time.LocalDateTime end) {
         return classRepository.countByScheduleBetween(start, end);
     }

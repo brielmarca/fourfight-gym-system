@@ -65,7 +65,18 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/plans", "/api/plans/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/plans", "/api/plans/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/plans", "/api/plans/**").hasRole("ADMIN")
-                .requestMatchers("/api/classes/**", "/api/programs/**").permitAll()
+                // Enroll/unenroll — authenticated, ownership enforced via principal
+                .requestMatchers(HttpMethod.POST, "/api/classes/*/enroll", "/api/classes/*/unenroll").authenticated()
+                // Class roster — ADMIN/MANAGER only
+                .requestMatchers(HttpMethod.GET, "/api/classes/*/roster").hasAnyRole("ADMIN", "MANAGER")
+                // Class mutations — ADMIN/MANAGER only
+                .requestMatchers(HttpMethod.POST, "/api/classes/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers(HttpMethod.PUT, "/api/classes/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers(HttpMethod.DELETE, "/api/classes/**").hasAnyRole("ADMIN", "MANAGER")
+                // Class reads — authenticated
+                .requestMatchers(HttpMethod.GET, "/api/classes", "/api/classes/*").authenticated()
+                // Programs — public read-only
+                .requestMatchers("/api/programs/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/schedule").permitAll()
                 // Checkout session status
                 .requestMatchers("/api/checkout/**").authenticated()

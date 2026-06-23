@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,16 +43,19 @@ public class ClassController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ClassResponse> create(@Valid @RequestBody CreateClassRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(classService.create(request));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ClassResponse> update(@PathVariable UUID id, @Valid @RequestBody UpdateClassRequest request) {
         return ResponseEntity.ok(classService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         classService.delete(id);
         return ResponseEntity.noContent().build();
@@ -69,6 +73,7 @@ public class ClassController {
     }
 
     @GetMapping("/{id}/roster")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Page<ClassEnrollmentResponse>> getRoster(@PathVariable UUID id, @PageableDefault(size = 50) Pageable pageable) {
         return ResponseEntity.ok(classService.getRoster(id, pageable));
     }

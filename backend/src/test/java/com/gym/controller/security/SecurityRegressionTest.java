@@ -6,7 +6,10 @@ import com.gym.entity.Membership;
 import com.gym.entity.Notification;
 import com.gym.entity.Payment;
 import com.gym.entity.ScheduleRequest;
+import com.gym.entity.GymClass;
 import com.gym.entity.Trainer;
+import com.gym.repository.ClassEnrollmentRepository;
+import com.gym.repository.ClassRepository;
 import com.gym.repository.NotificationRepository;
 import com.gym.repository.PaymentRepository;
 import com.gym.repository.PlanRepository;
@@ -84,6 +87,12 @@ class SecurityRegressionTest {
     @Autowired
     private NotificationRepository notificationRepository;
 
+    @Autowired
+    private ClassRepository classRepository;
+
+    @Autowired
+    private ClassEnrollmentRepository classEnrollmentRepository;
+
     private static final String TEST_EMAIL = "test@test.com";
     private static final String ADMIN_EMAIL = "admin@test.com";
     private static final String CLIENT_PASSWORD = "Pass12345";
@@ -105,6 +114,8 @@ class SecurityRegressionTest {
     private UUID otherScheduleRequestId;
     private UUID ownNotificationId;
     private UUID otherNotificationId;
+    private UUID testClassId;
+    private UUID trainerId;
 
     @BeforeEach
     void setUp() {
@@ -265,6 +276,17 @@ class SecurityRegressionTest {
                         .channel(Notification.NotificationChannel.IN_APP)
                         .build()));
 
+        trainerId = trainer.getId();
+        GymClass testClass = classRepository.save(GymClass.builder()
+                .trainer(trainer)
+                .name("Security Test Class")
+                .description("Class for security regression testing")
+                .capacity(30)
+                .schedule(java.time.LocalDateTime.now().plusDays(7))
+                .durationMin(60)
+                .status(GymClass.ClassStatus.SCHEDULED)
+                .build());
+
         validUserToken = jwtUtil.generateAccessToken(
                 testUserId, TEST_EMAIL, "CLIENT"
         );
@@ -277,6 +299,7 @@ class SecurityRegressionTest {
         testPaymentId = ownPayment.getId();
         otherUserPaymentId = otherPayment.getId();
         testCheckoutId = UUID.randomUUID();
+        testClassId = testClass.getId();
         ownScheduleRequestId = ownScheduleRequest.getId();
         otherScheduleRequestId = otherScheduleRequest.getId();
         ownNotificationId = ownNotification.getId();
@@ -1189,6 +1212,198 @@ class SecurityRegressionTest {
                         .cookie(refreshCookie)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
+    }
+
+    // ===== CLASS ENDPOINT AUTHORIZATION TESTS =====
+
+    @Test
+    @DisplayName("Unauthenticated user cannot list classes")
+    void unauthenticatedCannotListClasses() throws Exception {
+        mockMvc.perform(get("/api/classes"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Unauthenticated user cannot get class by id")
+    void unauthenticatedCannotGetClassById() throws Exception {
+        mockMvc.perform(get("/api/classes/" + testClassId))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Unauthenticated user cannot create class")
+    void unauthenticatedCannotCreateClass() throws Exception {
+        mockMvc.perform(post("/api/classes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Unauth Class\",\"capacity\":20,\"schedule\":\"2026-07-01T10:00:00\",\"durationMin\":60}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Unauthenticated user cannot update class")
+    void unauthenticatedCannotUpdateClass() throws Exception {
+        mockMvc.perform(put("/api/classes/" + testClassId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Hacked Name\"}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Unauthenticated user cannot delete class")
+    void unauthenticatedCannotDeleteClass() throws Exception {
+        mockMvc.perform(delete("/api/classes/" + testClassId))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Unauthenticated user cannot enroll")
+    void unauthenticatedCannotEnroll() throws Exception {
+        mockMvc.perform(post("/api/classes/" + testClassId + "/enroll"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Unauthenticated user cannot unenroll")
+    void unauthenticatedCannotUnenroll() throws Exception {
+        mockMvc.perform(post("/api/classes/" + testClassId + "/unenroll"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Unauthenticated user cannot access roster")
+    void unauthenticatedCannotAccessRoster() throws Exception {
+        mockMvc.perform(get("/api/classes/" + testClassId + "/roster"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Client can view class list")
+    void clientCanViewClassList() throws Exception {
+        mockMvc.perform(get("/api/classes")
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Client can view class detail")
+    void clientCanViewClassDetail() throws Exception {
+        mockMvc.perform(get("/api/classes/" + testClassId)
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Client cannot create class")
+    void clientCannotCreateClass() throws Exception {
+        mockMvc.perform(post("/api/classes")
+                        .header("Authorization", "Bearer " + validUserToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Client Class\",\"trainerId\":\"" + UUID.randomUUID() + "\",\"capacity\":20,\"schedule\":\"2026-07-01T10:00:00\",\"durationMin\":60}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Client cannot update class")
+    void clientCannotUpdateClass() throws Exception {
+        mockMvc.perform(put("/api/classes/" + testClassId)
+                        .header("Authorization", "Bearer " + validUserToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Client Updated\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Client cannot delete class")
+    void clientCannotDeleteClass() throws Exception {
+        mockMvc.perform(delete("/api/classes/" + testClassId)
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Client cannot access roster")
+    void clientCannotAccessRoster() throws Exception {
+        mockMvc.perform(get("/api/classes/" + testClassId + "/roster")
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Client can enroll self")
+    void clientCanEnrollSelf() throws Exception {
+        mockMvc.perform(post("/api/classes/" + testClassId + "/enroll")
+                        .header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isCreated());
+        // Clean up
+        mockMvc.perform(post("/api/classes/" + testClassId + "/unenroll")
+                        .header("Authorization", "Bearer " + validUserToken));
+    }
+
+    @Test
+    @DisplayName("Admin can create, update, and delete class")
+    void adminCanManageClasses() throws Exception {
+        MvcResult createResult = mockMvc.perform(post("/api/classes")
+                        .header("Authorization", "Bearer " + validAdminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Admin Test Class\",\"trainerId\":\"" + trainerId + "\",\"capacity\":25,\"schedule\":\"2026-08-01T10:00:00\",\"durationMin\":60}"))
+                .andExpect(status().isCreated())
+                .andReturn();
+        UUID createdClassId = UUID.fromString(extractField(createResult.getResponse().getContentAsString(), "id"));
+
+        mockMvc.perform(put("/api/classes/" + createdClassId)
+                        .header("Authorization", "Bearer " + validAdminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Admin Updated Class\"}"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(delete("/api/classes/" + createdClassId)
+                        .header("Authorization", "Bearer " + validAdminToken))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("Manager can create, update, and delete class")
+    void managerCanManageClasses() throws Exception {
+        MvcResult createResult = mockMvc.perform(post("/api/classes")
+                        .header("Authorization", "Bearer " + validManagerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Manager Test Class\",\"trainerId\":\"" + trainerId + "\",\"capacity\":25,\"schedule\":\"2026-08-01T14:00:00\",\"durationMin\":60}"))
+                .andExpect(status().isCreated())
+                .andReturn();
+        UUID createdClassId = UUID.fromString(extractField(createResult.getResponse().getContentAsString(), "id"));
+
+        mockMvc.perform(put("/api/classes/" + createdClassId)
+                        .header("Authorization", "Bearer " + validManagerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Manager Updated Class\"}"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(delete("/api/classes/" + createdClassId)
+                        .header("Authorization", "Bearer " + validManagerToken))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("Admin can access roster")
+    void adminCanAccessRoster() throws Exception {
+        mockMvc.perform(get("/api/classes/" + testClassId + "/roster")
+                        .header("Authorization", "Bearer " + validAdminToken))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Manager can access roster")
+    void managerCanAccessRoster() throws Exception {
+        mockMvc.perform(get("/api/classes/" + testClassId + "/roster")
+                        .header("Authorization", "Bearer " + validManagerToken))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Public programs endpoint remains accessible")
+    void publicProgramsEndpointRemainsAccessible() throws Exception {
+        mockMvc.perform(get("/api/programs"))
+                .andExpect(status().isOk());
     }
 
     private static String extractField(String json, String fieldName) {

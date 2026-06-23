@@ -159,6 +159,15 @@ public class RateLimitFilter implements Filter {
         };
     }
     
+    /**
+     * Resets all in-memory rate-limit buckets.
+     * Package-private — intended for deterministic test isolation only.
+     * Must never be called from runtime application flows.
+     */
+    void resetBuckets() {
+        buckets.clear();
+    }
+
     private String getClientIp(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.isBlank()) {

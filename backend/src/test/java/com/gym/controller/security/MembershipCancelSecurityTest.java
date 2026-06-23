@@ -8,6 +8,7 @@ import com.gym.repository.PlanRepository;
 import com.gym.repository.UserRepository;
 import com.gym.security.JwtUtil;
 import com.gym.security.RateLimitFilter;
+import com.gym.security.RateLimitFilterTestSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -64,7 +65,7 @@ class MembershipCancelSecurityTest {
 
     @BeforeEach
     void setUp() {
-        rateLimitFilter.resetBuckets();
+        RateLimitFilterTestSupport.reset(rateLimitFilter);
         User client = userRepository.findByEmail("cancel-test-client@test.com").orElseGet(() ->
                 userRepository.save(User.builder()
                         .id(UUID.randomUUID())
@@ -231,7 +232,7 @@ class MembershipCancelSecurityTest {
         assertTrue(callCount < 200, "Rate limit should have been triggered within 200 calls");
         assertTrue(callCount >= 100, "Should take at least 100 calls to exhaust general bucket");
 
-        rateLimitFilter.resetBuckets();
+        RateLimitFilterTestSupport.reset(rateLimitFilter);
 
         int statusAfterReset = mockMvc.perform(get("/api/rl-after-reset"))
                 .andReturn().getResponse().getStatus();

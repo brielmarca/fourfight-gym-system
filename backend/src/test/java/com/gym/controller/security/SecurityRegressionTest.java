@@ -19,6 +19,7 @@ import com.gym.repository.TrainerRepository;
 import com.gym.repository.UserRepository;
 import com.gym.security.JwtUtil;
 import com.gym.security.RateLimitFilter;
+import com.gym.security.RateLimitFilterTestSupport;
 import com.gym.service.AuthService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -123,7 +124,7 @@ class SecurityRegressionTest {
 
     @BeforeEach
     void setUp() {
-        rateLimitFilter.resetBuckets();
+        RateLimitFilterTestSupport.reset(rateLimitFilter);
         authService.unlockAccountLockout(ADMIN_EMAIL);
 
         User testUser = userRepository.findByEmail(TEST_EMAIL).orElseGet(() -> {

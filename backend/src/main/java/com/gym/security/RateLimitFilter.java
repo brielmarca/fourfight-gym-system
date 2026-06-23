@@ -161,9 +161,10 @@ public class RateLimitFilter implements Filter {
     
     /**
      * Resets all in-memory rate-limit buckets.
-     * Intended for test isolation — not called in production flows.
+     * Package-private — intended for deterministic test isolation only.
+     * Must never be called from runtime application flows.
      */
-    public void resetBuckets() {
+    void resetBuckets() {
         buckets.clear();
     }
 

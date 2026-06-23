@@ -491,7 +491,7 @@ export const api = {
         body: JSON.stringify(data),
       }),
     renew: (id: string) => request<Membership>(`/memberships/${id}/renew`, { method: "POST" }),
-    cancel: (id: string) => request<Membership>(`/memberships/${id}/cancel`, { method: "POST" }),
+    cancel: (id: string) => request<Membership>(`/memberships/${id}/cancel`, { method: "PATCH" }),
     cancelMy: (reason?: string) =>
       request<CancelMyMembershipResponse>("/memberships/me/cancel", {
         method: "POST",

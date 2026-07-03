@@ -18,6 +18,13 @@ startup:
   diagnostics:
     enabled: ${STARTUP_DIAGNOSTICS_ENABLED:true}
 
+security:
+  lockout:
+    failed-attempts: ${LOGIN_LOCKOUT_FAILED_ATTEMPTS:5}
+    duration: ${LOGIN_LOCKOUT_DURATION:PT15M}
+    cache-max-size: ${LOGIN_LOCKOUT_CACHE_MAXIMUM_SIZE:10000}
+    cache-expiry: ${LOGIN_LOCKOUT_CACHE_EXPIRY:PT30M}
+
 jwt:
   expiration-ms: 900000
   refresh-expiration-ms: 604800000

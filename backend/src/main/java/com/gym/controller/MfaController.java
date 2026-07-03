@@ -23,6 +23,7 @@ import com.gym.exception.UnauthorizedException;
 import com.gym.security.JwtUtil;
 import com.gym.security.GymUserDetailsService.JwtUserPrincipal;
 import com.gym.service.AuthService;
+import com.gym.service.MfaSecretEncryptionService;
 import com.gym.service.MfaService;
 import com.gym.service.RefreshTokenCookieService;
 import com.gym.service.UserService;
@@ -36,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MfaController {
 
     private final MfaService mfaService;
+    private final MfaSecretEncryptionService mfaSecretEncryptionService;
     private final AuthService authService;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
@@ -60,13 +62,13 @@ public class MfaController {
         String secret = mfaService.generateSecret();
         String qrCodeUrl = mfaService.generateQrCodeUrl(secret, user.getEmail());
         List<String> backupCodes = mfaService.generateBackupCodes(8);
-        
-        user.setMfaSecret(secret);
+
+        user.setMfaSecret(mfaSecretEncryptionService.encrypt(secret));
         user.setBackupCodes(mfaService.hashBackupCodes(backupCodes));
         userService.updateUser(user);
-        
+
         log.info("MFA setup initiated for user: {}", user.getEmail());
-        
+
         return ResponseEntity.ok(new MfaSetupResponse(
             secret,
             qrCodeUrl,
@@ -79,23 +81,41 @@ public class MfaController {
     public ResponseEntity<Void> verifySetup(
             @Valid @RequestBody MfaVerifyRequest request,
             @AuthenticationPrincipal JwtUserPrincipal principal) {
-        
+
         User user = userService.getUserById(principal.id());
-        
+
         if (user.getMfaSecret() == null) {
             throw new BusinessRuleException("MFA setup not initiated. Call /setup first.");
         }
-        
-        if (!mfaService.verifyCode(user.getMfaSecret(), request.code())) {
+
+        String plaintextSecret;
+        boolean needsMigration = false;
+
+        try {
+            if (mfaSecretEncryptionService.isEncrypted(user.getMfaSecret())) {
+                plaintextSecret = mfaSecretEncryptionService.decrypt(user.getMfaSecret());
+            } else {
+                plaintextSecret = user.getMfaSecret();
+                needsMigration = true;
+            }
+        } catch (Exception e) {
+            log.error("MFA secret decryption failed for user: {}", user.getEmail());
+            throw new BusinessRuleException("MFA configuration error");
+        }
+
+        if (!mfaService.verifyCode(plaintextSecret, request.code())) {
             log.warn("Invalid TOTP code during MFA setup for user: {}", user.getEmail());
             throw new UnauthorizedException("Invalid verification code");
         }
-        
+
+        if (needsMigration) {
+            user.setMfaSecret(mfaSecretEncryptionService.encrypt(plaintextSecret));
+        }
         user.setMfaEnabled(true);
         userService.updateUser(user);
-        
+
         log.info("MFA enabled for user: {}", user.getEmail());
-        
+
         return ResponseEntity.ok().build();
     }
 
@@ -128,39 +148,59 @@ public class MfaController {
     public ResponseEntity<TokenPairResponse> validateMfa(
             @Valid @RequestBody MfaValidateRequest request,
             HttpServletResponse response) {
-        
+
         if (!jwtUtil.validatePreAuthToken(request.preAuthToken())) {
             throw new UnauthorizedException("Invalid or expired pre-authentication token");
         }
         jwtUtil.extractUserId(request.preAuthToken());
         String email = jwtUtil.extractEmail(request.preAuthToken());
-        
+
         User user = userService.getUserByEmail(email);
-        
+
         if (!user.getMfaEnabled()) {
             throw new BusinessRuleException("MFA is not enabled for this user");
         }
-        
-        boolean valid = mfaService.verifyCode(user.getMfaSecret(), request.code());
-        
+
+        String storedSecret = user.getMfaSecret();
+        String plaintextSecret;
+        boolean needsMigration = false;
+
+        try {
+            if (mfaSecretEncryptionService.isEncrypted(storedSecret)) {
+                plaintextSecret = mfaSecretEncryptionService.decrypt(storedSecret);
+            } else {
+                plaintextSecret = storedSecret;
+                needsMigration = true;
+            }
+        } catch (Exception e) {
+            log.error("MFA secret decryption failed for user: {}", user.getEmail());
+            throw new UnauthorizedException("Invalid MFA configuration");
+        }
+
+        boolean valid = mfaService.verifyCode(plaintextSecret, request.code());
+
         if (!valid && user.getBackupCodes() != null) {
             valid = mfaService.verifyBackupCode(user.getBackupCodes(), request.code());
             if (valid) {
                 user.setBackupCodes(mfaService.removeUsedBackupCode(user.getBackupCodes(), request.code()));
-                userService.updateUser(user);
                 log.info("Backup code used for user: {}", user.getEmail());
             }
         }
-        
+
         if (!valid) {
             throw new UnauthorizedException("Invalid MFA code");
         }
-        
+
+        if (needsMigration) {
+            user.setMfaSecret(mfaSecretEncryptionService.encrypt(plaintextSecret));
+        }
+        userService.updateUser(user);
+
         TokenPairResponse tokens = authService.generateTokensForUser(user);
         refreshTokenCookieService.addRefreshTokenCookie(response, tokens.refreshToken());
-        
+
         log.info("MFA validation successful for user: {}", user.getEmail());
-        
+
         TokenPairResponse result = TokenPairResponse.of(tokens.accessToken(), null, tokens.expiresIn());
         return ResponseEntity.ok(result);
     }

@@ -36,6 +36,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(properties = {
+        "mfa.encryption-key-base64=VEVTVC1LRVktTk9ULUZPUi1QUk9EVUNUSU9OLTAxMjM=",
         "rate-limit.login.capacity=100",
         "rate-limit.login.refill-tokens=100",
         "rate-limit.login.refill-duration=1"
@@ -87,16 +88,14 @@ class MfaControllerValidationTest {
             newUser.setPasswordHash(passwordEncoder.encode(MFA_USER_PASSWORD));
             newUser.setRole(User.Role.CLIENT);
             newUser.setIsActive(true);
-            newUser.setMfaEnabled(true);
-            newUser.setMfaSecret(TOTP_SECRET);
+            newUser.setMfaEnabled(false);
             return userRepository.save(newUser);
         });
 
-        if (!user.getMfaEnabled()) {
-            user.setMfaEnabled(true);
-            user.setMfaSecret(TOTP_SECRET);
-            userRepository.save(user);
-        }
+        user.setMfaEnabled(true);
+        user.setMfaSecret(TOTP_SECRET);
+        user.setBackupCodes(null);
+        userRepository.save(user);
 
         mfaUserId = user.getId();
 

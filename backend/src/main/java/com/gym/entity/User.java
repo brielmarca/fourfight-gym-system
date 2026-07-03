@@ -1,5 +1,6 @@
 package com.gym.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,6 +34,7 @@ public class User {
     @Column(nullable = false, unique = true, length = 255)
     private String email;
 
+    @JsonIgnore
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
@@ -58,9 +60,11 @@ public class User {
     @Builder.Default
     private Boolean mfaEnabled = false;
 
+    @JsonIgnore
     @Column(name = "mfa_secret", length = 255)
     private String mfaSecret;
 
+    @JsonIgnore
     @Column(name = "backup_codes", columnDefinition = "TEXT")
     private String backupCodes;
 

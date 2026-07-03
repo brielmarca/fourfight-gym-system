@@ -22,6 +22,7 @@ services:
       - JWT_EXPIRATION_MS=900000
       - JWT_REFRESH_EXPIRATION_MS=604800000
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+      - MFA_ENCRYPTION_KEY_BASE64=${MFA_ENCRYPTION_KEY_BASE64}
     depends_on:
       postgres:
         condition: service_healthy

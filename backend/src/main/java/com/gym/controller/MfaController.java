@@ -129,6 +129,9 @@ public class MfaController {
             @Valid @RequestBody MfaValidateRequest request,
             HttpServletResponse response) {
         
+        if (!jwtUtil.validateToken(request.preAuthToken())) {
+            throw new UnauthorizedException("Invalid or expired pre-authentication token");
+        }
         jwtUtil.extractUserId(request.preAuthToken());
         String email = jwtUtil.extractEmail(request.preAuthToken());
         

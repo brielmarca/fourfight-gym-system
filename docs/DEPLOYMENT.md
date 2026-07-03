@@ -30,7 +30,7 @@ curl -I https://4fourfight.com
 
 ## Deploy backend (VPS)
 
-Backend rate limiting trusts `X-Forwarded-For`/`X-Real-IP` only when the immediate sender matches `RATE_LIMIT_TRUSTED_PROXIES`. Keep it empty by default, and set it only to the actual reverse proxy container/host IP or CIDR after confirming the backend is not publicly reachable directly.
+Backend rate limiting trusts `X-Forwarded-For`/`X-Real-IP` only when the immediate sender matches `RATE_LIMIT_TRUSTED_PROXIES`. Spring framework-level forwarded-header transformation is disabled in production so the rate-limit resolver can make the trust decision from the immediate peer address. Keep `RATE_LIMIT_TRUSTED_PROXIES` empty by default, and set it only to the actual reverse proxy container/host IP or CIDR after confirming the backend is not publicly reachable directly.
 
 ```bash
 ssh <deploy-user>@<vps-host>

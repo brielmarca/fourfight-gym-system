@@ -31,7 +31,7 @@ public class AuditLog {
     private User actor;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 50)
     private AuditAction action;
 
     @Column(name = "entity_type", nullable = false, length = 100)
@@ -47,7 +47,7 @@ public class AuditLog {
     @Column(length = 45)
     private String ip;
 
-    @Column(name = "user_agent", length = 500)
+    @Column(name = "user_agent", columnDefinition = "text")
     private String userAgent;
 
     @Column(name = "created_at", nullable = false, updatable = false)

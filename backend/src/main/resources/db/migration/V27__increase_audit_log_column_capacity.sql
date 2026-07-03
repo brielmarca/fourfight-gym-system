@@ -1,0 +1,3 @@
+ALTER TABLE audit_logs
+    ALTER COLUMN action TYPE VARCHAR(50),
+    ALTER COLUMN user_agent TYPE TEXT;

@@ -878,11 +878,11 @@ class SecurityRegressionTest {
     }
 
     @Test
-    @DisplayName("Manager cannot access another user's membership by id")
-    void managerCannotAccessAnotherUsersMembershipById() throws Exception {
+    @DisplayName("Manager can access another user's membership by id")
+    void managerCanAccessAnotherUsersMembershipById() throws Exception {
         mockMvc.perform(get("/api/memberships/" + otherMembershipId)
                         .header("Authorization", "Bearer " + validManagerToken))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
     }
 
     @Test

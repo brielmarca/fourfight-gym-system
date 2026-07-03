@@ -52,7 +52,9 @@ public class MembershipController {
             @PathVariable UUID id,
             @AuthenticationPrincipal JwtUserPrincipal principal) {
         MembershipResponse membership = membershipService.getById(id);
-        if (!membership.userId().equals(principal.id()) && !"ADMIN".equals(principal.role())) {
+        if (!membership.userId().equals(principal.id())
+                && !"ADMIN".equals(principal.role())
+                && !"MANAGER".equals(principal.role())) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.ok(membership);
@@ -69,7 +71,9 @@ public class MembershipController {
             @PathVariable UUID id,
             @AuthenticationPrincipal JwtUserPrincipal principal) {
         MembershipResponse membership = membershipService.getById(id);
-        if (!membership.userId().equals(principal.id()) && !"ADMIN".equals(principal.role())) {
+        if (!membership.userId().equals(principal.id())
+                && !"ADMIN".equals(principal.role())
+                && !"MANAGER".equals(principal.role())) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.ok(membershipService.renew(id));

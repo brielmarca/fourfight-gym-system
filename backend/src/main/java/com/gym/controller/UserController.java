@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.gym.dto.request.UpdateRoleRequest;
 import com.gym.dto.request.UpdateUserRequest;
 import com.gym.dto.response.UserResponse;
+import com.gym.security.GymUserDetailsService.JwtUserPrincipal;
 import com.gym.service.UserService;
 import lombok.RequiredArgsConstructor;
 

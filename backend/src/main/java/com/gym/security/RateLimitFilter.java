@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Set;
 
 /**
  * Rate limiting filter using Bucket4j for enterprise-grade brute force protection.
@@ -181,25 +180,6 @@ public class RateLimitFilter implements Filter {
      */
     void resetBuckets() {
         buckets.invalidateAll();
-        buckets.cleanUp();
-    }
-
-    long cachedBucketCount() {
-        buckets.cleanUp();
-        return buckets.estimatedSize();
-    }
-
-    Set<String> cachedBucketKeys() {
-        buckets.cleanUp();
-        return Set.copyOf(buckets.asMap().keySet());
-    }
-
-    Bucket cachedBucket(String key) {
-        buckets.cleanUp();
-        return buckets.getIfPresent(key);
-    }
-
-    void cleanUpBuckets() {
         buckets.cleanUp();
     }
 

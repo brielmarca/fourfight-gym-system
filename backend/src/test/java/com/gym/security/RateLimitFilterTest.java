@@ -1,5 +1,6 @@
 package com.gym.security;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Ticker;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.FilterChain;
@@ -42,12 +43,12 @@ class RateLimitFilterTest {
     void sameClientEndpointReusesSameBucketInstance() throws ServletException, IOException {
         filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
                 new MockHttpServletResponse(), passThroughChain());
-        Bucket first = filter.cachedBucket("203.0.113.25:login");
+        Bucket first = cachedBucket("203.0.113.25:login");
 
         filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
                 new MockHttpServletResponse(), passThroughChain());
 
-        assertSame(first, filter.cachedBucket("203.0.113.25:login"));
+        assertSame(first, cachedBucket("203.0.113.25:login"));
         assertEquals(1, bucketCount());
     }
 
@@ -61,7 +62,7 @@ class RateLimitFilterTest {
 
         assertTrue(bucketKeys().contains("203.0.113.25:login"));
         assertTrue(bucketKeys().contains("203.0.113.25:refresh"));
-        assertNotSame(filter.cachedBucket("203.0.113.25:login"), filter.cachedBucket("203.0.113.25:refresh"));
+        assertNotSame(cachedBucket("203.0.113.25:login"), cachedBucket("203.0.113.25:refresh"));
         assertEquals(2, bucketCount());
     }
 
@@ -73,7 +74,7 @@ class RateLimitFilterTest {
         filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
                 new MockHttpServletResponse(), passThroughChain());
 
-        assertNotSame(filter.cachedBucket("203.0.113.24:login"), filter.cachedBucket("203.0.113.25:login"));
+        assertNotSame(cachedBucket("203.0.113.24:login"), cachedBucket("203.0.113.25:login"));
         assertEquals(2, bucketCount());
     }
 
@@ -87,7 +88,7 @@ class RateLimitFilterTest {
             filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113." + i),
                     new MockHttpServletResponse(), passThroughChain());
         }
-        filter.cleanUpBuckets();
+        cleanUpBuckets();
 
         assertTrue(bucketCount() <= 3);
     }
@@ -102,7 +103,7 @@ class RateLimitFilterTest {
                 new MockHttpServletResponse(), passThroughChain());
         filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.2"),
                 new MockHttpServletResponse(), passThroughChain());
-        filter.cleanUpBuckets();
+        cleanUpBuckets();
 
         assertEquals(1, bucketCount());
         assertFalse(bucketKeys().contains("203.0.113.1:login"));
@@ -117,7 +118,7 @@ class RateLimitFilterTest {
         filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
                 new MockHttpServletResponse(), passThroughChain());
         ticker.advance(61, TimeUnit.SECONDS);
-        filter.cleanUpBuckets();
+        cleanUpBuckets();
 
         assertEquals(0, bucketCount());
     }
@@ -133,11 +134,11 @@ class RateLimitFilterTest {
         ticker.advance(45, TimeUnit.SECONDS);
         filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
                 new MockHttpServletResponse(), passThroughChain());
-        Bucket refreshed = filter.cachedBucket("203.0.113.25:login");
+        Bucket refreshed = cachedBucket("203.0.113.25:login");
         ticker.advance(45, TimeUnit.SECONDS);
-        filter.cleanUpBuckets();
+        cleanUpBuckets();
 
-        assertSame(refreshed, filter.cachedBucket("203.0.113.25:login"));
+        assertSame(refreshed, cachedBucket("203.0.113.25:login"));
         assertEquals(1, bucketCount());
     }
 
@@ -149,13 +150,13 @@ class RateLimitFilterTest {
 
         filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
                 new MockHttpServletResponse(), passThroughChain());
-        Bucket expired = filter.cachedBucket("203.0.113.25:login");
+        Bucket expired = cachedBucket("203.0.113.25:login");
         ticker.advance(61, TimeUnit.SECONDS);
-        filter.cleanUpBuckets();
+        cleanUpBuckets();
         filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
                 new MockHttpServletResponse(), passThroughChain());
 
-        assertNotSame(expired, filter.cachedBucket("203.0.113.25:login"));
+        assertNotSame(expired, cachedBucket("203.0.113.25:login"));
     }
 
     @Test
@@ -166,12 +167,12 @@ class RateLimitFilterTest {
 
         filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
                 new MockHttpServletResponse(), passThroughChain());
-        Bucket active = filter.cachedBucket("203.0.113.25:login");
+        Bucket active = cachedBucket("203.0.113.25:login");
         ticker.advance(30, TimeUnit.SECONDS);
         filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
                 new MockHttpServletResponse(), passThroughChain());
 
-        assertSame(active, filter.cachedBucket("203.0.113.25:login"));
+        assertSame(active, cachedBucket("203.0.113.25:login"));
     }
 
     @Test
@@ -187,7 +188,7 @@ class RateLimitFilterTest {
 
         filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.26"),
                 new MockHttpServletResponse(), passThroughChain());
-        filter.cleanUpBuckets();
+        cleanUpBuckets();
 
         assertEquals(200, responseFor(requestWithRemote("/api/auth/login", "203.0.113.25")).getStatus());
         assertEquals(200, responseFor(requestWithRemote("/api/auth/login", "203.0.113.25")).getStatus());
@@ -419,11 +420,30 @@ class RateLimitFilterTest {
     }
 
     private int bucketCount() {
-        return Math.toIntExact(filter.cachedBucketCount());
+        Cache<String, Bucket> buckets = bucketCache();
+        buckets.cleanUp();
+        return Math.toIntExact(buckets.estimatedSize());
     }
 
     private Set<String> bucketKeys() {
-        return filter.cachedBucketKeys();
+        Cache<String, Bucket> buckets = bucketCache();
+        buckets.cleanUp();
+        return Set.copyOf(buckets.asMap().keySet());
+    }
+
+    private Bucket cachedBucket(String key) {
+        Cache<String, Bucket> buckets = bucketCache();
+        buckets.cleanUp();
+        return buckets.getIfPresent(key);
+    }
+
+    private void cleanUpBuckets() {
+        bucketCache().cleanUp();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Cache<String, Bucket> bucketCache() {
+        return (Cache<String, Bucket>) ReflectionTestUtils.getField(filter, "buckets");
     }
 
     private FilterChain passThroughChain() {

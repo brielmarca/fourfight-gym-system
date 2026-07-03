@@ -24,6 +24,9 @@ jwt:
 
 rate-limit:
   trusted-proxies: ${RATE_LIMIT_TRUSTED_PROXIES:}
+  cache:
+    maximum-size: ${RATE_LIMIT_CACHE_MAXIMUM_SIZE:10000}
+    expire-after-access-minutes: ${RATE_LIMIT_CACHE_EXPIRE_AFTER_ACCESS_MINUTES:30}
   login:
     capacity: 10
     refill-tokens: 5

@@ -23,22 +23,15 @@ public class MfaSecretEncryptionService {
     private final SecureRandom secureRandom = new SecureRandom();
 
     public MfaSecretEncryptionService(
-            @Value("${mfa.encryption-key-base64:}") String encryptionKeyBase64,
-            @Value("${spring.profiles.active:}") String activeProfiles) {
+            @Value("${mfa.encryption-key-base64:}") String encryptionKeyBase64) {
         String key = encryptionKeyBase64;
         if (key == null || key.isBlank()) {
-            if (isProductionProfile(activeProfiles)) {
-                throw new IllegalStateException(
-                        "MFA_ENCRYPTION_KEY_BASE64 must be configured in production");
-            }
-            byte[] generated = new byte[32];
-            secureRandom.nextBytes(generated);
-            this.keySpec = new SecretKeySpec(generated, "AES");
-            return;
+            throw new IllegalStateException(
+                    "MFA_ENCRYPTION_KEY_BASE64 must be configured");
         }
         byte[] decoded;
         try {
-            decoded = Base64.getDecoder().decode(key);
+            decoded = Base64.getDecoder().decode(key.trim());
         } catch (IllegalArgumentException e) {
             throw new IllegalStateException("MFA_ENCRYPTION_KEY_BASE64 is not valid Base64", e);
         }
@@ -96,18 +89,5 @@ public class MfaSecretEncryptionService {
 
     public boolean isEncrypted(String storedValue) {
         return storedValue != null && storedValue.startsWith(VERSION_PREFIX);
-    }
-
-    private static boolean isProductionProfile(String profiles) {
-        if (profiles == null || profiles.isBlank()) {
-            return false;
-        }
-        for (String profile : profiles.split(",")) {
-            String p = profile.trim();
-            if ("prod".equalsIgnoreCase(p) || "production".equalsIgnoreCase(p)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

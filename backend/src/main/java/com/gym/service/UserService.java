@@ -42,6 +42,7 @@ public class UserService {
             .orElseThrow(() -> new ResourceNotFoundException("User by email", email));
     }
 
+    @Transactional
     public void updateUser(User user) {
         userRepository.save(user);
     }

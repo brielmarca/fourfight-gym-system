@@ -78,18 +78,29 @@ class MfaSecretEncryptionServiceTest {
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> service.decrypt("v1::"))
                 .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.decrypt("v1:not-base64:!!!"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    @DisplayName("Malformed v1 value is never treated as plaintext")
+    void malformedV1NeverFallsBackToPlaintext() {
+        MfaSecretEncryptionService service = newService();
+        assertThat(service.isEncrypted("v1:bad")).isTrue();
+        assertThatThrownBy(() -> service.decrypt("v1:bad"))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     @DisplayName("Invalid key length fails startup")
     void invalidKeyLengthFails() {
         String shortKey = Base64.getEncoder().encodeToString(new byte[16]);
-        assertThatThrownBy(() -> new MfaSecretEncryptionService(shortKey, "test"))
+        assertThatThrownBy(() -> new MfaSecretEncryptionService(shortKey))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("32 bytes");
 
         String longKey = Base64.getEncoder().encodeToString(new byte[48]);
-        assertThatThrownBy(() -> new MfaSecretEncryptionService(longKey, "test"))
+        assertThatThrownBy(() -> new MfaSecretEncryptionService(longKey))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("32 bytes");
     }
@@ -97,22 +108,22 @@ class MfaSecretEncryptionServiceTest {
     @Test
     @DisplayName("Invalid Base64 key fails startup")
     void invalidBase64KeyFails() {
-        assertThatThrownBy(() -> new MfaSecretEncryptionService("not-valid-base64!!!", "test"))
+        assertThatThrownBy(() -> new MfaSecretEncryptionService("not-valid-base64!!!"))
                 .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
-    @DisplayName("Production startup fails without key")
-    void productionStartupFailsWithoutKey() {
-        assertThatThrownBy(() -> new MfaSecretEncryptionService(null, "prod"))
+    @DisplayName("Startup fails without key regardless of profile")
+    void startupFailsWithoutKey() {
+        assertThatThrownBy(() -> new MfaSecretEncryptionService(null))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("must be configured");
 
-        assertThatThrownBy(() -> new MfaSecretEncryptionService("", "prod"))
+        assertThatThrownBy(() -> new MfaSecretEncryptionService(""))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("must be configured");
 
-        assertThatThrownBy(() -> new MfaSecretEncryptionService("  ", "production"))
+        assertThatThrownBy(() -> new MfaSecretEncryptionService("  "))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("must be configured");
     }
@@ -169,27 +180,52 @@ class MfaSecretEncryptionServiceTest {
     }
 
     @Test
-    @DisplayName("Non-production startup generates key")
-    void nonProductionStartupGeneratesKey() {
-        MfaSecretEncryptionService service = new MfaSecretEncryptionService(null, "dev");
-        String encrypted = service.encrypt("test");
-        assertThat(encrypted).startsWith("v1:");
-        assertThat(service.decrypt(encrypted)).isEqualTo("test");
+    @DisplayName("Value encrypted before recreating service with same key still decrypts")
+    void sameKeyAcrossServiceInstances() {
+        String plaintext = "JBSWY3DPEHPK3PXP";
+        String encrypted = newService().encrypt(plaintext);
+        MfaSecretEncryptionService secondService = newService();
+        assertThat(secondService.decrypt(encrypted)).isEqualTo(plaintext);
     }
 
     @Test
-    @DisplayName("Empty profiles are treated as non-production")
-    void emptyProfilesAreNonProduction() {
-        MfaSecretEncryptionService service = new MfaSecretEncryptionService(null, "");
+    @DisplayName("Maximum expected secret fits within column length")
+    void maximumSecretFitsInColumn() {
+        MfaSecretEncryptionService service = newService();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 128; i++) {
+            sb.append('A');
+        }
+        String largePlaintext = sb.toString();
+        String encrypted = service.encrypt(largePlaintext);
+        assertThat(encrypted).startsWith("v1:");
+        assertThat(encrypted.length()).isLessThanOrEqualTo(255);
+        assertThat(service.decrypt(encrypted)).isEqualTo(largePlaintext);
+    }
+
+    @Test
+    @DisplayName("toString does not leak secret")
+    void toStringDoesNotLeakSecret() {
+        MfaSecretEncryptionService service = newService();
+        String toString = service.toString();
+        assertThat(toString).doesNotContain("keySpec");
+        assertThat(toString).doesNotContain("AES");
+    }
+
+    @Test
+    @DisplayName("Key is trimmed before decoding")
+    void keyTrimmedBeforeDecoding() {
+        MfaSecretEncryptionService service = new MfaSecretEncryptionService(
+                "  " + TEST_KEY + "  ");
         String encrypted = service.encrypt("test");
         assertThat(service.decrypt(encrypted)).isEqualTo("test");
     }
 
     private MfaSecretEncryptionService newService() {
-        return new MfaSecretEncryptionService(TEST_KEY, "test");
+        return new MfaSecretEncryptionService(TEST_KEY);
     }
 
     private MfaSecretEncryptionService newService(String base64Key) {
-        return new MfaSecretEncryptionService(base64Key, "test");
+        return new MfaSecretEncryptionService(base64Key);
     }
 }

@@ -24,7 +24,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import io.jsonwebtoken.Jwts;
+import java.security.PrivateKey;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.containsString;
@@ -355,6 +358,89 @@ class MfaControllerValidationTest {
 
         org.junit.jupiter.api.Assertions.assertEquals(loginCookieAttrs, mfaCookieAttrs,
                 "MFA cookie attributes must match login cookie attributes");
+    }
+
+    @Test
+    @DisplayName("Access token used as preAuthToken returns 401 with no cookie")
+    void accessTokenRejectedAsPreAuthToken() throws Exception {
+        String accessToken = jwtUtil.generateAccessToken(mfaUserId, MFA_USER_EMAIL, "CLIENT");
+        String totpCode = generateTotpCode();
+
+        mockMvc.perform(post("/api/auth/mfa/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"preAuthToken\":\"" + accessToken + "\",\"code\":\"" + totpCode + "\"}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().doesNotExist("Set-Cookie"))
+                .andExpect(jsonPath("$.accessToken").doesNotExist())
+                .andExpect(jsonPath("$.refreshToken").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("Refresh token used as preAuthToken returns 401 with no cookie")
+    void refreshTokenRejectedAsPreAuthToken() throws Exception {
+        String refreshToken = jwtUtil.generateRefreshToken(mfaUserId);
+        String totpCode = generateTotpCode();
+
+        mockMvc.perform(post("/api/auth/mfa/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"preAuthToken\":\"" + refreshToken + "\",\"code\":\"" + totpCode + "\"}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().doesNotExist("Set-Cookie"))
+                .andExpect(jsonPath("$.accessToken").doesNotExist())
+                .andExpect(jsonPath("$.refreshToken").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("Token with missing typ claim returns 401 with no cookie")
+    void missingTypClaimReturns401() throws Exception {
+        PrivateKey privateKey = getPrivateKey();
+        String noTypToken = Jwts.builder()
+                .subject(mfaUserId.toString())
+                .claim("email", MFA_USER_EMAIL)
+                .id(UUID.randomUUID().toString())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 300000))
+                .signWith(privateKey, Jwts.SIG.RS256)
+                .compact();
+        String totpCode = generateTotpCode();
+
+        mockMvc.perform(post("/api/auth/mfa/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"preAuthToken\":\"" + noTypToken + "\",\"code\":\"" + totpCode + "\"}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().doesNotExist("Set-Cookie"))
+                .andExpect(jsonPath("$.accessToken").doesNotExist())
+                .andExpect(jsonPath("$.refreshToken").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("Token with wrong typ claim returns 401 with no cookie")
+    void wrongTypClaimReturns401() throws Exception {
+        PrivateKey privateKey = getPrivateKey();
+        String wrongTypToken = Jwts.builder()
+                .subject(mfaUserId.toString())
+                .claim("email", MFA_USER_EMAIL)
+                .claim("typ", "invalid")
+                .id(UUID.randomUUID().toString())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 300000))
+                .signWith(privateKey, Jwts.SIG.RS256)
+                .compact();
+        String totpCode = generateTotpCode();
+
+        mockMvc.perform(post("/api/auth/mfa/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"preAuthToken\":\"" + wrongTypToken + "\",\"code\":\"" + totpCode + "\"}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().doesNotExist("Set-Cookie"))
+                .andExpect(jsonPath("$.accessToken").doesNotExist())
+                .andExpect(jsonPath("$.refreshToken").doesNotExist());
+    }
+
+    private PrivateKey getPrivateKey() throws Exception {
+        java.lang.reflect.Field field = JwtUtil.class.getDeclaredField("privateKey");
+        field.setAccessible(true);
+        return (PrivateKey) field.get(jwtUtil);
     }
 
     private static String generateTotpCode() {

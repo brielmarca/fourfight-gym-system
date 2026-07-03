@@ -357,6 +357,36 @@ class MfaControllerValidationTest {
                 "MFA cookie attributes must match login cookie attributes");
     }
 
+    @Test
+    @DisplayName("Access token used as preAuthToken returns 401 with no cookie")
+    void accessTokenRejectedAsPreAuthToken() throws Exception {
+        String accessToken = jwtUtil.generateAccessToken(mfaUserId, MFA_USER_EMAIL, "CLIENT");
+        String totpCode = generateTotpCode();
+
+        mockMvc.perform(post("/api/auth/mfa/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"preAuthToken\":\"" + accessToken + "\",\"code\":\"" + totpCode + "\"}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().doesNotExist("Set-Cookie"))
+                .andExpect(jsonPath("$.accessToken").doesNotExist())
+                .andExpect(jsonPath("$.refreshToken").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("Refresh token used as preAuthToken returns 401 with no cookie")
+    void refreshTokenRejectedAsPreAuthToken() throws Exception {
+        String refreshToken = jwtUtil.generateRefreshToken(mfaUserId);
+        String totpCode = generateTotpCode();
+
+        mockMvc.perform(post("/api/auth/mfa/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"preAuthToken\":\"" + refreshToken + "\",\"code\":\"" + totpCode + "\"}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().doesNotExist("Set-Cookie"))
+                .andExpect(jsonPath("$.accessToken").doesNotExist())
+                .andExpect(jsonPath("$.refreshToken").doesNotExist());
+    }
+
     private static String generateTotpCode() {
         try {
             long timeSlice = timeProvider.getTime() / 30;

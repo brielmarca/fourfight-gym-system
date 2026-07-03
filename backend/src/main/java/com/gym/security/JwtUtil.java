@@ -187,6 +187,19 @@ public class JwtUtil {
         }
     }
 
+    public boolean validatePreAuthToken(String token) {
+        if (!validateToken(token)) {
+            return false;
+        }
+        try {
+            String typ = extractClaim(token, claims -> claims.get("typ", String.class));
+            return "pre".equals(typ);
+        } catch (JwtException | IllegalArgumentException e) {
+            log.debug("Pre-auth token type validation failed: {}", e.getMessage());
+            return false;
+        }
+    }
+
     public boolean validateTokenWithKeyId(String token, String expectedKeyId) {
         try {
             String kid = extractKid(token);

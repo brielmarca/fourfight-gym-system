@@ -129,7 +129,7 @@ public class MfaController {
             @Valid @RequestBody MfaValidateRequest request,
             HttpServletResponse response) {
         
-        if (!jwtUtil.validateToken(request.preAuthToken())) {
+        if (!jwtUtil.validatePreAuthToken(request.preAuthToken())) {
             throw new UnauthorizedException("Invalid or expired pre-authentication token");
         }
         jwtUtil.extractUserId(request.preAuthToken());

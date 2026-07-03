@@ -191,6 +191,83 @@ class MfaControllerValidationTest {
     }
 
     @Test
+    @DisplayName("Invalid preAuthToken returns 401 with no cookie")
+    void invalidPreAuthTokenReturns401() throws Exception {
+        mockMvc.perform(post("/api/auth/mfa/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"preAuthToken\":\"invalid-token\",\"code\":\"123456\"}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().doesNotExist("Set-Cookie"))
+                .andExpect(jsonPath("$.accessToken").doesNotExist())
+                .andExpect(jsonPath("$.refreshToken").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("MFA-disabled user returns 422 with no cookie")
+    void mfaDisabledUserReturns422() throws Exception {
+        String preAuthToken = jwtUtil.generatePreAuthToken(mfaUserId, MFA_USER_EMAIL);
+        String totpCode = generateTotpCode();
+
+        User user = userRepository.findById(mfaUserId).orElseThrow();
+        user.setMfaEnabled(false);
+        userRepository.save(user);
+
+        mockMvc.perform(post("/api/auth/mfa/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"preAuthToken\":\"" + preAuthToken + "\",\"code\":\"" + totpCode + "\"}"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(header().doesNotExist("Set-Cookie"))
+                .andExpect(jsonPath("$.accessToken").doesNotExist())
+                .andExpect(jsonPath("$.refreshToken").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("Invalid backup code returns 401 with no cookie and no tokens")
+    void invalidBackupCodeReturns401() throws Exception {
+        String preAuthToken = jwtUtil.generatePreAuthToken(mfaUserId, MFA_USER_EMAIL);
+
+        mockMvc.perform(post("/api/auth/mfa/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"preAuthToken\":\"" + preAuthToken + "\",\"code\":\"12345678\"}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().doesNotExist("Set-Cookie"))
+                .andExpect(jsonPath("$.accessToken").doesNotExist())
+                .andExpect(jsonPath("$.refreshToken").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("Invalid MFA code response does not contain stack traces or internal class names")
+    void invalidMfaCodeResponseHasNoStackTraces() throws Exception {
+        String preAuthToken = jwtUtil.generatePreAuthToken(mfaUserId, MFA_USER_EMAIL);
+
+        String body = mockMvc.perform(post("/api/auth/mfa/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"preAuthToken\":\"" + preAuthToken + "\",\"code\":\"000000\"}"))
+                .andExpect(status().isUnauthorized())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        org.junit.jupiter.api.Assertions.assertFalse(body.contains("Exception"), "Response must not contain exception class names");
+        org.junit.jupiter.api.Assertions.assertFalse(body.contains("at com.gym"), "Response must not contain stack traces");
+    }
+
+    @Test
+    @DisplayName("Invalid preAuthToken response does not contain stack traces or internal class names")
+    void invalidPreAuthTokenResponseHasNoStackTraces() throws Exception {
+        String body = mockMvc.perform(post("/api/auth/mfa/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"preAuthToken\":\"invalid-token\",\"code\":\"123456\"}"))
+                .andExpect(status().isUnauthorized())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        org.junit.jupiter.api.Assertions.assertFalse(body.contains("Exception"), "Response must not contain exception class names");
+        org.junit.jupiter.api.Assertions.assertFalse(body.contains("at com.gym"), "Response must not contain stack traces");
+    }
+
+    @Test
     @DisplayName("MFA-validated refresh token works with refresh endpoint")
     void mfaValidatedRefreshTokenWorksWithRefreshEndpoint() throws Exception {
         String preAuthToken = jwtUtil.generatePreAuthToken(mfaUserId, MFA_USER_EMAIL);

@@ -1,5 +1,6 @@
 package com.gym.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ import com.gym.security.JwtUtil;
 import com.gym.security.GymUserDetailsService.JwtUserPrincipal;
 import com.gym.service.AuthService;
 import com.gym.service.MfaService;
+import com.gym.service.RefreshTokenCookieService;
 import com.gym.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +40,7 @@ public class MfaController {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final RefreshTokenCookieService refreshTokenCookieService;
 
     @PostMapping("/setup")
     public ResponseEntity<MfaSetupResponse> setupMfa(
@@ -123,7 +126,8 @@ public class MfaController {
 
     @PostMapping("/validate")
     public ResponseEntity<TokenPairResponse> validateMfa(
-            @Valid @RequestBody MfaValidateRequest request) {
+            @Valid @RequestBody MfaValidateRequest request,
+            HttpServletResponse response) {
         
         jwtUtil.extractUserId(request.preAuthToken());
         String email = jwtUtil.extractEmail(request.preAuthToken());
@@ -150,10 +154,12 @@ public class MfaController {
         }
         
         TokenPairResponse tokens = authService.generateTokensForUser(user);
+        refreshTokenCookieService.addRefreshTokenCookie(response, tokens.refreshToken());
         
         log.info("MFA validation successful for user: {}", user.getEmail());
         
-        return ResponseEntity.ok(tokens);
+        TokenPairResponse result = TokenPairResponse.of(tokens.accessToken(), null, tokens.expiresIn());
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/status")

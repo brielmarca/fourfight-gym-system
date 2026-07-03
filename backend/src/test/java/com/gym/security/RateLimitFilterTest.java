@@ -1,5 +1,8 @@
 package com.gym.security;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Ticker;
+import io.github.bucket4j.Bucket;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,37 +13,222 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
-import java.util.Map;
+import java.lang.reflect.Modifier;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RateLimitFilterTest {
 
     private RateLimitFilter filter;
+    private TestTicker ticker;
 
     @BeforeEach
     void setUp() {
-        filter = new RateLimitFilter(new ClientIpResolver(""));
+        ticker = new TestTicker();
+        filter = new RateLimitFilter(new ClientIpResolver(""), new RateLimitCacheProperties(10_000, 30), ticker);
+        initializeFilterFields();
+        filter.resetBuckets();
+    }
 
-        ReflectionTestUtils.setField(filter, "loginCapacity", 10);
-        ReflectionTestUtils.setField(filter, "registerCapacity", 10);
-        ReflectionTestUtils.setField(filter, "loginRefillDurationMinutes", 60);
-        ReflectionTestUtils.setField(filter, "refreshCapacity", 10);
-        ReflectionTestUtils.setField(filter, "refreshRefillDurationMinutes", 60);
-        ReflectionTestUtils.setField(filter, "forgotPasswordCapacity", 2);
-        ReflectionTestUtils.setField(filter, "forgotPasswordRefillDurationMinutes", 60);
-        ReflectionTestUtils.setField(filter, "resetPasswordCapacity", 2);
-        ReflectionTestUtils.setField(filter, "resetPasswordRefillDurationMinutes", 60);
-        ReflectionTestUtils.setField(filter, "generalCapacity", 100);
-        ReflectionTestUtils.setField(filter, "generalRefillDurationMinutes", 60);
+    @Test
+    @DisplayName("Same clientIp:endpoint key reuses the same bucket instance")
+    void sameClientEndpointReusesSameBucketInstance() throws ServletException, IOException {
+        filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
+                new MockHttpServletResponse(), passThroughChain());
+        Bucket first = cachedBucket("203.0.113.25:login");
 
-        @SuppressWarnings("unchecked")
-        Map<String, ?> buckets = (Map<String, ?>) ReflectionTestUtils.getField(filter, "buckets");
-        if (buckets != null) {
-            buckets.clear();
+        filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
+                new MockHttpServletResponse(), passThroughChain());
+
+        assertSame(first, cachedBucket("203.0.113.25:login"));
+        assertEquals(1, bucketCount());
+    }
+
+    @Test
+    @DisplayName("Different endpoint types use separate buckets for same client")
+    void differentEndpointTypesUseSeparateBuckets() throws ServletException, IOException {
+        filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
+                new MockHttpServletResponse(), passThroughChain());
+        filter.doFilter(requestWithRemote("/api/auth/refresh", "203.0.113.25"),
+                new MockHttpServletResponse(), passThroughChain());
+
+        assertTrue(bucketKeys().contains("203.0.113.25:login"));
+        assertTrue(bucketKeys().contains("203.0.113.25:refresh"));
+        assertNotSame(cachedBucket("203.0.113.25:login"), cachedBucket("203.0.113.25:refresh"));
+        assertEquals(2, bucketCount());
+    }
+
+    @Test
+    @DisplayName("Different clients use separate buckets")
+    void differentClientsUseSeparateBucketInstances() throws ServletException, IOException {
+        filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.24"),
+                new MockHttpServletResponse(), passThroughChain());
+        filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
+                new MockHttpServletResponse(), passThroughChain());
+
+        assertNotSame(cachedBucket("203.0.113.24:login"), cachedBucket("203.0.113.25:login"));
+        assertEquals(2, bucketCount());
+    }
+
+    @Test
+    @DisplayName("Cache never exceeds configured maximum size after cleanup")
+    void cacheNeverExceedsConfiguredMaximumSize() throws ServletException, IOException {
+        filter = new RateLimitFilter(new ClientIpResolver(""), new RateLimitCacheProperties(3, 30), ticker);
+        initializeFilterFields();
+
+        for (int i = 0; i < 10; i++) {
+            filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113." + i),
+                    new MockHttpServletResponse(), passThroughChain());
         }
+        cleanUpBuckets();
+
+        assertTrue(bucketCount() <= 3);
+    }
+
+    @Test
+    @DisplayName("Inactive entries are evicted when maximum size is exceeded")
+    void inactiveEntryIsEvictedWhenMaximumSizeExceeded() throws ServletException, IOException {
+        filter = new RateLimitFilter(new ClientIpResolver(""), new RateLimitCacheProperties(1, 30), ticker);
+        initializeFilterFields();
+
+        filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.1"),
+                new MockHttpServletResponse(), passThroughChain());
+        filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.2"),
+                new MockHttpServletResponse(), passThroughChain());
+        cleanUpBuckets();
+
+        assertEquals(1, bucketCount());
+        assertFalse(bucketKeys().contains("203.0.113.1:login"));
+    }
+
+    @Test
+    @DisplayName("Entry expires after configured inactivity")
+    void entryExpiresAfterConfiguredInactivity() throws ServletException, IOException {
+        filter = new RateLimitFilter(new ClientIpResolver(""), new RateLimitCacheProperties(10, 1), ticker);
+        initializeFilterFields();
+
+        filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
+                new MockHttpServletResponse(), passThroughChain());
+        ticker.advance(61, TimeUnit.SECONDS);
+        cleanUpBuckets();
+
+        assertEquals(0, bucketCount());
+    }
+
+    @Test
+    @DisplayName("Access refreshes expire-after-access timing")
+    void accessRefreshesExpireAfterAccessTiming() throws ServletException, IOException {
+        filter = new RateLimitFilter(new ClientIpResolver(""), new RateLimitCacheProperties(10, 1), ticker);
+        initializeFilterFields();
+
+        filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
+                new MockHttpServletResponse(), passThroughChain());
+        ticker.advance(45, TimeUnit.SECONDS);
+        filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
+                new MockHttpServletResponse(), passThroughChain());
+        Bucket refreshed = cachedBucket("203.0.113.25:login");
+        ticker.advance(45, TimeUnit.SECONDS);
+        cleanUpBuckets();
+
+        assertSame(refreshed, cachedBucket("203.0.113.25:login"));
+        assertEquals(1, bucketCount());
+    }
+
+    @Test
+    @DisplayName("Expired entry receives a new bucket instance")
+    void expiredEntryReceivesNewBucketInstance() throws ServletException, IOException {
+        filter = new RateLimitFilter(new ClientIpResolver(""), new RateLimitCacheProperties(10, 1), ticker);
+        initializeFilterFields();
+
+        filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
+                new MockHttpServletResponse(), passThroughChain());
+        Bucket expired = cachedBucket("203.0.113.25:login");
+        ticker.advance(61, TimeUnit.SECONDS);
+        cleanUpBuckets();
+        filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
+                new MockHttpServletResponse(), passThroughChain());
+
+        assertNotSame(expired, cachedBucket("203.0.113.25:login"));
+    }
+
+    @Test
+    @DisplayName("Active non-expired entry keeps the same bucket instance")
+    void activeNonExpiredEntryKeepsSameBucketInstance() throws ServletException, IOException {
+        filter = new RateLimitFilter(new ClientIpResolver(""), new RateLimitCacheProperties(10, 1), ticker);
+        initializeFilterFields();
+
+        filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
+                new MockHttpServletResponse(), passThroughChain());
+        Bucket active = cachedBucket("203.0.113.25:login");
+        ticker.advance(30, TimeUnit.SECONDS);
+        filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
+                new MockHttpServletResponse(), passThroughChain());
+
+        assertSame(active, cachedBucket("203.0.113.25:login"));
+    }
+
+    @Test
+    @DisplayName("Eviction does not change configured rate-limit thresholds")
+    void evictionDoesNotChangeConfiguredRateLimitThresholds() throws ServletException, IOException {
+        filter = new RateLimitFilter(new ClientIpResolver(""), new RateLimitCacheProperties(1, 30), ticker);
+        initializeFilterFields();
+        ReflectionTestUtils.setField(filter, "loginCapacity", 2);
+
+        assertEquals(200, responseFor(requestWithRemote("/api/auth/login", "203.0.113.25")).getStatus());
+        assertEquals(200, responseFor(requestWithRemote("/api/auth/login", "203.0.113.25")).getStatus());
+        assertEquals(429, responseFor(requestWithRemote("/api/auth/login", "203.0.113.25")).getStatus());
+
+        filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.26"),
+                new MockHttpServletResponse(), passThroughChain());
+        cleanUpBuckets();
+
+        assertEquals(200, responseFor(requestWithRemote("/api/auth/login", "203.0.113.25")).getStatus());
+        assertEquals(200, responseFor(requestWithRemote("/api/auth/login", "203.0.113.25")).getStatus());
+        assertEquals(429, responseFor(requestWithRemote("/api/auth/login", "203.0.113.25")).getStatus());
+    }
+
+    @Test
+    @DisplayName("resetBuckets clears all cached entries")
+    void resetBucketsClearsAllCachedEntries() throws ServletException, IOException {
+        filter.doFilter(requestWithRemote("/api/auth/login", "203.0.113.25"),
+                new MockHttpServletResponse(), passThroughChain());
+
+        filter.resetBuckets();
+
+        assertEquals(0, bucketCount());
+    }
+
+    @Test
+    @DisplayName("Test reset remains inaccessible outside package except test bridge")
+    void testResetRemainsPackagePrivate() throws NoSuchMethodException {
+        int modifiers = RateLimitFilter.class.getDeclaredMethod("resetBuckets").getModifiers();
+
+        assertFalse(Modifier.isPublic(modifiers));
+        assertFalse(Modifier.isProtected(modifiers));
+        assertFalse(Modifier.isPrivate(modifiers));
+        assertDoesNotThrow(() -> RateLimitFilterTestSupport.reset(filter));
+    }
+
+    @Test
+    @DisplayName("Invalid maximum size fails construction")
+    void invalidMaximumSizeFailsConstruction() {
+        assertThrows(IllegalArgumentException.class, () -> new RateLimitCacheProperties(0, 30));
+        assertThrows(IllegalArgumentException.class, () -> new RateLimitCacheProperties(1_000_001, 30));
+    }
+
+    @Test
+    @DisplayName("Invalid expiration fails construction")
+    void invalidExpirationFailsConstruction() {
+        assertThrows(IllegalArgumentException.class, () -> new RateLimitCacheProperties(10_000, 0));
+        assertThrows(IllegalArgumentException.class, () -> new RateLimitCacheProperties(10_000, 1_441));
     }
 
     @Test
@@ -132,7 +320,7 @@ class RateLimitFilterTest {
     @Test
     @DisplayName("Trusted proxy request resolves the legitimate client IP")
     void trustedProxyRequestResolvesClientIp() throws ServletException, IOException {
-        filter = new RateLimitFilter(new ClientIpResolver("10.0.0.10"));
+        filter = new RateLimitFilter(new ClientIpResolver("10.0.0.10"), new RateLimitCacheProperties(10_000, 30), ticker);
         initializeFilterFields();
 
         filter.doFilter(requestWithRemoteAndHeader("/api/auth/login", "10.0.0.10", "X-Forwarded-For", "203.0.113.23"),
@@ -144,7 +332,7 @@ class RateLimitFilterTest {
     @Test
     @DisplayName("Trusted proxy with multiple hops uses nearest untrusted address")
     void trustedProxyWithMultipleHopsUsesNearestUntrustedAddress() throws ServletException, IOException {
-        filter = new RateLimitFilter(new ClientIpResolver("10.0.0.10, 10.0.0.0/24"));
+        filter = new RateLimitFilter(new ClientIpResolver("10.0.0.10, 10.0.0.0/24"), new RateLimitCacheProperties(10_000, 30), ticker);
         initializeFilterFields();
 
         filter.doFilter(requestWithRemoteAndHeader("/api/auth/login", "10.0.0.10", "X-Forwarded-For", "198.51.100.50, 203.0.113.24, 10.0.0.20"),
@@ -232,17 +420,47 @@ class RateLimitFilterTest {
     }
 
     private int bucketCount() {
-        return bucketKeys().size();
+        Cache<String, Bucket> buckets = bucketCache();
+        buckets.cleanUp();
+        return Math.toIntExact(buckets.estimatedSize());
     }
 
-    private java.util.Set<String> bucketKeys() {
-        @SuppressWarnings("unchecked")
-        Map<String, ?> buckets = (Map<String, ?>) ReflectionTestUtils.getField(filter, "buckets");
-        return buckets == null ? java.util.Set.of() : buckets.keySet();
+    private Set<String> bucketKeys() {
+        Cache<String, Bucket> buckets = bucketCache();
+        buckets.cleanUp();
+        return Set.copyOf(buckets.asMap().keySet());
+    }
+
+    private Bucket cachedBucket(String key) {
+        Cache<String, Bucket> buckets = bucketCache();
+        buckets.cleanUp();
+        return buckets.getIfPresent(key);
+    }
+
+    private void cleanUpBuckets() {
+        bucketCache().cleanUp();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Cache<String, Bucket> bucketCache() {
+        return (Cache<String, Bucket>) ReflectionTestUtils.getField(filter, "buckets");
     }
 
     private FilterChain passThroughChain() {
         return (request, response) -> {
         };
+    }
+
+    private static final class TestTicker implements Ticker {
+        private long nanos;
+
+        @Override
+        public long read() {
+            return nanos;
+        }
+
+        void advance(long duration, TimeUnit unit) {
+            nanos += unit.toNanos(duration);
+        }
     }
 }

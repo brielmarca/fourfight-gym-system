@@ -87,16 +87,14 @@ class MfaControllerValidationTest {
             newUser.setPasswordHash(passwordEncoder.encode(MFA_USER_PASSWORD));
             newUser.setRole(User.Role.CLIENT);
             newUser.setIsActive(true);
-            newUser.setMfaEnabled(true);
-            newUser.setMfaSecret(TOTP_SECRET);
+            newUser.setMfaEnabled(false);
             return userRepository.save(newUser);
         });
 
-        if (!user.getMfaEnabled()) {
-            user.setMfaEnabled(true);
-            user.setMfaSecret(TOTP_SECRET);
-            userRepository.save(user);
-        }
+        user.setMfaEnabled(true);
+        user.setMfaSecret(TOTP_SECRET);
+        user.setBackupCodes(null);
+        userRepository.save(user);
 
         mfaUserId = user.getId();
 

@@ -3,6 +3,7 @@ package com.gym.service;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.gym.dto.request.CreatePaymentRequest;
@@ -80,6 +81,7 @@ public class PaymentService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public PaymentResponse refund(UUID id) {
         Payment payment = paymentRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Payment", id));

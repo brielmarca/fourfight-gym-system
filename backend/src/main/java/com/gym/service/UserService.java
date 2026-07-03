@@ -3,6 +3,10 @@ package com.gym.service;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +56,14 @@ public class UserService {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("User", id));
 
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+            .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+
+        if (request.isActive() != null && !isAdmin) {
+            throw new AccessDeniedException("Only administrators can change user active status");
+        }
+
         if (request.name() != null) user.setName(request.name());
         if (request.phone() != null) user.setPhone(request.phone());
         if (request.avatarUrl() != null) user.setAvatarUrl(request.avatarUrl());
@@ -70,15 +82,30 @@ public class UserService {
     }
 
     @Transactional
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public void delete(UUID id) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("User", id));
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+            .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+
+        if (user.getRole() == Role.ADMIN || user.getRole() == Role.MANAGER) {
+            throw new AccessDeniedException("Cannot delete privileged user accounts");
+        }
+
+        if (!isAdmin && user.getRole() != Role.CLIENT) {
+            throw new AccessDeniedException("Managers can only delete student accounts");
+        }
+
         user.softDelete();
         userRepository.save(user);
         log.info("User soft deleted: {}", user.getEmail());
     }
 
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public UserResponse updateRole(UUID id, User.Role role) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("User", id));

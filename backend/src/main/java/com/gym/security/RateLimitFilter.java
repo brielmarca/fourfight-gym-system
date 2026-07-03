@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RateLimitFilter implements Filter {
 
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
+    private final ClientIpResolver clientIpResolver;
     
     @Value("${rate-limit.login.capacity:10}")
     private int loginCapacity;
@@ -70,7 +71,8 @@ public class RateLimitFilter implements Filter {
     @Value("${rate-limit.general.refill-duration:1}")
     private int generalRefillDurationMinutes;
     
-    public RateLimitFilter() {
+    public RateLimitFilter(ClientIpResolver clientIpResolver) {
+        this.clientIpResolver = clientIpResolver;
         log.info("[STARTUP] START RateLimitFilter constructor");
         log.info("[STARTUP] END RateLimitFilter constructor");
     }
@@ -86,7 +88,7 @@ public class RateLimitFilter implements Filter {
         }
         
         String path = httpRequest.getRequestURI();
-        String clientIp = getClientIp(httpRequest);
+        String clientIp = clientIpResolver.resolve(httpRequest);
         
         // Skip rate limiting for public endpoints and health checks
         if (path.equals("/actuator/health") || path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) {
@@ -168,15 +170,4 @@ public class RateLimitFilter implements Filter {
         buckets.clear();
     }
 
-    private String getClientIp(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-        String xRealIp = request.getHeader("X-Real-IP");
-        if (xRealIp != null && !xRealIp.isBlank()) {
-            return xRealIp;
-        }
-        return request.getRemoteAddr();
-    }
 }

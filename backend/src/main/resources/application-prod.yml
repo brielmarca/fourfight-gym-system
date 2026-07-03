@@ -68,6 +68,7 @@ jwt:
   refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
 
 rate-limit:
+  trusted-proxies: ${RATE_LIMIT_TRUSTED_PROXIES:}
   login:
     capacity: 10
     refill-tokens: 5
@@ -94,11 +95,8 @@ cors:
 server:
   port: ${PORT:10000}
   address: 0.0.0.0
-  forward-headers-strategy: framework
+  forward-headers-strategy: none
   tomcat:
-    remoteip:
-      remote-ip-header: x-forwarded-for
-      protocol-header: x-forwarded-proto
     threads:
       max: 50
       min-spare: 5

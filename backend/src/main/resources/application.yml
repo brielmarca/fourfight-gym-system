@@ -23,6 +23,7 @@ jwt:
   refresh-expiration-ms: 604800000
 
 rate-limit:
+  trusted-proxies: ${RATE_LIMIT_TRUSTED_PROXIES:}
   login:
     capacity: 10
     refill-tokens: 5

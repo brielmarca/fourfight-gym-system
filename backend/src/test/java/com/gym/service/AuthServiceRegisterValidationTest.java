@@ -7,11 +7,13 @@ import com.gym.dto.request.PreferredTrainingTime;
 import com.gym.dto.request.RegisterRequest;
 import com.gym.entity.PreRegistrationProfile;
 import com.gym.entity.User;
+import com.gym.config.LoginLockoutProperties;
 import com.gym.exception.ValidationException;
 import com.gym.repository.PreRegistrationProfileRepository;
 import com.gym.repository.RefreshTokenRepository;
 import com.gym.repository.UserRepository;
 import com.gym.security.JwtUtil;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
@@ -52,7 +54,8 @@ class AuthServiceRegisterValidationTest {
             preRegistrationProfileRepository,
             passwordEncoder,
             jwtUtil,
-            eventPublisher
+            eventPublisher,
+            new LoginLockoutProperties(5, Duration.ofMinutes(15), 10000, Duration.ofMinutes(30))
         );
 
         when(userRepository.existsByEmailIgnoreCase(any())).thenReturn(false);

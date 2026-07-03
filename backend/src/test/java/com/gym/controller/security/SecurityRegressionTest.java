@@ -1025,7 +1025,7 @@ class SecurityRegressionTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(correctPasswordJson))
                 .andExpect(status().isUnauthorized())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Account temporarily locked due to too many failed attempts")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Invalid email or password")));
     }
 
     @Test

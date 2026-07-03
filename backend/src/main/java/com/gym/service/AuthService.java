@@ -3,17 +3,29 @@ package com.gym.service;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.Map;
 import java.util.UUID;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.gym.config.LoginLockoutProperties;
+import com.gym.security.ClientIpResolver;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import com.gym.dto.request.LoginRequest;
 import com.gym.dto.request.PreferredContactMethod;
 import com.gym.dto.request.PreferredModality;
@@ -49,18 +61,52 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final ApplicationEventPublisher eventPublisher;
-
-    @Value("${security.lockout.failed-attempts:5}")
-    private int maxFailedAttempts;
-
-    @Value("${security.lockout.duration:PT15M}")
-    private String lockoutDuration;
+    private final LoginLockoutProperties loginLockoutProperties;
 
     @Value("${AUTH_DIAGNOSTICS_ENABLED:false}")
     private boolean authDiagnosticsEnabled;
 
-    private static final Map<String, Integer> failedLoginAttempts = new java.util.concurrent.ConcurrentHashMap<>();
-    private static final Map<String, LocalDateTime> lockedAccounts = new java.util.concurrent.ConcurrentHashMap<>();
+    @Getter
+    private static class LoginAttemptState {
+        private final int failedAttempts;
+        private final Instant lockedUntil;
+
+        LoginAttemptState(int failedAttempts, Instant lockedUntil) {
+            this.failedAttempts = failedAttempts;
+            this.lockedUntil = lockedUntil;
+        }
+
+        LoginAttemptState withIncrement() {
+            return new LoginAttemptState(failedAttempts + 1, lockedUntil);
+        }
+
+        LoginAttemptState withLock(Instant expiry) {
+            return new LoginAttemptState(failedAttempts, expiry);
+        }
+
+        boolean isLocked(Instant now) {
+            return lockedUntil != null && now.isBefore(lockedUntil);
+        }
+    }
+
+    private Cache<String, LoginAttemptState> loginAttemptCache;
+
+    @PostConstruct
+    void initLoginAttemptCache() {
+        this.loginAttemptCache = Caffeine.newBuilder()
+            .maximumSize(loginLockoutProperties.cacheMaxSize())
+            .expireAfterWrite(loginLockoutProperties.cacheExpiry())
+            .build();
+    }
+
+    private Clock clock = Clock.systemUTC();
+
+    void setClock(Clock clock) {
+        this.clock = clock;
+    }
+
+    @Autowired
+    private ClientIpResolver clientIpResolver;
 
     @Transactional
     public UserResponse register(RegisterRequest request) {
@@ -153,14 +199,14 @@ public class AuthService {
         if (isAccountLocked(normalizedEmail)) {
             log.warn("Login attempt on locked account: {} from IP: {}", normalizedEmail, clientIp);
             loginStatus = "LOCKED";
-            logAuthDiagnostics(normalizedEmail, userFound, userActive, deletedAtNull, role, passwordMatch, loginStatus);
-            throw new UnauthorizedException("Account temporarily locked due to too many failed attempts");
+            logAuthDiagnostics(normalizedEmail, userFound, userActive, deletedAtNull, role, loginStatus);
+            throw UnauthorizedException.invalidCredentials();
         }
 
         User user = userRepository.findByEmailIgnoreCase(normalizedEmail)
             .orElseGet(() -> userRepository.findByEmail(normalizedEmail).orElse(null));
         if (user == null) {
-            logAuthDiagnostics(normalizedEmail, userFound, userActive, deletedAtNull, role, passwordMatch, loginStatus);
+            logAuthDiagnostics(normalizedEmail, userFound, userActive, deletedAtNull, role, loginStatus);
             throw UnauthorizedException.invalidCredentials();
         }
         userFound = true;
@@ -171,26 +217,26 @@ public class AuthService {
         passwordMatch = passwordEncoder.matches(request.password(), user.getPasswordHash());
         if (!passwordMatch) {
             handleFailedLogin(normalizedEmail, clientIp);
-            logAuthDiagnostics(normalizedEmail, userFound, userActive, deletedAtNull, role, passwordMatch, loginStatus);
+            logAuthDiagnostics(normalizedEmail, userFound, userActive, deletedAtNull, role, loginStatus);
             throw UnauthorizedException.invalidCredentials();
         }
 
         if (!user.getIsActive()) {
             loginStatus = "INACTIVE";
-            logAuthDiagnostics(normalizedEmail, userFound, userActive, deletedAtNull, role, passwordMatch, loginStatus);
-            throw new UnauthorizedException("Account is disabled");
+            logAuthDiagnostics(normalizedEmail, userFound, userActive, deletedAtNull, role, loginStatus);
+            throw UnauthorizedException.invalidCredentials();
         }
 
         clearFailedLoginAttempts(normalizedEmail);
         
         if (Boolean.TRUE.equals(user.getMfaEnabled())) {
             loginStatus = "MFA_PREAUTH";
-            logAuthDiagnostics(normalizedEmail, userFound, userActive, deletedAtNull, role, passwordMatch, loginStatus);
+            logAuthDiagnostics(normalizedEmail, userFound, userActive, deletedAtNull, role, loginStatus);
             return generatePreAuthToken(user);
         }
         
         loginStatus = "SUCCESS";
-        logAuthDiagnostics(normalizedEmail, userFound, userActive, deletedAtNull, role, passwordMatch, loginStatus);
+        logAuthDiagnostics(normalizedEmail, userFound, userActive, deletedAtNull, role, loginStatus);
         return generateTokenPair(user);
     }
 
@@ -204,20 +250,18 @@ public class AuthService {
         boolean userActive,
         boolean deletedAtNull,
         String role,
-        boolean passwordMatch,
         String loginStatus
     ) {
         if (!authDiagnosticsEnabled) {
             return;
         }
         log.info(
-            "AUTH_DIAG email={} userFound={} userActive={} deletedAtNull={} role={} passwordMatch={} loginStatus={}",
+            "AUTH_DIAG email={} userFound={} userActive={} deletedAtNull={} role={} loginStatus={}",
             normalizedEmail,
             userFound,
             userActive,
             deletedAtNull,
             role,
-            passwordMatch,
             loginStatus
         );
     }
@@ -235,41 +279,40 @@ public class AuthService {
     }
 
     private void handleFailedLogin(String email, String clientIp) {
-        int attempts = failedLoginAttempts.getOrDefault(email, 0) + 1;
-        failedLoginAttempts.put(email, attempts);
-        
-        log.warn("Failed login attempt {} of {} for user {} from IP: {}", 
-            attempts, maxFailedAttempts, email, clientIp);
-        
-        if (attempts >= maxFailedAttempts) {
-            lockAccount(email);
-            log.warn("Account locked due to {} failed attempts: {}", attempts, email);
-        }
-    }
-
-    private void lockAccount(String email) {
-        lockedAccounts.put(email, LocalDateTime.now().plus(Duration.parse(lockoutDuration)));
+        Instant now = clock.instant();
+        int maxAttempts = loginLockoutProperties.failedAttempts();
+        Duration lockDuration = loginLockoutProperties.duration();
+        loginAttemptCache.asMap().compute(email, (key, current) -> {
+            LoginAttemptState incremented = (current != null ? current : new LoginAttemptState(0, null)).withIncrement();
+            int attempts = incremented.failedAttempts;
+            log.warn("Failed login attempt {} of {} for user {} from IP: {}",
+                attempts, maxAttempts, email, clientIp);
+            if (attempts >= maxAttempts) {
+                log.warn("Account locked due to {} failed attempts: {}", attempts, email);
+                return incremented.withLock(now.plus(lockDuration));
+            }
+            return incremented;
+        });
     }
 
     private boolean isAccountLocked(String email) {
-        LocalDateTime lockExpiresAt = lockedAccounts.get(email);
-        if (lockExpiresAt == null) {
+        Instant now = clock.instant();
+        LoginAttemptState state = loginAttemptCache.getIfPresent(email);
+        if (state == null) {
             return false;
         }
-        
-        if (LocalDateTime.now().isAfter(lockExpiresAt)) {
-            lockedAccounts.remove(email);
-            failedLoginAttempts.remove(email);
+        if (state.isLocked(now)) {
+            return true;
+        }
+        if (state.lockedUntil != null && now.isAfter(state.lockedUntil)) {
+            loginAttemptCache.invalidate(email);
             log.info("Account lock expired for user: {}", email);
-            return false;
         }
-        
-        return true;
+        return false;
     }
 
     private void clearFailedLoginAttempts(String email) {
-        failedLoginAttempts.remove(email);
-        lockedAccounts.remove(email);
+        loginAttemptCache.invalidate(email);
     }
 
     public boolean unlockAccountLockout(String email) {
@@ -277,10 +320,7 @@ public class AuthService {
         if (normalizedEmail == null || normalizedEmail.isBlank()) {
             return false;
         }
-
-        boolean hadFailedAttempts = failedLoginAttempts.remove(normalizedEmail) != null;
-        boolean hadLock = lockedAccounts.remove(normalizedEmail) != null;
-        return hadFailedAttempts || hadLock;
+        return loginAttemptCache.asMap().remove(normalizedEmail) != null;
     }
 
     @Transactional
@@ -385,6 +425,14 @@ public class AuthService {
     }
 
     private String getClientIp() {
+        try {
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+            if (request != null && clientIpResolver != null) {
+                return clientIpResolver.resolve(request);
+            }
+        } catch (IllegalStateException e) {
+            log.debug("No request context available for IP resolution");
+        }
         return "127.0.0.1";
     }
 

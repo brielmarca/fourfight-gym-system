@@ -18,6 +18,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,12 +26,17 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -98,6 +104,7 @@ class ManagerAuthorizationConsistencyTest {
             .id(UUID.randomUUID())
             .name("MgrAuth Client")
             .email(clientEmail)
+            .phone("+351912345678")
             .passwordHash(passwordEncoder.encode("ClientPass123!"))
             .role(User.Role.CLIENT)
             .isActive(true)
@@ -109,6 +116,7 @@ class ManagerAuthorizationConsistencyTest {
             .id(UUID.randomUUID())
             .name("MgrAuth Other")
             .email(otherEmail)
+            .phone("+351912345678")
             .passwordHash(passwordEncoder.encode("OtherPass123!"))
             .role(User.Role.CLIENT)
             .isActive(true)
@@ -382,6 +390,225 @@ class ManagerAuthorizationConsistencyTest {
     // ===== ROLE MANAGEMENT =====
 
     @Test
+    @DisplayName("ADMIN can access full user list")
+    void adminCanAccessFullUserList() throws Exception {
+        mockMvc.perform(get("/api/users?page=0&size=20")
+                .header("Authorization", "Bearer " + adminToken))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[*].role", hasItem("ADMIN")))
+            .andExpect(jsonPath("$.content[*].role", hasItem("MANAGER")))
+            .andExpect(jsonPath("$.content[0].createdAt").exists())
+            .andExpect(jsonPath("$.content[0].updatedAt").exists());
+    }
+
+    @Test
+    @DisplayName("MANAGER cannot access admin full user list")
+    void managerCannotAccessAdminFullUserList() throws Exception {
+        mockMvc.perform(get("/api/users?page=0&size=20")
+                .header("Authorization", "Bearer " + managerToken))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("MANAGER operational directory excludes privileged accounts and sensitive fields")
+    void managerDirectoryExcludesPrivilegedAccountsAndSensitiveFields() throws Exception {
+        User trainer = createUser("directory-trainer-" + UUID.randomUUID() + "@test.com", User.Role.TRAINER);
+        User professor = createUser("directory-professor-" + UUID.randomUUID() + "@test.com", User.Role.PROFESSOR);
+        User inactiveClient = createClient("directory-inactive-" + UUID.randomUUID() + "@test.com");
+        inactiveClient.setIsActive(false);
+        inactiveClient.setMfaSecret("encrypted-secret-for-test");
+        inactiveClient.setBackupCodes("encrypted-backup-codes-for-test");
+        userRepository.save(inactiveClient);
+        long visibleTotal = userRepository.findActiveByRoles(
+            List.of(User.Role.CLIENT, User.Role.TRAINER, User.Role.PROFESSOR),
+            PageRequest.of(0, 1)
+        ).getTotalElements();
+
+        mockMvc.perform(get("/api/manager/users?page=0&size=50")
+                .header("Authorization", "Bearer " + managerToken))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.totalElements").value((int) visibleTotal))
+            .andExpect(jsonPath("$.content[*].role", everyItem(not("ADMIN"))))
+            .andExpect(jsonPath("$.content[*].role", everyItem(not("MANAGER"))))
+            .andExpect(jsonPath("$.content[*].role", hasItem("CLIENT")))
+            .andExpect(jsonPath("$.content[*].role", hasItem("TRAINER")))
+            .andExpect(jsonPath("$.content[*].role", hasItem("PROFESSOR")))
+            .andExpect(jsonPath("$.content[*].id", hasItem(clientId.toString())))
+            .andExpect(jsonPath("$.content[*].id", hasItem(trainer.getId().toString())))
+            .andExpect(jsonPath("$.content[*].id", hasItem(professor.getId().toString())))
+            .andExpect(jsonPath("$.content[*].id", everyItem(not(adminId.toString()))))
+            .andExpect(jsonPath("$.content[*].id", everyItem(not(managerId.toString()))))
+            .andExpect(jsonPath("$.content[*].id", everyItem(not(inactiveClient.getId().toString()))))
+            .andExpect(jsonPath("$.content[0].email").exists())
+            .andExpect(jsonPath("$.content[0].isActive").doesNotExist())
+            .andExpect(jsonPath("$.content[0].createdAt").doesNotExist())
+            .andExpect(jsonPath("$.content[0].updatedAt").doesNotExist())
+            .andExpect(jsonPath("$.content[0].passwordHash").doesNotExist())
+            .andExpect(jsonPath("$.content[0].mfaEnabled").doesNotExist())
+            .andExpect(jsonPath("$.content[0].mfaSecret").doesNotExist())
+            .andExpect(jsonPath("$.content[0].backupCodes").doesNotExist())
+            .andExpect(content().string(not(containsString("passwordHash"))))
+            .andExpect(content().string(not(containsString("mfaSecret"))))
+            .andExpect(content().string(not(containsString("backupCodes"))))
+            .andExpect(content().string(not(containsString("mfaEnabled"))))
+            .andExpect(content().string(containsString("\"phone\"")));
+    }
+
+    @Test
+    @DisplayName("CLIENT and unauthenticated users cannot access manager directory")
+    void clientAndUnauthenticatedCannotAccessManagerDirectory() throws Exception {
+        mockMvc.perform(get("/api/manager/users?page=0&size=20")
+                .header("Authorization", "Bearer " + clientToken))
+            .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/api/manager/users?page=0&size=20"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("MANAGER user detail is reduced for operational targets and conceals hidden targets")
+    void managerUserDetailIsScopedByTargetRole() throws Exception {
+        User trainer = createUser("detail-trainer-" + UUID.randomUUID() + "@test.com", User.Role.TRAINER);
+        User professor = createUser("detail-professor-" + UUID.randomUUID() + "@test.com", User.Role.PROFESSOR);
+        User inactiveClient = createClient("detail-inactive-" + UUID.randomUUID() + "@test.com");
+        inactiveClient.setIsActive(false);
+        userRepository.save(inactiveClient);
+        User inactiveTrainer = createUser("detail-inactive-trainer-" + UUID.randomUUID() + "@test.com", User.Role.TRAINER);
+        inactiveTrainer.setIsActive(false);
+        userRepository.save(inactiveTrainer);
+        User inactiveProfessor = createUser("detail-inactive-professor-" + UUID.randomUUID() + "@test.com", User.Role.PROFESSOR);
+        inactiveProfessor.setIsActive(false);
+        userRepository.save(inactiveProfessor);
+
+        mockMvc.perform(get("/api/users/" + clientId)
+                .header("Authorization", "Bearer " + managerToken))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(clientId.toString()))
+            .andExpect(jsonPath("$.role").value("CLIENT"))
+            .andExpect(jsonPath("$.email").exists())
+            .andExpect(jsonPath("$.phone").exists())
+            .andExpect(jsonPath("$.isActive").doesNotExist())
+            .andExpect(jsonPath("$.createdAt").doesNotExist())
+            .andExpect(jsonPath("$.updatedAt").doesNotExist())
+            .andExpect(jsonPath("$.mfaEnabled").doesNotExist())
+            .andExpect(jsonPath("$.passwordHash").doesNotExist())
+            .andExpect(jsonPath("$.mfaSecret").doesNotExist())
+            .andExpect(jsonPath("$.backupCodes").doesNotExist())
+            .andExpect(jsonPath("$.stripeCustomerId").doesNotExist())
+            .andExpect(content().string(not(containsString("password"))))
+            .andExpect(content().string(not(containsString("token"))))
+            .andExpect(content().string(containsString("\"avatarUrl\"")));
+
+        mockMvc.perform(get("/api/users/" + trainer.getId())
+                .header("Authorization", "Bearer " + managerToken))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.role").value("TRAINER"))
+            .andExpect(jsonPath("$.createdAt").doesNotExist());
+
+        mockMvc.perform(get("/api/users/" + professor.getId())
+                .header("Authorization", "Bearer " + managerToken))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.role").value("PROFESSOR"))
+            .andExpect(jsonPath("$.createdAt").doesNotExist());
+
+        mockMvc.perform(get("/api/users/" + adminId)
+                .header("Authorization", "Bearer " + managerToken))
+            .andExpect(status().isNotFound())
+            .andExpect(content().string(not(containsString("ADMIN"))))
+            .andExpect(content().string(not(containsString("Access denied"))))
+            .andExpect(content().string(not(containsString("outside"))));
+
+        mockMvc.perform(get("/api/users/" + managerId)
+                .header("Authorization", "Bearer " + managerToken))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.role").value("MANAGER"))
+            .andExpect(jsonPath("$.createdAt").exists());
+
+        User otherManager = createUser("detail-other-manager-" + UUID.randomUUID() + "@test.com", User.Role.MANAGER);
+        mockMvc.perform(get("/api/users/" + otherManager.getId())
+                .header("Authorization", "Bearer " + managerToken))
+            .andExpect(status().isNotFound())
+            .andExpect(content().string(not(containsString("MANAGER"))))
+            .andExpect(content().string(not(containsString("Access denied"))));
+
+        mockMvc.perform(get("/api/users/" + inactiveClient.getId())
+                .header("Authorization", "Bearer " + managerToken))
+            .andExpect(status().isNotFound())
+            .andExpect(content().string(not(containsString("isActive"))))
+            .andExpect(content().string(not(containsString("inactive"))));
+
+        mockMvc.perform(get("/api/users/" + inactiveTrainer.getId())
+                .header("Authorization", "Bearer " + managerToken))
+            .andExpect(status().isNotFound())
+            .andExpect(content().string(not(containsString("TRAINER"))))
+            .andExpect(content().string(not(containsString("inactive"))));
+
+        mockMvc.perform(get("/api/users/" + inactiveProfessor.getId())
+                .header("Authorization", "Bearer " + managerToken))
+            .andExpect(status().isNotFound())
+            .andExpect(content().string(not(containsString("PROFESSOR"))))
+            .andExpect(content().string(not(containsString("inactive"))));
+
+        UUID nonexistentId = UUID.randomUUID();
+        MvcResult hiddenResult = mockMvc.perform(get("/api/users/" + adminId)
+                .header("Authorization", "Bearer " + managerToken))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.title").value("Resource Not Found"))
+            .andExpect(jsonPath("$.status").value(404))
+            .andReturn();
+        MvcResult nonexistentResult = mockMvc.perform(get("/api/users/" + nonexistentId)
+                .header("Authorization", "Bearer " + managerToken))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.title").value("Resource Not Found"))
+            .andExpect(jsonPath("$.status").value(404))
+            .andReturn();
+        assertEquals(hiddenResult.getResponse().getContentType(), nonexistentResult.getResponse().getContentType());
+
+        mockMvc.perform(get("/api/users/" + adminId)
+                .header("Authorization", "Bearer " + adminToken))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(adminId.toString()))
+            .andExpect(jsonPath("$.role").value("ADMIN"))
+            .andExpect(jsonPath("$.isActive").exists())
+            .andExpect(jsonPath("$.createdAt").exists());
+
+        mockMvc.perform(get("/api/users/" + clientId)
+                .header("Authorization", "Bearer " + clientToken))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(clientId.toString()))
+            .andExpect(jsonPath("$.role").value("CLIENT"))
+            .andExpect(jsonPath("$.isActive").exists())
+            .andExpect(jsonPath("$.createdAt").exists());
+    }
+
+    @Test
+    @DisplayName("User directory pagination is bounded and invalid size is safely defaulted")
+    void userDirectoryPaginationIsBounded() throws Exception {
+        for (int i = 0; i < 105; i++) {
+            createClient("page-bound-" + i + "-" + UUID.randomUUID() + "@test.com");
+        }
+
+        mockMvc.perform(get("/api/manager/users?page=0&size=1000")
+                .header("Authorization", "Bearer " + managerToken))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.size").value(100));
+
+        mockMvc.perform(get("/api/manager/users?page=0&size=0")
+                .header("Authorization", "Bearer " + managerToken))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.size").value(20));
+
+        mockMvc.perform(get("/api/manager/users?page=-1&size=20")
+                .header("Authorization", "Bearer " + managerToken))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.number").value(0));
+
+        mockMvc.perform(get("/api/manager/users?page=0&size=20&sort=passwordHash,asc")
+                .header("Authorization", "Bearer " + managerToken))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
     @DisplayName("ADMIN can change user role")
     void adminCanChangeRole() throws Exception {
         User target = createClient("change-role-" + UUID.randomUUID() + "@test.com");
@@ -560,6 +787,7 @@ class ManagerAuthorizationConsistencyTest {
             .id(UUID.randomUUID())
             .name("Test " + email)
             .email(email)
+            .phone("+351912345678")
             .passwordHash(passwordEncoder.encode("TestPass123!"))
             .role(role)
             .isActive(true)

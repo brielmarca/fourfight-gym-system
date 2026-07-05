@@ -31,15 +31,15 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<UserResponse>> getAll(@PageableDefault(size = 20) Pageable pageable) {
         return ResponseEntity.ok(userService.getAll(pageable));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or #id == authentication.principal.id")
-    public ResponseEntity<UserResponse> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok(userService.getById(id));
+    public ResponseEntity<Object> getById(@PathVariable UUID id, @AuthenticationPrincipal JwtUserPrincipal principal) {
+        return ResponseEntity.ok(userService.getVisibleById(id, principal.id(), principal.role()));
     }
 
     @PutMapping("/{id}")

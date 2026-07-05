@@ -25,9 +25,10 @@ Executar na VPS:
 ```bash
 ssh <deploy-user>@<vps-host>
 cd /opt/fourfight/fourfight-gym-system
-git pull origin main
+git pull --ff-only origin main
 cd /opt/fourfight
-docker compose up -d --build
+docker compose config --services
+docker compose up --build -d backend
 sleep 25
 curl -i http://127.0.0.1:10000/api/health
 curl -i https://api.4fourfight.com/api/health
@@ -36,6 +37,7 @@ curl -i https://api.4fourfight.com/api/health
 - [ ] Health interno `200`
 - [ ] Health externo `200`
 - [ ] Containers `fourfight-backend` e `fourfight-caddy` ativos
+- [ ] `docker compose config --services` lista `backend` e `caddy`, sem `app`, `postgres`, `redis` ou `nginx`
 
 ## 4) Pos-deploy minimo
 

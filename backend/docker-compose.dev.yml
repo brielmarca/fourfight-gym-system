@@ -1,0 +1,80 @@
+# DEVELOPMENT ONLY - NOT FOR PRODUCTION DEPLOYMENT.
+#
+# This file is intentionally not named docker-compose.yml. Run it explicitly:
+#   docker compose -f docker-compose.dev.yml up --build
+#
+# Production runs from /opt/fourfight/docker-compose.yml with project fourfight,
+# service backend, Caddy, and an external database.
+
+name: fourfight-dev
+
+services:
+  backend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - path: docker-compose.dev.env
+        required: false
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DATABASE_URL: jdbc:postgresql://postgres-dev:5432/fourfight_dev
+      DB_USERNAME: fourfight_dev
+      DB_PASSWORD: ${DEV_POSTGRES_PASSWORD:-fourfight_dev_password}
+      PORT: 8080
+      SERVER_PORT: 8080
+      CORS_ALLOWED_ORIGINS: ${DEV_CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:8080}
+      STRIPE_FRONTEND_SUCCESS_URL: ${DEV_STRIPE_FRONTEND_SUCCESS_URL:-http://localhost:5173/membership/success}
+      STRIPE_FRONTEND_CANCEL_URL: ${DEV_STRIPE_FRONTEND_CANCEL_URL:-http://localhost:5173/plans}
+      APP_FRONTEND_URL: ${DEV_APP_FRONTEND_URL:-http://localhost:5173}
+      RATE_LIMIT_TRUSTED_PROXIES: ""
+    depends_on:
+      postgres-dev:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${DEV_BACKEND_PORT:-8080}:8080"
+    networks:
+      - fourfight-dev-backend
+      - fourfight-dev-database
+    restart: unless-stopped
+
+  postgres-dev:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: fourfight_dev
+      POSTGRES_USER: fourfight_dev
+      POSTGRES_PASSWORD: ${DEV_POSTGRES_PASSWORD:-fourfight_dev_password}
+    ports:
+      - "127.0.0.1:${DEV_POSTGRES_PORT:-55432}:5432"
+    volumes:
+      - fourfight-dev-postgres-data:/var/lib/postgresql/data
+    networks:
+      - fourfight-dev-database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fourfight_dev -d fourfight_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis-dev:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    expose:
+      - "6379"
+    volumes:
+      - fourfight-dev-redis-data:/data
+    networks:
+      - fourfight-dev-backend
+    restart: unless-stopped
+
+networks:
+  fourfight-dev-backend:
+    driver: bridge
+  fourfight-dev-database:
+    driver: bridge
+    internal: true
+
+volumes:
+  fourfight-dev-postgres-data:
+  fourfight-dev-redis-data:

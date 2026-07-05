@@ -56,9 +56,10 @@ Fluxo de atualizacao backend:
 ```bash
 ssh <deploy-user>@<vps-host>
 cd /opt/fourfight/fourfight-gym-system
-git pull origin main
+git pull --ff-only origin main
 cd /opt/fourfight
-docker compose up -d --build
+docker compose config --services
+docker compose up --build -d backend
 sleep 25
 curl -i http://127.0.0.1:10000/api/health
 curl -i https://api.4fourfight.com/api/health
@@ -80,6 +81,16 @@ Comandos:
 npm install
 npm run dev:full
 ```
+
+Docker Compose local development is explicitly opt-in and development-only:
+
+```bash
+cd backend
+cp docker-compose.dev.env.example docker-compose.dev.env
+docker compose -f docker-compose.dev.yml up --build
+```
+
+Do not run Docker Compose from `backend/` in production. Production runs from `/opt/fourfight` and targets service `backend`.
 
 Ou separado:
 

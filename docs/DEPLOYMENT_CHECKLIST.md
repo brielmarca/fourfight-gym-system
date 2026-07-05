@@ -8,6 +8,10 @@
 
 - [ ] Revisar diff e garantir que nao ha secrets, `.env` ou `.pem` staged
 - [ ] Confirmar arquitetura atual (Cloudflare Pages + VPS + Docker Compose + Caddy)
+- [ ] Confirmar alvo de producao `root@178.105.215.50`
+- [ ] Confirmar diretorio de producao `/opt/fourfight`
+- [ ] Confirmar Compose de producao `/opt/fourfight/docker-compose.yml`, projeto `fourfight`, servico `backend`, container `fourfight-backend`
+- [ ] Confirmar banco externo via `/opt/fourfight/.env`, sem usar env local do repo
 - [ ] Confirmar frontend com `VITE_API_URL=https://api.4fourfight.com/api`
 
 ## 2) Frontend-only change
@@ -23,11 +27,12 @@
 Executar na VPS:
 
 ```bash
-ssh <deploy-user>@<vps-host>
+ssh root@178.105.215.50
 cd /opt/fourfight/fourfight-gym-system
-git pull origin main
+git pull --ff-only origin main
 cd /opt/fourfight
-docker compose up -d --build
+docker compose config --services
+docker compose up --build -d backend
 sleep 25
 curl -i http://127.0.0.1:10000/api/health
 curl -i https://api.4fourfight.com/api/health
@@ -36,6 +41,7 @@ curl -i https://api.4fourfight.com/api/health
 - [ ] Health interno `200`
 - [ ] Health externo `200`
 - [ ] Containers `fourfight-backend` e `fourfight-caddy` ativos
+- [ ] `docker compose config --services` lista `backend` e `caddy`, sem `app`, `postgres`, `redis` ou `nginx`
 
 ## 4) Pos-deploy minimo
 

@@ -1,70 +1,105 @@
 # Deployment Guide - Four Fight Gym System
 
-> Status: Ativo
-> Fonte canonica: `README.md`
-> Ordem de leitura: `docs/INDEX.md`
+> Status: Active
+> Canonical production runtime: `/opt/fourfight`
 
-## Producao atual
+## Production
 
-- Frontend: Cloudflare Pages (`https://4fourfight.com`)
-- API: VPS Ubuntu/Hetzner + Docker Compose + Caddy (`https://api.4fourfight.com/api`)
-- Health: `https://api.4fourfight.com/api/health`
+- Target: `root@178.105.215.50`
+- Deployment directory: `/opt/fourfight`
+- Compose file: `/opt/fourfight/docker-compose.yml`
+- Compose project: `fourfight`
+- Compose service: `backend`
+- Container: `fourfight-backend`
+- Reverse proxy: Caddy (`fourfight-caddy`)
+- Database: external PostgreSQL through `DATABASE_URL`
+- Environment file: `/opt/fourfight/.env`
+- Public API: `https://api.4fourfight.com/api`
+- Public health: `https://api.4fourfight.com/api/health`
 
-## Regras operacionais
+Backend rate limiting trusts `X-Forwarded-For`/`X-Real-IP` only when the immediate sender matches `RATE_LIMIT_TRUSTED_PROXIES`. Keep `RATE_LIMIT_TRUSTED_PROXIES` empty by default, and set it only to the actual reverse proxy container/host IP or CIDR after confirming the backend is not publicly reachable directly.
 
-- Mudanca so no frontend: deploy Cloudflare Pages, sem operacao na VPS.
-- Mudanca no backend: atualizar repo na VPS e recriar stack com Docker Compose.
-- `README.md` prevalece em caso de conflito.
-
-## Deploy frontend (Cloudflare Pages)
-
-- Trigger: push para `main`.
-- Variavel obrigatoria: `VITE_API_URL=https://api.4fourfight.com/api`.
-- Nao usar `VITE_API_BASE_URL`.
-
-Validacao minima:
+Production backend update command:
 
 ```bash
-curl -I https://4fourfight.com
-```
-
-## Deploy backend (VPS)
-
-Backend rate limiting trusts `X-Forwarded-For`/`X-Real-IP` only when the immediate sender matches `RATE_LIMIT_TRUSTED_PROXIES`. Spring framework-level forwarded-header transformation is disabled in production so the rate-limit resolver can make the trust decision from the immediate peer address. Keep `RATE_LIMIT_TRUSTED_PROXIES` empty by default, and set it only to the actual reverse proxy container/host IP or CIDR after confirming the backend is not publicly reachable directly.
-
-```bash
-ssh <deploy-user>@<vps-host>
+ssh root@178.105.215.50
 cd /opt/fourfight/fourfight-gym-system
-git pull origin main
+git pull --ff-only origin main
 cd /opt/fourfight
-docker compose up -d --build
+docker compose config --services
+docker compose up --build -d backend
 sleep 25
 curl -i http://127.0.0.1:10000/api/health
 curl -i https://api.4fourfight.com/api/health
 ```
 
-Se houver `502` imediatamente apos o deploy, aguardar 20-30s e repetir os checks de health.
-
-## Verificacoes pos-deploy
+Expected production services from `/opt/fourfight`:
 
 ```bash
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-curl -i https://api.4fourfight.com/api/health
-curl -i https://api.4fourfight.com/api/plans
+docker compose config --services
 ```
 
-Esperado:
+Expected output:
 
-- Containers ativos: `fourfight-backend`, `fourfight-caddy`
-- Health externo retorna `200`
-- Endpoint publico de planos responde sem erro
+```text
+backend
+caddy
+```
 
-## Troubleshooting rapido
+If there is an immediate `502`, wait 20-30 seconds and repeat the health checks.
 
-- `health interno falha`: backend nao subiu corretamente
-- `health externo falha e interno ok`: revisar proxy/rede (Caddy)
-- frontend sem dados: revisar `VITE_API_URL` no Cloudflare
+## Development
 
-## Nota historica
+The development Compose file is intentionally explicit and development-only:
 
-- Referencias antigas a Render/Nginx devem ser tratadas apenas como historico, nao como runbook operacional atual.
+- File: `backend/docker-compose.dev.yml`
+- Project name: `fourfight-dev`
+- Services: `backend-dev`, `postgres-dev`, `redis-dev`
+- Database: local Docker PostgreSQL volume `fourfight-dev-postgres-data`
+- Redis: local Docker Redis volume `fourfight-dev-redis-data`
+- Reverse proxy: none; this does not use production Caddy or legacy nginx
+- Environment template: `backend/docker-compose.dev.env.example`
+
+Development startup:
+
+```bash
+cd backend
+cp docker-compose.dev.env.example docker-compose.dev.env
+docker compose -f docker-compose.dev.yml up --build
+```
+
+Development teardown without deleting data:
+
+```bash
+cd backend
+docker compose -f docker-compose.dev.yml down
+```
+
+Development volume cleanup, only after confirming local data is disposable:
+
+```bash
+cd backend
+docker compose -f docker-compose.dev.yml down --volumes
+```
+
+The non-Docker local workflow remains supported through the root npm scripts:
+
+```bash
+npm run dev:full
+```
+
+## Never Do This In Production
+
+- Do not run Docker Compose from the repository `backend/` subdirectory.
+- Do not run or recreate the legacy path `backend/docker-compose.yml`.
+- Do not create `backend/.env` on production.
+- Do not start local `postgres-dev`, `redis-dev`, or legacy `nginx` on production.
+- Do not use service `app`; production service is `backend`.
+- Do not run production deploys with a default Compose file from `backend/`.
+- Do not assume `localhost:8080` is the production health endpoint; production binds backend health on `127.0.0.1:10000` and public health at `https://api.4fourfight.com/api/health`.
+
+## Notes
+
+- The production Compose file is currently maintained on the VPS at `/opt/fourfight/docker-compose.yml`, not version-controlled in this repository.
+- Do not copy production secrets into Git.
+- Historical Render or nginx references are not the current production runbook.

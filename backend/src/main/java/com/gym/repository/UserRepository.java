@@ -1,6 +1,7 @@
 package com.gym.repository;
 
 import com.gym.entity.User;
+import java.util.Collection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,6 +24,12 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query("SELECT u FROM User u WHERE u.isActive = true AND u.role = :role")
     Page<User> findByActiveRole(@Param("role") User.Role role, Pageable pageable);
+
+    @Query("SELECT u FROM User u WHERE u.isActive = true AND u.role IN :roles")
+    Page<User> findActiveByRoles(@Param("roles") Collection<User.Role> roles, Pageable pageable);
+
+    @Query("SELECT u FROM User u WHERE u.id = :id AND u.isActive = true AND u.role IN :roles")
+    Optional<User> findActiveByIdAndRoles(@Param("id") UUID id, @Param("roles") Collection<User.Role> roles);
 
     @Query("SELECT COUNT(u) FROM User u WHERE u.isActive = true AND u.role = 'CLIENT'")
     long countActiveClients();

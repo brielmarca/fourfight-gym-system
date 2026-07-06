@@ -15,8 +15,9 @@ export const Route = createFileRoute("/login")({
 
 function getDefaultPathForRole(
   role: UserRole | undefined,
-): "/admin" | "/professor" | "/student-area" | "/" {
+): "/admin" | "/trainer" | "/professor" | "/student-area" | "/" {
   if (role === "ADMIN" || role === "MANAGER") return "/admin";
+  if (role === "TRAINER") return "/trainer";
   if (role === "PROFESSOR") return "/professor";
   if (role === "CLIENT") return "/student-area";
   return "/";

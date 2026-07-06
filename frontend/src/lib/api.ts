@@ -454,7 +454,8 @@ export const api = {
 
   studentProfile: {
     getMe: () => request<StudentProfile>("/student-profile/me"),
-    getByUserId: (userId: string) => request<StudentProfile>(`/student-profile/by-user/${userId}`),
+    getByUserId: (userId: string) =>
+      request<StaffStudentProfile>(`/student-profile/by-user/${userId}`),
     updateMe: (data: UpdateStudentProfileRequest) =>
       request<StudentProfile>("/student-profile/me", {
         method: "PUT",

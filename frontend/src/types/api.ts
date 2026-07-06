@@ -146,6 +146,11 @@ export interface StudentProfile {
   isActive: boolean;
 }
 
+export type StaffStudentProfile = Omit<
+  StudentProfile,
+  "userEmail" | "emergencyContact" | "emergencyPhone" | "medicalNotes" | "recoveryNotes"
+>;
+
 export interface AttendanceRecord {
   id: string;
   studentId: string;

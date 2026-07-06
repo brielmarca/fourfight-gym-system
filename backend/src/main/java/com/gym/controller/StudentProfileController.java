@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.gym.dto.request.CreateStudentProfileRequest;
 import com.gym.dto.request.UpdateBeltRequest;
+import com.gym.dto.response.StaffStudentProfileResponse;
 import com.gym.dto.response.StudentProfileResponse;
 import com.gym.entity.User;
 import com.gym.service.StudentProfileService;
@@ -33,8 +34,8 @@ public class StudentProfileController {
 
     @GetMapping("/by-user/{userId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TRAINER')")
-    public ResponseEntity<StudentProfileResponse> getByUserId(@PathVariable UUID userId) {
-        return ResponseEntity.ok(studentProfileService.getByUserId(userId));
+    public ResponseEntity<StaffStudentProfileResponse> getByUserId(@PathVariable UUID userId) {
+        return ResponseEntity.ok(studentProfileService.getStaffViewByUserId(userId));
     }
 
     @PostMapping

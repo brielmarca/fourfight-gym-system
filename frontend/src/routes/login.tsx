@@ -5,12 +5,22 @@ import { getUser, isAuthenticated } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { UserRole } from "@/types";
 
 import { Loader2, Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
+
+function getDefaultPathForRole(
+  role: UserRole | undefined,
+): "/admin" | "/professor" | "/student-area" | "/" {
+  if (role === "ADMIN" || role === "MANAGER") return "/admin";
+  if (role === "PROFESSOR") return "/professor";
+  if (role === "CLIENT") return "/student-area";
+  return "/";
+}
 
 function getSafeRedirect(search: unknown): string | null {
   const redirect = (search as { redirect?: unknown }).redirect;
@@ -47,13 +57,7 @@ function LoginPage() {
       return null;
     }
 
-    if (user?.role === "ADMIN" || user?.role === "MANAGER") {
-      navigate({ to: "/admin", replace: true });
-    } else if (user?.role === "PROFESSOR") {
-      navigate({ to: "/professor", replace: true });
-    } else {
-      navigate({ to: "/student-area", replace: true });
-    }
+    navigate({ to: getDefaultPathForRole(user?.role), replace: true });
     return null;
   }
 
@@ -70,12 +74,8 @@ function LoginPage() {
       const user = getUser();
       if (redirect) {
         navigate({ to: redirect, replace: true });
-      } else if (user?.role === "ADMIN" || user?.role === "MANAGER") {
-        navigate({ to: "/admin", replace: true });
-      } else if (user?.role === "PROFESSOR") {
-        navigate({ to: "/professor", replace: true });
       } else {
-        navigate({ to: "/student-area", replace: true });
+        navigate({ to: getDefaultPathForRole(user?.role), replace: true });
       }
     } catch (err) {
       clearAuthState();
@@ -179,7 +179,10 @@ function LoginPage() {
                 )}
               </Button>
               <div className="text-right">
-                <Link to="/esqueci-senha" className="text-xs text-primary hover:underline font-semibold">
+                <Link
+                  to="/esqueci-senha"
+                  className="text-xs text-primary hover:underline font-semibold"
+                >
                   Esqueceste-te da palavra-passe?
                 </Link>
               </div>

@@ -2,12 +2,23 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Loader2, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { isAuthenticated } from "@/lib/api";
-import { useMyProfessorStudents, useManageVideoLessons, useCreateVideoLesson, useDeactivateVideoLesson } from "@/queries";
+import {
+  useMyProfessorStudents,
+  useManageVideoLessons,
+  useCreateVideoLesson,
+  useDeactivateVideoLesson,
+} from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useState } from "react";
 import {
   Table,
@@ -38,12 +49,19 @@ function ProfessorPage() {
   const navigate = Route.useNavigate();
   const { user, hasRole, logout } = useAuth();
   const { data: students = [], isLoading } = useMyProfessorStudents(hasRole(["PROFESSOR"]));
-  const { data: lessons = [], isLoading: lessonsLoading } = useManageVideoLessons(hasRole(["PROFESSOR"]));
+  const { data: lessons = [], isLoading: lessonsLoading } = useManageVideoLessons(
+    hasRole(["PROFESSOR"]),
+  );
   const createVideoLesson = useCreateVideoLesson();
   const deactivateVideoLesson = useDeactivateVideoLesson();
   const [feedback, setFeedback] = useState<string | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [form, setForm] = useState({ title: "", description: "", modality: "JIU_JITSU" as const, minimumPlanRank: 1 as 1 | 2 | 3 });
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    modality: "JIU_JITSU" as const,
+    minimumPlanRank: 1 as 1 | 2 | 3,
+  });
 
   if (user && hasRole(["ADMIN", "MANAGER"])) {
     void navigate({ to: "/admin", replace: true });
@@ -51,6 +69,11 @@ function ProfessorPage() {
   }
 
   if (user && !hasRole(["PROFESSOR"])) {
+    if (!hasRole(["CLIENT"])) {
+      void navigate({ to: "/", replace: true });
+      return null;
+    }
+
     void navigate({ to: "/student-area", replace: true });
     return null;
   }
@@ -88,18 +111,27 @@ function ProfessorPage() {
           <p className="text-text-secondary mt-1 text-sm sm:text-base">Alunos atribuídos</p>
         </div>
 
-        <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>
+        <Card
+          className="bg-surface border-border-subtle"
+          style={{ borderTop: "2px solid #C1121F" }}
+        >
           <CardHeader>
             <CardTitle className="text-xs tracking-[0.2em] uppercase">Alunos atribuídos</CardTitle>
           </CardHeader>
           <CardContent className="overflow-x-auto">
             {isLoading ? (
               <div className="py-10 text-center">
-                <Loader2 size={24} className="animate-spin mx-auto mb-3" style={{ color: "#C1121F" }} />
+                <Loader2
+                  size={24}
+                  className="animate-spin mx-auto mb-3"
+                  style={{ color: "#C1121F" }}
+                />
                 <p className="text-text-secondary">A carregar alunos atribuídos...</p>
               </div>
             ) : students.length === 0 ? (
-              <p className="py-10 text-center text-text-secondary">Ainda não existem alunos atribuídos.</p>
+              <p className="py-10 text-center text-text-secondary">
+                Ainda não existem alunos atribuídos.
+              </p>
             ) : (
               <Table>
                 <TableHeader>
@@ -118,9 +150,14 @@ function ProfessorPage() {
                       <TableCell>{student.studentName}</TableCell>
                       <TableCell>{student.studentEmail}</TableCell>
                       <TableCell>{modalityLabels[student.modality] ?? student.modality}</TableCell>
-                      <TableCell>{[student.planName, student.membershipStatus].filter(Boolean).join(" - ") || "-"}</TableCell>
+                      <TableCell>
+                        {[student.planName, student.membershipStatus].filter(Boolean).join(" - ") ||
+                          "-"}
+                      </TableCell>
                       <TableCell>{student.notes || "-"}</TableCell>
-                      <TableCell>{new Date(student.assignedAt).toLocaleDateString("pt-PT")}</TableCell>
+                      <TableCell>
+                        {new Date(student.assignedAt).toLocaleDateString("pt-PT")}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -130,15 +167,29 @@ function ProfessorPage() {
         </Card>
 
         <div className="mt-6 grid gap-4">
-          <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>
+          <Card
+            className="bg-surface border-border-subtle"
+            style={{ borderTop: "2px solid #C1121F" }}
+          >
             <CardHeader>
               <CardTitle className="text-xs tracking-[0.2em] uppercase">Videoaulas</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="grid md:grid-cols-2 gap-3">
-                <Input placeholder="Titulo" value={form.title} onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))} />
-                <Select value={form.modality} onValueChange={(value) => setForm((prev) => ({ ...prev, modality: value as typeof form.modality }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Input
+                  placeholder="Titulo"
+                  value={form.title}
+                  onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
+                />
+                <Select
+                  value={form.modality}
+                  onValueChange={(value) =>
+                    setForm((prev) => ({ ...prev, modality: value as typeof form.modality }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="JIU_JITSU">Jiu-Jitsu</SelectItem>
                     <SelectItem value="BOXE_KICKBOXING">Boxe/Kickboxing</SelectItem>
@@ -146,15 +197,38 @@ function ProfessorPage() {
                     <SelectItem value="MMA">MMA</SelectItem>
                   </SelectContent>
                 </Select>
-                <Input type="file" accept="video/mp4,.mp4" onChange={(event) => setVideoFile(event.target.files?.[0] ?? null)} className="md:col-span-2" />
-                <Select value={String(form.minimumPlanRank)} onValueChange={(value) => setForm((prev) => ({ ...prev, minimumPlanRank: Number(value) as 1 | 2 | 3 }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="1">Basic</SelectItem><SelectItem value="2">Standard</SelectItem><SelectItem value="3">Premium</SelectItem></SelectContent>
+                <Input
+                  type="file"
+                  accept="video/mp4,.mp4"
+                  onChange={(event) => setVideoFile(event.target.files?.[0] ?? null)}
+                  className="md:col-span-2"
+                />
+                <Select
+                  value={String(form.minimumPlanRank)}
+                  onValueChange={(value) =>
+                    setForm((prev) => ({ ...prev, minimumPlanRank: Number(value) as 1 | 2 | 3 }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Basic</SelectItem>
+                    <SelectItem value="2">Standard</SelectItem>
+                    <SelectItem value="3">Premium</SelectItem>
+                  </SelectContent>
                 </Select>
               </div>
-              <Textarea placeholder="Descricao" value={form.description} onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))} />
+              <Textarea
+                placeholder="Descricao"
+                value={form.description}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, description: event.target.value }))
+                }
+              />
               <p className="text-xs text-text-secondary">
-                Apenas MP4. O ficheiro sera convertido para WebM e o MP4 original sera removido apos o processamento.
+                Apenas MP4. O ficheiro sera convertido para WebM e o MP4 original sera removido apos
+                o processamento.
               </p>
               <Button
                 onClick={async () => {
@@ -166,10 +240,17 @@ function ProfessorPage() {
                     }
                     await createVideoLesson.mutateAsync({ file: videoFile, payload: form });
                     setVideoFile(null);
-                    setForm({ title: "", description: "", modality: "JIU_JITSU", minimumPlanRank: 1 });
+                    setForm({
+                      title: "",
+                      description: "",
+                      modality: "JIU_JITSU",
+                      minimumPlanRank: 1,
+                    });
                     setFeedback("Videoaula guardada com sucesso.");
                   } catch (error) {
-                    setFeedback(error instanceof Error ? error.message : "Erro ao guardar videoaula.");
+                    setFeedback(
+                      error instanceof Error ? error.message : "Erro ao guardar videoaula.",
+                    );
                   }
                 }}
                 disabled={createVideoLesson.isPending}
@@ -180,18 +261,50 @@ function ProfessorPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>
-            <CardHeader><CardTitle className="text-xs tracking-[0.2em] uppercase">Minhas videoaulas</CardTitle></CardHeader>
+          <Card
+            className="bg-surface border-border-subtle"
+            style={{ borderTop: "2px solid #C1121F" }}
+          >
+            <CardHeader>
+              <CardTitle className="text-xs tracking-[0.2em] uppercase">
+                Minhas videoaulas
+              </CardTitle>
+            </CardHeader>
             <CardContent className="space-y-2">
-              {lessonsLoading ? <p className="text-text-secondary">A carregar videoaulas...</p> : lessons.length === 0 ? <p className="text-text-secondary">Ainda nao tens videoaulas.</p> : lessons.map((lesson) => (
-                <div key={lesson.id} className="flex items-center justify-between gap-3 border border-border-subtle rounded-md p-3">
-                  <div>
-                    <p className="font-semibold">{lesson.title}</p>
-                    <p className="text-xs text-text-secondary">{modalityLabels[lesson.modality]} - Plano minimo {lesson.minimumPlanRank} - Estado {lesson.status ?? "READY"}</p>
+              {lessonsLoading ? (
+                <p className="text-text-secondary">A carregar videoaulas...</p>
+              ) : lessons.length === 0 ? (
+                <p className="text-text-secondary">Ainda nao tens videoaulas.</p>
+              ) : (
+                lessons.map((lesson) => (
+                  <div
+                    key={lesson.id}
+                    className="flex items-center justify-between gap-3 border border-border-subtle rounded-md p-3"
+                  >
+                    <div>
+                      <p className="font-semibold">{lesson.title}</p>
+                      <p className="text-xs text-text-secondary">
+                        {modalityLabels[lesson.modality]} - Plano minimo {lesson.minimumPlanRank} -
+                        Estado {lesson.status ?? "READY"}
+                      </p>
+                    </div>
+                    {lesson.active && (
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => {
+                          if (window.confirm("Eliminar esta videoaula?")) {
+                            deactivateVideoLesson.mutate(lesson.id);
+                          }
+                        }}
+                        disabled={deactivateVideoLesson.isPending}
+                      >
+                        Eliminar
+                      </Button>
+                    )}
                   </div>
-                  {lesson.active && <Button size="sm" variant="destructive" onClick={() => { if (window.confirm("Eliminar esta videoaula?")) { deactivateVideoLesson.mutate(lesson.id); } }} disabled={deactivateVideoLesson.isPending}>Eliminar</Button>}
-                </div>
-              ))}
+                ))
+              )}
             </CardContent>
           </Card>
         </div>

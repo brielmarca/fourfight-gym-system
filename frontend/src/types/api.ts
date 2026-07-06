@@ -13,7 +13,21 @@ export interface UserResponse {
   avatarUrl?: string;
 }
 
-export type UserRole = "ADMIN" | "MANAGER" | "STUDENT" | "PROFESSOR";
+export const USER_ROLES = ["ADMIN", "MANAGER", "TRAINER", "PROFESSOR", "CLIENT"] as const;
+
+export type UserRole = (typeof USER_ROLES)[number];
+
+export const USER_ROLE_LABELS: Record<UserRole, string> = {
+  ADMIN: "Administrador",
+  MANAGER: "Gerente",
+  TRAINER: "Treinador",
+  PROFESSOR: "Professor",
+  CLIENT: "Aluno",
+};
+
+export function isUserRole(role: unknown): role is UserRole {
+  return typeof role === "string" && USER_ROLES.includes(role as UserRole);
+}
 
 export interface User {
   id: string;
@@ -152,7 +166,14 @@ export interface Membership {
   plan?: Plan | null;
   startDate: string;
   endDate: string;
-  status: "ACTIVE" | "EXPIRED" | "CANCELLED" | "SUSPENDED" | "PENDING_PAYMENT" | "PENDING_APPROVAL" | "REJECTED";
+  status:
+    | "ACTIVE"
+    | "EXPIRED"
+    | "CANCELLED"
+    | "SUSPENDED"
+    | "PENDING_PAYMENT"
+    | "PENDING_APPROVAL"
+    | "REJECTED";
   autoRenew: boolean;
   stripePayment: boolean;
   currentPeriodEnd?: string | null;
@@ -168,7 +189,15 @@ export interface AdminStudent {
   planName?: string | null;
   startDate?: string | null;
   endDate?: string | null;
-  status: "ACTIVE" | "EXPIRED" | "CANCELLED" | "SUSPENDED" | "PENDING_PAYMENT" | "PENDING_APPROVAL" | "REJECTED" | "REGISTERED";
+  status:
+    | "ACTIVE"
+    | "EXPIRED"
+    | "CANCELLED"
+    | "SUSPENDED"
+    | "PENDING_PAYMENT"
+    | "PENDING_APPROVAL"
+    | "REJECTED"
+    | "REGISTERED";
   createdAt?: string | null;
   updatedAt?: string | null;
 }
@@ -498,7 +527,14 @@ export interface PaymentFormRequest {
 }
 
 export interface CancelMyMembershipResponse {
-  status: "ACTIVE" | "EXPIRED" | "CANCELLED" | "SUSPENDED" | "PENDING_PAYMENT" | "PENDING_APPROVAL" | "REJECTED";
+  status:
+    | "ACTIVE"
+    | "EXPIRED"
+    | "CANCELLED"
+    | "SUSPENDED"
+    | "PENDING_PAYMENT"
+    | "PENDING_APPROVAL"
+    | "REJECTED";
   cancellationScheduled: boolean;
   accessUntil: string;
   message: string;

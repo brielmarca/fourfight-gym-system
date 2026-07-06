@@ -90,6 +90,11 @@ function StudentAreaPage() {
     return null;
   }
 
+  if (user && !hasRole(["CLIENT"])) {
+    void navigate({ to: "/", replace: true });
+    return null;
+  }
+
   const handleLogout = () => {
     logout();
     void navigate({ to: "/", replace: true });
@@ -406,7 +411,10 @@ function StudentAreaPage() {
           </TabsContent>
 
           <TabsContent value="video-lessons">
-            <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>
+            <Card
+              className="bg-surface border-border-subtle"
+              style={{ borderTop: "2px solid #C1121F" }}
+            >
               <CardHeader>
                 <CardTitle className="text-xs tracking-[0.2em] uppercase">Videoaulas</CardTitle>
               </CardHeader>
@@ -414,52 +422,101 @@ function StudentAreaPage() {
                 {videoLessonsLoading ? (
                   <p className="text-text-secondary">A carregar videoaulas...</p>
                 ) : readyActiveLessons.length === 0 ? (
-                  <EmptyState icon={Target} title="Sem videoaulas disponíveis" description="Quando houver conteúdo para o teu plano ele aparece aqui." />
+                  <EmptyState
+                    icon={Target}
+                    title="Sem videoaulas disponíveis"
+                    description="Quando houver conteúdo para o teu plano ele aparece aqui."
+                  />
                 ) : (
                   <div className="space-y-6">
-                    {(["JIU_JITSU", "BOXE_KICKBOXING", "CAPOEIRA", "MMA"] as const).map((modality) => {
-                      const byModality = readyActiveLessons.filter((lesson) => lesson.modality === modality);
-                      if (byModality.length === 0) return null;
-                      const label = modality === "JIU_JITSU" ? "Jiu-Jitsu" : modality === "BOXE_KICKBOXING" ? "Boxe/Kickboxing" : modality === "CAPOEIRA" ? "Capoeira" : "MMA";
-                      return (
-                        <div key={modality} className="space-y-3">
-                          <h3 className="text-sm tracking-[0.15em] uppercase text-text-secondary">{label}</h3>
-                          <div className="grid md:grid-cols-2 gap-4">
-                            {byModality.map((lesson) => (
-                              <Card key={lesson.id} className="bg-surface-2 border-border-subtle">
-                                <CardHeader>
-                                  <CardTitle className="text-base">{lesson.title}</CardTitle>
-                                  <p className="text-xs text-text-secondary">Plano mínimo: {lesson.minimumPlanRank === 1 ? "Basic" : lesson.minimumPlanRank === 2 ? "Standard" : "Premium"}</p>
-                                </CardHeader>
-                                <CardContent className="space-y-3">
-                                  {lesson.description && <p className="text-sm text-text-secondary">{lesson.description}</p>}
-                                  {lesson.embedUrl ? (
-                                    <div className="aspect-video rounded-md overflow-hidden border border-border-subtle">
-                                      <iframe title={lesson.title} src={lesson.embedUrl} className="w-full h-full" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
-                                    </div>
-                                  ) : (
-                                    <div className="space-y-2">
-                                      {videoBlobUrlById[lesson.id] ? (
-                                        <video controls preload="metadata" className="w-full rounded-md border border-border-subtle bg-black">
-                                          <source src={videoBlobUrlById[lesson.id]} type="video/webm" />
-                                        </video>
-                                      ) : (
-                                        <Button size="sm" variant="outline" onClick={() => void loadVideoBlob(lesson.id)}>
-                                          Carregar video
-                                        </Button>
-                                      )}
-                                      {videoErrorById[lesson.id] && (
-                                        <p className="text-xs text-destructive">{videoErrorById[lesson.id]}</p>
-                                      )}
-                                    </div>
-                                  )}
-                                </CardContent>
-                              </Card>
-                            ))}
+                    {(["JIU_JITSU", "BOXE_KICKBOXING", "CAPOEIRA", "MMA"] as const).map(
+                      (modality) => {
+                        const byModality = readyActiveLessons.filter(
+                          (lesson) => lesson.modality === modality,
+                        );
+                        if (byModality.length === 0) return null;
+                        const label =
+                          modality === "JIU_JITSU"
+                            ? "Jiu-Jitsu"
+                            : modality === "BOXE_KICKBOXING"
+                              ? "Boxe/Kickboxing"
+                              : modality === "CAPOEIRA"
+                                ? "Capoeira"
+                                : "MMA";
+                        return (
+                          <div key={modality} className="space-y-3">
+                            <h3 className="text-sm tracking-[0.15em] uppercase text-text-secondary">
+                              {label}
+                            </h3>
+                            <div className="grid md:grid-cols-2 gap-4">
+                              {byModality.map((lesson) => (
+                                <Card key={lesson.id} className="bg-surface-2 border-border-subtle">
+                                  <CardHeader>
+                                    <CardTitle className="text-base">{lesson.title}</CardTitle>
+                                    <p className="text-xs text-text-secondary">
+                                      Plano mínimo:{" "}
+                                      {lesson.minimumPlanRank === 1
+                                        ? "Basic"
+                                        : lesson.minimumPlanRank === 2
+                                          ? "Standard"
+                                          : "Premium"}
+                                    </p>
+                                  </CardHeader>
+                                  <CardContent className="space-y-3">
+                                    {lesson.description && (
+                                      <p className="text-sm text-text-secondary">
+                                        {lesson.description}
+                                      </p>
+                                    )}
+                                    {lesson.embedUrl ? (
+                                      <div className="aspect-video rounded-md overflow-hidden border border-border-subtle">
+                                        <iframe
+                                          title={lesson.title}
+                                          src={lesson.embedUrl}
+                                          className="w-full h-full"
+                                          loading="lazy"
+                                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                          allowFullScreen
+                                          referrerPolicy="strict-origin-when-cross-origin"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <div className="space-y-2">
+                                        {videoBlobUrlById[lesson.id] ? (
+                                          <video
+                                            controls
+                                            preload="metadata"
+                                            className="w-full rounded-md border border-border-subtle bg-black"
+                                          >
+                                            <source
+                                              src={videoBlobUrlById[lesson.id]}
+                                              type="video/webm"
+                                            />
+                                          </video>
+                                        ) : (
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => void loadVideoBlob(lesson.id)}
+                                          >
+                                            Carregar video
+                                          </Button>
+                                        )}
+                                        {videoErrorById[lesson.id] && (
+                                          <p className="text-xs text-destructive">
+                                            {videoErrorById[lesson.id]}
+                                          </p>
+                                        )}
+                                      </div>
+                                    )}
+                                  </CardContent>
+                                </Card>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      },
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -485,10 +542,7 @@ function MembershipTabContent({ membership }: { membership: Membership | undefin
 
   if (!membership) {
     return (
-      <Card
-        className="bg-surface border-border-subtle"
-        style={{ borderTop: "2px solid #C1121F" }}
-      >
+      <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>
         <CardContent>
           <div className="text-center py-6 space-y-4">
             <p className="text-text-secondary">Ainda não tens uma mensalidade ativa.</p>
@@ -505,14 +559,9 @@ function MembershipTabContent({ membership }: { membership: Membership | undefin
   const formattedAccessUntil = new Date(accessUntil).toLocaleDateString("pt-PT");
 
   return (
-    <Card
-      className="bg-surface border-border-subtle"
-      style={{ borderTop: "2px solid #C1121F" }}
-    >
+    <Card className="bg-surface border-border-subtle" style={{ borderTop: "2px solid #C1121F" }}>
       <CardHeader>
-        <CardTitle className="text-xs tracking-[0.2em] uppercase">
-          Dados da Mensalidade
-        </CardTitle>
+        <CardTitle className="text-xs tracking-[0.2em] uppercase">Dados da Mensalidade</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -544,15 +593,17 @@ function MembershipTabContent({ membership }: { membership: Membership | undefin
           {membership.stripePayment && (
             <div className="flex justify-between py-2 border-b border-border-subtle">
               <span className="text-text-secondary">Pagamento</span>
-              <Badge className="bg-primary/20 text-primary border-primary/30">
-                Stripe
-              </Badge>
+              <Badge className="bg-primary/20 text-primary border-primary/30">Stripe</Badge>
             </div>
           )}
           {accessUntil && (
             <div className="flex justify-between py-2 border-b border-border-subtle">
               <span className="text-text-secondary">
-                {membership.cancelAtPeriodEnd ? "Acesso até" : membership.stripePayment ? "Próxima renovação" : "Fim do plano"}
+                {membership.cancelAtPeriodEnd
+                  ? "Acesso até"
+                  : membership.stripePayment
+                    ? "Próxima renovação"
+                    : "Fim do plano"}
               </span>
               <span>{formattedAccessUntil}</span>
             </div>
@@ -580,13 +631,12 @@ function MembershipTabContent({ membership }: { membership: Membership | undefin
                 <AlertDialogHeader>
                   <AlertDialogTitle>Cancelar mensalidade?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    A tua mensalidade continuará ativa até {formattedAccessUntil}. Depois dessa data, não haverá nova renovação automática.
+                    A tua mensalidade continuará ativa até {formattedAccessUntil}. Depois dessa
+                    data, não haverá nova renovação automática.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel disabled={cancelMutation.isPending}>
-                    Voltar
-                  </AlertDialogCancel>
+                  <AlertDialogCancel disabled={cancelMutation.isPending}>Voltar</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleCancel}
                     disabled={cancelMutation.isPending}
@@ -594,8 +644,7 @@ function MembershipTabContent({ membership }: { membership: Membership | undefin
                   >
                     {cancelMutation.isPending ? (
                       <>
-                        <Loader2 size={14} className="animate-spin mr-1" />
-                        A cancelar...
+                        <Loader2 size={14} className="animate-spin mr-1" />A cancelar...
                       </>
                     ) : (
                       "Confirmar cancelamento"
@@ -620,7 +669,8 @@ function MembershipTabContent({ membership }: { membership: Membership | undefin
               <div>
                 <span className="font-semibold">Cancelamento agendado</span>
                 <p className="mt-1">
-                  {cancelMutation.data?.message || `O teu acesso continua ativo até ${formattedAccessUntil}.`}
+                  {cancelMutation.data?.message ||
+                    `O teu acesso continua ativo até ${formattedAccessUntil}.`}
                 </p>
               </div>
             </div>

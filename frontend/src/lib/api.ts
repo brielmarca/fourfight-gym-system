@@ -1,3 +1,6 @@
+import { isUserRole } from "@/types/api";
+import type { User, UserRole } from "@/types/api";
+
 const DEFAULT_API_BASE = "https://fourfight-gym-system.onrender.com/api";
 const RAW_API_URL = import.meta.env.VITE_API_URL?.trim();
 
@@ -291,11 +294,15 @@ function getAccessToken(): string | null {
   return memoryAccessToken;
 }
 
-function getUser(): { id: string; email: string; role: string } | null {
+function getUser(): User | null {
   const token = getAccessToken();
   if (!token) return null;
   try {
     const payload = JSON.parse(atob(token.split(".")[1])) as TokenPayload;
+    if (!isUserRole(payload.role)) {
+      clearTokens();
+      return null;
+    }
     return { id: payload.sub, email: payload.email, role: payload.role };
   } catch {
     clearTokens();
@@ -314,7 +321,7 @@ function isAuthenticated(): boolean {
   }
 }
 
-function hasRole(roles: string[]): boolean {
+function hasRole(roles: UserRole[]): boolean {
   const user = getUser();
   return user ? roles.includes(user.role) : false;
 }
@@ -625,7 +632,8 @@ export const api = {
   },
 
   videoLessons: {
-    getManage: () => requestWithFallback<VideoLesson[]>("/admin/video-lessons", "/video-lessons/manage"),
+    getManage: () =>
+      requestWithFallback<VideoLesson[]>("/admin/video-lessons", "/video-lessons/manage"),
     upload: (file: File, payload: UpsertVideoLessonRequest) => {
       const formData = new FormData();
       formData.append("file", file);
@@ -647,11 +655,16 @@ export const api = {
         body: JSON.stringify(payload),
       }),
     deactivate: (id: string) =>
-      requestWithFallback<VideoLesson>(`/admin/video-lessons/${id}`, `/video-lessons/${id}/deactivate`, {
-        method: "DELETE",
-      }),
+      requestWithFallback<VideoLesson>(
+        `/admin/video-lessons/${id}`,
+        `/video-lessons/${id}/deactivate`,
+        {
+          method: "DELETE",
+        },
+      ),
     getMy: () => requestWithFallback<VideoLesson[]>("/video-lessons", "/video-lessons/my"),
-    getMyById: (id: string) => requestWithFallback<VideoLesson>(`/video-lessons/${id}`, `/video-lessons/my/${id}`),
+    getMyById: (id: string) =>
+      requestWithFallback<VideoLesson>(`/video-lessons/${id}`, `/video-lessons/my/${id}`),
     getStreamBlob: (id: string) => requestBlob(`/video-lessons/${id}/stream`),
   },
 
@@ -691,15 +704,17 @@ export const api = {
         body: JSON.stringify({ planId }),
       }),
     listPendingReceptionRequests: () =>
-      request<Array<{
-        membershipId: string;
-        userName: string;
-        userEmail: string;
-        planName: string;
-        planPrice: number;
-        status: string;
-        requestedAt: string;
-      }>>("/stripe/reception-requests/pending"),
+      request<
+        Array<{
+          membershipId: string;
+          userName: string;
+          userEmail: string;
+          planName: string;
+          planPrice: number;
+          status: string;
+          requestedAt: string;
+        }>
+      >("/stripe/reception-requests/pending"),
     approveReceptionRequest: (membershipId: string) =>
       request<void>(`/stripe/reception-requests/${membershipId}/approve`, {
         method: "POST",

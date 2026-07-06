@@ -18,7 +18,7 @@ import {
   restoreAuthSession,
   isAuthenticated as checkIsAuthenticated,
 } from "@/lib/api";
-import type { RegisterRequest, User } from "@/types";
+import type { RegisterRequest, User, UserRole } from "@/types";
 
 const protectedRoutePrefixes = [
   "/admin",
@@ -36,14 +36,14 @@ function isProtectedRoute(pathname: string): boolean {
 
 interface AuthContextValue {
   user: User | null;
-  role: string | null;
+  role: UserRole | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   clearAuthState: () => void;
-  hasRole: (roles: string[]) => boolean;
+  hasRole: (roles: UserRole[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -177,7 +177,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [queryClient]);
 
   const hasRole = useCallback(
-    (roles: string[]) => {
+    (roles: UserRole[]) => {
       if (!user) return false;
       return roles.includes(user.role);
     },

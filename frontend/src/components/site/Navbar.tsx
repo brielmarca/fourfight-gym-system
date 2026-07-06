@@ -30,7 +30,11 @@ function Navbar() {
       return { to: "/professor", label: "Área Trainer" };
     }
 
-    return { to: "/student-area", label: "Área do Aluno" };
+    if (role === "CLIENT") {
+      return { to: "/student-area", label: "Área do Aluno" };
+    }
+
+    return { to: "/", label: "Conta" };
   };
 
   const dashboardAction = getDashboardAction();
@@ -61,11 +65,7 @@ function Navbar() {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between">
         <Link to="/" className="flex items-center shrink-0 py-1">
-          <img
-            src="/assets/logo.png"
-            alt="4Four Fight Academy"
-            className={brandLogoClass}
-          />
+          <img src="/assets/logo.png" alt="4Four Fight Academy" className={brandLogoClass} />
         </Link>
 
         <nav className="hidden md:flex items-center gap-9">

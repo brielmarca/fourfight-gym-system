@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import queryKeys from "./query-keys";
 import type {
+  StaffStudentProfile,
   StudentProfile,
   UpdateStudentProfileRequest,
   CreateStudentProfileRequest,
@@ -16,7 +17,7 @@ export function useMyStudentProfile() {
 }
 
 export function useStudentProfileByUserId(userId: string) {
-  return useQuery<StudentProfile>({
+  return useQuery<StaffStudentProfile>({
     queryKey: [...queryKeys.studentProfile.all, "byUser", userId],
     queryFn: () => api.studentProfile.getByUserId(userId),
     enabled: !!userId,

@@ -4,6 +4,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.gym.dto.request.CreateStudentProfileRequest;
+import com.gym.dto.response.StaffStudentProfileResponse;
 import com.gym.dto.response.StudentProfileResponse;
 import com.gym.entity.Belt;
 import com.gym.entity.StudentProfile;
@@ -25,10 +26,18 @@ public class StudentProfileService {
     private final UserRepository userRepository;
     private final BeltRepository beltRepository;
 
+    @Transactional(readOnly = true)
     public StudentProfileResponse getByUserId(UUID userId) {
         StudentProfile profile = studentProfileRepository.findByUserIdAndDeletedAtIsNull(userId)
             .orElseThrow(() -> new ResourceNotFoundException("StudentProfile", userId));
         return StudentProfileResponse.from(profile);
+    }
+
+    @Transactional(readOnly = true)
+    public StaffStudentProfileResponse getStaffViewByUserId(UUID userId) {
+        StudentProfile profile = studentProfileRepository.findByUserIdAndDeletedAtIsNull(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("StudentProfile", userId));
+        return StaffStudentProfileResponse.from(profile);
     }
 
     public boolean hasProfile(UUID userId) {

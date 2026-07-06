@@ -26,8 +26,12 @@ function Navbar() {
       return { to: "/admin", label: "Painel Admin" };
     }
 
+    if (role === "TRAINER") {
+      return { to: "/trainer", label: "Área Treinador" };
+    }
+
     if (role === "PROFESSOR") {
-      return { to: "/professor", label: "Área Trainer" };
+      return { to: "/professor", label: "Área Professor" };
     }
 
     if (role === "CLIENT") {

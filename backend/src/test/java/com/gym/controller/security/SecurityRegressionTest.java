@@ -8,6 +8,7 @@ import com.gym.entity.Payment;
 import com.gym.entity.ScheduleRequest;
 import com.gym.entity.GymClass;
 import com.gym.entity.Trainer;
+import com.gym.entity.StudentProfile;
 import com.gym.repository.ClassEnrollmentRepository;
 import com.gym.repository.ClassRepository;
 import com.gym.repository.NotificationRepository;
@@ -15,6 +16,7 @@ import com.gym.repository.PaymentRepository;
 import com.gym.repository.PlanRepository;
 import com.gym.repository.MembershipRepository;
 import com.gym.repository.ScheduleRequestRepository;
+import com.gym.repository.StudentProfileRepository;
 import com.gym.repository.TrainerRepository;
 import com.gym.repository.UserRepository;
 import com.gym.security.JwtUtil;
@@ -91,6 +93,9 @@ class SecurityRegressionTest {
     private TrainerRepository trainerRepository;
 
     @Autowired
+    private StudentProfileRepository studentProfileRepository;
+
+    @Autowired
     private NotificationRepository notificationRepository;
 
     @Autowired
@@ -109,8 +114,12 @@ class SecurityRegressionTest {
     private String validUserToken;
     private String validAdminToken;
     private String validManagerToken;
+    private String validTrainerToken;
+    private String validProfessorToken;
     private UUID testUserId;
     private UUID adminUserId;
+    private UUID trainerUserId;
+    private UUID professorUserId;
     private UUID otherUserPaymentId;
     private UUID ownMembershipId;
     private UUID otherMembershipId;
@@ -183,6 +192,17 @@ class SecurityRegressionTest {
             return userRepository.save(user);
         });
 
+        User professorUser = userRepository.findByEmail("professor@test.com").orElseGet(() -> {
+            User user = new User();
+            user.setId(UUID.randomUUID());
+            user.setName("Professor User");
+            user.setEmail("professor@test.com");
+            user.setPasswordHash(passwordEncoder.encode("ProfessorPass123!"));
+            user.setRole(User.Role.PROFESSOR);
+            user.setIsActive(true);
+            return userRepository.save(user);
+        });
+
         Trainer trainer = trainerRepository.findByUserId(trainerUser.getId()).orElseGet(() -> trainerRepository.save(Trainer.builder()
                 .user(trainerUser)
                 .bio("Security test trainer")
@@ -190,8 +210,19 @@ class SecurityRegressionTest {
                 .isActive(true)
                 .build()));
 
+        studentProfileRepository.findByUserIdAndDeletedAtIsNull(testUser.getId()).orElseGet(() -> studentProfileRepository.save(StudentProfile.builder()
+                .user(testUser)
+                .trainingDays("MON,WED")
+                .emergencyContact("Emergency Contact")
+                .emergencyPhone("000000000")
+                .medicalNotes("Operational medical note")
+                .isActive(true)
+                .build()));
+
         testUserId = testUser.getId();
         adminUserId = adminUser.getId();
+        trainerUserId = trainerUser.getId();
+        professorUserId = professorUser.getId();
 
         Plan plan = planRepository.findAll().stream().findFirst().orElseGet(() -> {
             Plan newPlan = Plan.builder()
@@ -303,6 +334,12 @@ class SecurityRegressionTest {
         validManagerToken = jwtUtil.generateAccessToken(
                 managerUser.getId(), MANAGER_EMAIL, "MANAGER"
         );
+        validTrainerToken = jwtUtil.generateAccessToken(
+                trainerUserId, "trainer@test.com", "TRAINER"
+        );
+        validProfessorToken = jwtUtil.generateAccessToken(
+                professorUserId, "professor@test.com", "PROFESSOR"
+        );
         testPaymentId = ownPayment.getId();
         otherUserPaymentId = otherPayment.getId();
         testCheckoutId = UUID.randomUUID();
@@ -341,6 +378,130 @@ class SecurityRegressionTest {
                         throw new AssertionError("Expected non-401 status, got " + status);
                     }
                 });
+    }
+
+    // ===== TEST 1B: Trainer/Professor Role Boundaries =====
+
+    @Test
+    @DisplayName("TRAINER can access intended operational endpoints")
+    void trainerCanAccessIntendedOperationalEndpoints() throws Exception {
+        mockMvc.perform(get("/api/attendance/date")
+                        .param("date", LocalDate.now().toString())
+                        .header("Authorization", "Bearer " + validTrainerToken))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/schedule-requests")
+                        .header("Authorization", "Bearer " + validTrainerToken))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/student-profile/by-user/" + testUserId)
+                        .header("Authorization", "Bearer " + validTrainerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(testUserId.toString()))
+                .andExpect(jsonPath("$.userEmail").doesNotExist())
+                .andExpect(jsonPath("$.medicalNotes").doesNotExist())
+                .andExpect(jsonPath("$.emergencyPhone").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("PROFESSOR can access intended professor endpoints")
+    void professorCanAccessIntendedProfessorEndpoints() throws Exception {
+        mockMvc.perform(get("/api/professor/students")
+                        .header("Authorization", "Bearer " + validProfessorToken))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/video-lessons/manage")
+                        .header("Authorization", "Bearer " + validProfessorToken))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("TRAINER and PROFESSOR cannot access privileged staff management endpoints")
+    void trainerAndProfessorCannotAccessPrivilegedStaffManagementEndpoints() throws Exception {
+        for (String endpoint : new String[] {
+                "/api/users",
+                "/api/manager/users",
+                "/api/admin/audit-logs",
+                "/api/admin/dashboard",
+                "/api/memberships"
+        }) {
+            mockMvc.perform(get(endpoint).header("Authorization", "Bearer " + validTrainerToken))
+                    .andExpect(status().isForbidden());
+            mockMvc.perform(get(endpoint).header("Authorization", "Bearer " + validProfessorToken))
+                    .andExpect(status().isForbidden());
+        }
+
+        mockMvc.perform(patch("/api/payments/" + testPaymentId + "/refund")
+                        .header("Authorization", "Bearer " + validTrainerToken))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(patch("/api/payments/" + testPaymentId + "/refund")
+                        .header("Authorization", "Bearer " + validProfessorToken))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(patch("/api/users/" + testUserId + "/role")
+                        .header("Authorization", "Bearer " + validTrainerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"role\":\"ADMIN\"}"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(patch("/api/users/" + testUserId + "/role")
+                        .header("Authorization", "Bearer " + validProfessorToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"role\":\"ADMIN\"}"))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(put("/api/users/" + testUserId)
+                        .header("Authorization", "Bearer " + validTrainerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"isActive\":false}"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(put("/api/users/" + testUserId)
+                        .header("Authorization", "Bearer " + validProfessorToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"isActive\":false}"))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(put("/api/users/" + trainerUserId)
+                        .header("Authorization", "Bearer " + validTrainerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"isActive\":false}"))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(put("/api/users/" + professorUserId)
+                        .header("Authorization", "Bearer " + validProfessorToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"isActive\":false}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("TRAINER and PROFESSOR do not inherit each other's dedicated endpoints")
+    void trainerAndProfessorDoNotInheritEachOthersDedicatedEndpoints() throws Exception {
+        mockMvc.perform(get("/api/professor/students")
+                        .header("Authorization", "Bearer " + validTrainerToken))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/api/attendance/date")
+                        .param("date", LocalDate.now().toString())
+                        .header("Authorization", "Bearer " + validProfessorToken))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/api/schedule-requests")
+                        .header("Authorization", "Bearer " + validProfessorToken))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/api/student-profile/by-user/" + testUserId)
+                        .header("Authorization", "Bearer " + validProfessorToken))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Trainer/professor protected endpoints return 401 without authentication")
+    void trainerProfessorProtectedEndpointsReturn401WithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/api/attendance/date").param("date", LocalDate.now().toString()))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(get("/api/professor/students"))
+                .andExpect(status().isUnauthorized());
     }
 
     // ===== TEST 2: Checkout Protection =====

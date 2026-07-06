@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TrainerRouteImport } from './routes/trainer'
 import { Route as TermosUtilizacaoRouteImport } from './routes/termos-utilizacao'
 import { Route as StudentAreaRouteImport } from './routes/student-area'
 import { Route as ScheduleRouteImport } from './routes/schedule'
@@ -34,6 +35,11 @@ import { Route as MembershipMembershipIdRouteImport } from './routes/membership/
 import { Route as CheckoutPlanIdRouteImport } from './routes/checkout/$planId'
 import { Route as MembershipMembershipIdFormRouteImport } from './routes/membership/$membershipId/form'
 
+const TrainerRoute = TrainerRouteImport.update({
+  id: '/trainer',
+  path: '/trainer',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermosUtilizacaoRoute = TermosUtilizacaoRouteImport.update({
   id: '/termos-utilizacao',
   path: '/termos-utilizacao',
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/schedule': typeof ScheduleRoute
   '/student-area': typeof StudentAreaRoute
   '/termos-utilizacao': typeof TermosUtilizacaoRoute
+  '/trainer': typeof TrainerRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
   '/membership/$membershipId': typeof MembershipMembershipIdRouteWithChildren
   '/membership/success': typeof MembershipSuccessRoute
@@ -199,6 +206,7 @@ export interface FileRoutesByTo {
   '/schedule': typeof ScheduleRoute
   '/student-area': typeof StudentAreaRoute
   '/termos-utilizacao': typeof TermosUtilizacaoRoute
+  '/trainer': typeof TrainerRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
   '/membership/$membershipId': typeof MembershipMembershipIdRouteWithChildren
   '/membership/success': typeof MembershipSuccessRoute
@@ -226,6 +234,7 @@ export interface FileRoutesById {
   '/schedule': typeof ScheduleRoute
   '/student-area': typeof StudentAreaRoute
   '/termos-utilizacao': typeof TermosUtilizacaoRoute
+  '/trainer': typeof TrainerRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
   '/membership/$membershipId': typeof MembershipMembershipIdRouteWithChildren
   '/membership/success': typeof MembershipSuccessRoute
@@ -254,6 +263,7 @@ export interface FileRouteTypes {
     | '/schedule'
     | '/student-area'
     | '/termos-utilizacao'
+    | '/trainer'
     | '/checkout/$planId'
     | '/membership/$membershipId'
     | '/membership/success'
@@ -280,6 +290,7 @@ export interface FileRouteTypes {
     | '/schedule'
     | '/student-area'
     | '/termos-utilizacao'
+    | '/trainer'
     | '/checkout/$planId'
     | '/membership/$membershipId'
     | '/membership/success'
@@ -306,6 +317,7 @@ export interface FileRouteTypes {
     | '/schedule'
     | '/student-area'
     | '/termos-utilizacao'
+    | '/trainer'
     | '/checkout/$planId'
     | '/membership/$membershipId'
     | '/membership/success'
@@ -333,6 +345,7 @@ export interface RootRouteChildren {
   ScheduleRoute: typeof ScheduleRoute
   StudentAreaRoute: typeof StudentAreaRoute
   TermosUtilizacaoRoute: typeof TermosUtilizacaoRoute
+  TrainerRoute: typeof TrainerRoute
   CheckoutPlanIdRoute: typeof CheckoutPlanIdRoute
   MembershipMembershipIdRoute: typeof MembershipMembershipIdRouteWithChildren
   MembershipSuccessRoute: typeof MembershipSuccessRoute
@@ -344,6 +357,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/trainer': {
+      id: '/trainer'
+      path: '/trainer'
+      fullPath: '/trainer'
+      preLoaderRoute: typeof TrainerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/termos-utilizacao': {
       id: '/termos-utilizacao'
       path: '/termos-utilizacao'
@@ -546,6 +566,7 @@ const rootRouteChildren: RootRouteChildren = {
   ScheduleRoute: ScheduleRoute,
   StudentAreaRoute: StudentAreaRoute,
   TermosUtilizacaoRoute: TermosUtilizacaoRoute,
+  TrainerRoute: TrainerRoute,
   CheckoutPlanIdRoute: CheckoutPlanIdRoute,
   MembershipMembershipIdRoute: MembershipMembershipIdRouteWithChildren,
   MembershipSuccessRoute: MembershipSuccessRoute,

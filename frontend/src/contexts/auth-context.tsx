@@ -23,6 +23,7 @@ import type { RegisterRequest, User, UserRole } from "@/types";
 const protectedRoutePrefixes = [
   "/admin",
   "/student-area",
+  "/trainer",
   "/professor",
   "/checkout",
   "/membership",

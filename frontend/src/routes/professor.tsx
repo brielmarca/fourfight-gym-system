@@ -68,6 +68,11 @@ function ProfessorPage() {
     return null;
   }
 
+  if (user && hasRole(["TRAINER"])) {
+    void navigate({ to: "/trainer", replace: true });
+    return null;
+  }
+
   if (user && !hasRole(["PROFESSOR"])) {
     if (!hasRole(["CLIENT"])) {
       void navigate({ to: "/", replace: true });

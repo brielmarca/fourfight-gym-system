@@ -213,6 +213,11 @@ function AdminPage() {
       return null;
     }
 
+    if (hasRole(["TRAINER"])) {
+      void navigate({ to: "/trainer", replace: true });
+      return null;
+    }
+
     if (!hasRole(["CLIENT"])) {
       void navigate({ to: "/", replace: true });
       return null;

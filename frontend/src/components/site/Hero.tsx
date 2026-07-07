@@ -2,10 +2,7 @@ import { Link } from "@tanstack/react-router";
 
 export function Hero() {
   return (
-    <section
-      id="top"
-      className="relative w-full overflow-hidden hero-section"
-    >
+    <section id="top" className="relative w-full overflow-hidden hero-section">
       {/* Single BG image */}
       <div className="absolute inset-0">
         <img
@@ -68,13 +65,22 @@ export function Hero() {
             textShadow: "0 8px 36px rgba(0,0,0,0.9)",
           }}
         >
-          <span className="hero-title-mobile hero-word" style={{ animationDelay: "0.1s", color: "#F5F5F5" }}>
+          <span
+            className="hero-title-mobile hero-word"
+            style={{ animationDelay: "0.1s", color: "#F5F5F5" }}
+          >
             TREINE O <span style={{ color: "#C1121F" }}>INSTINTO</span>
           </span>
-          <span className="block hero-word hero-title-desktop" style={{ animationDelay: "0.1s", color: "#F5F5F5" }}>
+          <span
+            className="block hero-word hero-title-desktop"
+            style={{ animationDelay: "0.1s", color: "#F5F5F5" }}
+          >
             TREINE O
           </span>
-          <span className="block hero-word hero-title-desktop" style={{ animationDelay: "0.35s", color: "#C1121F" }}>
+          <span
+            className="block hero-word hero-title-desktop"
+            style={{ animationDelay: "0.35s", color: "#C1121F" }}
+          >
             INSTINTO
           </span>
         </h1>
@@ -96,16 +102,10 @@ export function Hero() {
         </p>
 
         <div className="hero-cta-group" style={{ animationDelay: "1.05s", opacity: 1 }}>
-          <Link
-            to="/plans"
-            className="hero-cta-btn hero-cta-btn-primary"
-          >
-            COMEÇAR AGORA<span className="cta-desktop-suffix">  7 DIAS GRÁTIS</span>
+          <Link to="/plans" className="hero-cta-btn hero-cta-btn-primary">
+            COMEÇAR AGORA<span className="cta-desktop-suffix"> 7 DIAS GRÁTIS</span>
           </Link>
-          <Link
-            to="/plans"
-            className="hero-cta-btn hero-cta-btn-secondary"
-          >
+          <Link to="/plans" className="hero-cta-btn hero-cta-btn-secondary">
             VER PLANOS
           </Link>
         </div>

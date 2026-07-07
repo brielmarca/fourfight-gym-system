@@ -37,11 +37,36 @@ const benefits = [
 ];
 
 const belts = [
-  { name: "Branca", order: "1", stripeClass: "bg-zinc-100 border-zinc-300", detailClass: "text-zinc-300" },
-  { name: "Azul", order: "2", stripeClass: "bg-blue-500 border-blue-400", detailClass: "text-blue-300" },
-  { name: "Roxa", order: "3", stripeClass: "bg-violet-500 border-violet-400", detailClass: "text-violet-300" },
-  { name: "Castanha", order: "4", stripeClass: "bg-amber-700 border-amber-600", detailClass: "text-amber-400" },
-  { name: "Preta", order: "5", stripeClass: "bg-zinc-900 border-red-700", detailClass: "text-red-400" },
+  {
+    name: "Branca",
+    order: "1",
+    stripeClass: "bg-zinc-100 border-zinc-300",
+    detailClass: "text-zinc-300",
+  },
+  {
+    name: "Azul",
+    order: "2",
+    stripeClass: "bg-blue-500 border-blue-400",
+    detailClass: "text-blue-300",
+  },
+  {
+    name: "Roxa",
+    order: "3",
+    stripeClass: "bg-violet-500 border-violet-400",
+    detailClass: "text-violet-300",
+  },
+  {
+    name: "Castanha",
+    order: "4",
+    stripeClass: "bg-amber-700 border-amber-600",
+    detailClass: "text-amber-400",
+  },
+  {
+    name: "Preta",
+    order: "5",
+    stripeClass: "bg-zinc-900 border-red-700",
+    detailClass: "text-red-400",
+  },
 ];
 
 const dayLabels: Record<string, string> = {
@@ -83,7 +108,10 @@ function JiuJitsuPage() {
     () =>
       schedule
         .filter((entry) => entry.modality === "JIU_JITSU")
-        .sort((a, b) => a.dayOfWeek.localeCompare(b.dayOfWeek) || a.startTime.localeCompare(b.startTime))
+        .sort(
+          (a, b) =>
+            a.dayOfWeek.localeCompare(b.dayOfWeek) || a.startTime.localeCompare(b.startTime),
+        )
         .slice(0, 6),
     [schedule],
   );
@@ -110,12 +138,16 @@ function JiuJitsuPage() {
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(11,11,11,0.78) 58%, #0B0B0B 100%)",
+              background:
+                "linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(11,11,11,0.78) 58%, #0B0B0B 100%)",
             }}
           />
         </div>
 
-        <div className="relative px-4 text-center max-w-[980px] mx-auto pt-24" style={{ zIndex: 10 }}>
+        <div
+          className="relative px-4 text-center max-w-[980px] mx-auto pt-24"
+          style={{ zIndex: 10 }}
+        >
           <div className="flex items-center justify-center gap-4 mb-8">
             <span className="block w-12 h-px" style={{ background: "#C1121F" }} />
             <p className="text-[10px] tracking-[0.4em] uppercase" style={{ color: "#888" }}>
@@ -136,7 +168,10 @@ function JiuJitsuPage() {
             A ARTE SUAVE
           </h1>
 
-          <p className="mt-6 mx-auto hero-word" style={{ color: "#888", fontSize: "18px", maxWidth: "620px" }}>
+          <p
+            className="mt-6 mx-auto hero-word"
+            style={{ color: "#888", fontSize: "18px", maxWidth: "620px" }}
+          >
             Domina a técnica, o controlo e a disciplina do Jiu-Jitsu Brasileiro num ambiente
             estruturado, seguro e focado na evolução real.
           </p>
@@ -162,10 +197,16 @@ function JiuJitsuPage() {
       <section className="section-pad px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="font-display" style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}>
+            <h2
+              className="font-display"
+              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
+            >
               JIU-JITSU NA 4FOUR FIGHT ACADEMY
             </h2>
-            <div className="mx-auto mt-6" style={{ width: "48px", height: "2px", background: "#C1121F" }} />
+            <div
+              className="mx-auto mt-6"
+              style={{ width: "48px", height: "2px", background: "#C1121F" }}
+            />
           </div>
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-10 items-center">
             <div className="space-y-6 text-text-secondary leading-relaxed">
@@ -194,14 +235,20 @@ function JiuJitsuPage() {
       <section className="section-pad px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="font-display" style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}>
+            <h2
+              className="font-display"
+              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
+            >
               BENEFÍCIOS DO JIU-JITSU
             </h2>
             <p className="mt-4 text-text-secondary text-lg max-w-3xl mx-auto">
               Mais do que uma arte marcial, o Jiu-Jitsu desenvolve técnica, confiança, disciplina e
               preparação física.
             </p>
-            <div className="mx-auto mt-6" style={{ width: "48px", height: "2px", background: "#C1121F" }} />
+            <div
+              className="mx-auto mt-6"
+              style={{ width: "48px", height: "2px", background: "#C1121F" }}
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -212,8 +259,15 @@ function JiuJitsuPage() {
                 style={{ transitionDelay: `${idx * 100}ms` }}
               >
                 <CardContent className="pt-8">
-                  <benefit.icon size={32} strokeWidth={1.5} style={{ color: "#C1121F", marginBottom: "20px" }} />
-                  <h3 className="font-display text-2xl mb-4" style={{ color: "#F5F5F5", letterSpacing: "0.05em" }}>
+                  <benefit.icon
+                    size={32}
+                    strokeWidth={1.5}
+                    style={{ color: "#C1121F", marginBottom: "20px" }}
+                  />
+                  <h3
+                    className="font-display text-2xl mb-4"
+                    style={{ color: "#F5F5F5", letterSpacing: "0.05em" }}
+                  >
                     {benefit.title}
                   </h3>
                   <p className="text-sm" style={{ color: "#888", lineHeight: 1.8 }}>
@@ -226,25 +280,43 @@ function JiuJitsuPage() {
         </div>
       </section>
 
-      <section className="px-4 py-20" style={{ background: "#0B0B0B", borderTop: "1px solid #1E1E1E" }}>
+      <section
+        className="px-4 py-20"
+        style={{ background: "#0B0B0B", borderTop: "1px solid #1E1E1E" }}
+      >
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="font-display" style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}>
+            <h2
+              className="font-display"
+              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
+            >
               PROGRESSÃO DE FAIXAS
             </h2>
             <p className="mt-4 text-text-secondary text-lg max-w-2xl mx-auto">
               Evolução técnica por etapas, com critérios claros e treino consistente.
             </p>
-            <div className="mx-auto mt-6" style={{ width: "48px", height: "2px", background: "#C1121F" }} />
+            <div
+              className="mx-auto mt-6"
+              style={{ width: "48px", height: "2px", background: "#C1121F" }}
+            />
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 max-w-4xl mx-auto">
             {belts.map((belt) => (
-              <div key={belt.name} className="text-center py-4 px-2 rounded border border-border-subtle bg-surface">
-                <div className="mb-3 h-2 w-full rounded-sm border border-border-subtle overflow-hidden" aria-hidden>
+              <div
+                key={belt.name}
+                className="text-center py-4 px-2 rounded border border-border-subtle bg-surface"
+              >
+                <div
+                  className="mb-3 h-2 w-full rounded-sm border border-border-subtle overflow-hidden"
+                  aria-hidden
+                >
                   <span className={`block h-full w-full ${belt.stripeClass}`} />
                 </div>
-                <div className="font-display text-sm mb-2" style={{ color: "#F5F5F5", letterSpacing: "0.05em" }}>
+                <div
+                  className="font-display text-sm mb-2"
+                  style={{ color: "#F5F5F5", letterSpacing: "0.05em" }}
+                >
                   Faixa {belt.name}
                 </div>
                 <div className="pt-2 border-t border-border-subtle">
@@ -261,13 +333,19 @@ function JiuJitsuPage() {
       <section className="section-pad px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="font-display" style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}>
+            <h2
+              className="font-display"
+              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
+            >
               HORÁRIOS
             </h2>
             <p className="mt-4 text-text-secondary text-lg max-w-2xl mx-auto">
               Pré-visualização das próximas aulas de Jiu-Jitsu.
             </p>
-            <div className="mx-auto mt-6" style={{ width: "48px", height: "2px", background: "#C1121F" }} />
+            <div
+              className="mx-auto mt-6"
+              style={{ width: "48px", height: "2px", background: "#C1121F" }}
+            />
           </div>
 
           <Card className="bg-surface border-border-subtle">
@@ -285,8 +363,12 @@ function JiuJitsuPage() {
                     <thead>
                       <tr className="border-b border-border-subtle">
                         <th className="text-left py-3 px-4 text-text-secondary font-medium">Dia</th>
-                        <th className="text-left py-3 px-4 text-text-secondary font-medium">Hora</th>
-                        <th className="text-left py-3 px-4 text-text-secondary font-medium">Nível</th>
+                        <th className="text-left py-3 px-4 text-text-secondary font-medium">
+                          Hora
+                        </th>
+                        <th className="text-left py-3 px-4 text-text-secondary font-medium">
+                          Nível
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="text-text-secondary">
@@ -295,7 +377,9 @@ function JiuJitsuPage() {
                           key={entry.id}
                           className="border-b border-border-subtle hover:bg-surface-2 transition-colors"
                         >
-                          <td className="py-3 px-4">{dayLabels[entry.dayOfWeek] ?? entry.dayOfWeek}</td>
+                          <td className="py-3 px-4">
+                            {dayLabels[entry.dayOfWeek] ?? entry.dayOfWeek}
+                          </td>
                           <td className="py-3 px-4">
                             {entry.startTime.slice(0, 5)} - {entry.endTime.slice(0, 5)}
                           </td>
@@ -313,7 +397,6 @@ function JiuJitsuPage() {
           </Card>
         </div>
       </section>
-
     </main>
   );
 }

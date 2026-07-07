@@ -7,7 +7,9 @@ import { api } from "@/lib/api";
 
 export const Route = createFileRoute("/redefinir-senha")({
   component: ResetPasswordPage,
-  validateSearch: (search: Record<string, unknown>) => ({ token: typeof search.token === "string" ? search.token : "" }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    token: typeof search.token === "string" ? search.token : "",
+  }),
 });
 
 function ResetPasswordPage() {

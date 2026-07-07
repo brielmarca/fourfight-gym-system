@@ -2,7 +2,12 @@ import { useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useAuth } from "@/contexts/auth-context";
 import { api, setTokens } from "@/lib/api";
-import type { PreferredContactMethod, PreferredModality, PreferredTrainingDay, PreferredTrainingTime } from "@/types";
+import type {
+  PreferredContactMethod,
+  PreferredModality,
+  PreferredTrainingDay,
+  PreferredTrainingTime,
+} from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
@@ -68,11 +73,7 @@ function RegisterPage() {
     if (day < 1 || month < 1 || month > 12 || year < 1900 || year > 9999) return null;
 
     const date = new Date(year, month - 1, day);
-    if (
-      date.getFullYear() !== year ||
-      date.getMonth() !== month - 1 ||
-      date.getDate() !== day
-    ) {
+    if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
       return null;
     }
 
@@ -122,10 +123,16 @@ function RegisterPage() {
     return null;
   };
 
-  const birthDateIso = buildBirthDateIso(formData.birthDay, formData.birthMonth, formData.birthYear);
+  const birthDateIso = buildBirthDateIso(
+    formData.birthDay,
+    formData.birthMonth,
+    formData.birthYear,
+  );
   const calculatedAge = calculateAge(birthDateIso);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -181,7 +188,8 @@ function RegisterPage() {
         age: calculatedAge as number,
         parishOrArea: normalizeText(formData.parishOrArea),
         hasMartialArtsExperience: formData.hasMartialArtsExperience === "SIM",
-        martialArtsExperienceDetails: normalizeText(formData.martialArtsExperienceDetails) || undefined,
+        martialArtsExperienceDetails:
+          normalizeText(formData.martialArtsExperienceDetails) || undefined,
         trainingGoal: normalizeText(formData.trainingGoal),
         preferredModality: formData.preferredModality,
         preferredModalityOther: normalizeText(formData.preferredModalityOther) || undefined,
@@ -190,7 +198,8 @@ function RegisterPage() {
         preferredTrainingDays: formData.preferredTrainingDays,
         valuesMartialArtsPhilosophy: formData.valuesMartialArtsPhilosophy === "SIM",
         preferredContactMethod: formData.preferredContactMethod,
-        preferredContactMethodOther: normalizeText(formData.preferredContactMethodOther) || undefined,
+        preferredContactMethodOther:
+          normalizeText(formData.preferredContactMethodOther) || undefined,
       });
 
       const response = await api.auth.login(normalizeEmail(formData.email), formData.password);
@@ -237,7 +246,9 @@ function RegisterPage() {
         >
           <div className="text-center pb-2 pt-6">
             <CardTitle className="font-display text-2xl tracking-wider">CRIAR CONTA</CardTitle>
-            <CardDescription className="text-text-secondary mt-2">Pré-inscrição e criação de conta</CardDescription>
+            <CardDescription className="text-text-secondary mt-2">
+              Pré-inscrição e criação de conta
+            </CardDescription>
           </div>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -246,20 +257,69 @@ function RegisterPage() {
                   {error}
                 </div>
               )}
-              {success && <div className="bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-3 text-sm">{success}</div>}
+              {success && (
+                <div className="bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-3 text-sm">
+                  {success}
+                </div>
+              )}
 
-              <div className="text-xs text-text-secondary tracking-[0.15em] uppercase">Passo {currentStep} de 3</div>
+              <div className="text-xs text-text-secondary tracking-[0.15em] uppercase">
+                Passo {currentStep} de 3
+              </div>
 
               {currentStep === 1 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Nome</label><Input name="name" type="text" value={formData.name} onChange={handleChange} required maxLength={255} className="bg-surface-2 border-border-subtle h-12" /></div>
-                  <div className="space-y-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">E-mail</label><Input name="email" type="email" value={formData.email} onChange={handleChange} required maxLength={255} className="bg-surface-2 border-border-subtle h-12" /></div>
-                  <div className="space-y-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Telemóvel</label><Input name="phone" type="tel" value={formData.phone} onChange={handleChange} required maxLength={20} className="bg-surface-2 border-border-subtle h-12" /></div>
                   <div className="space-y-2">
-                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Data de nascimento</label>
+                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">
+                      Nome
+                    </label>
+                    <Input
+                      name="name"
+                      type="text"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
+                      maxLength={255}
+                      className="bg-surface-2 border-border-subtle h-12"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">
+                      E-mail
+                    </label>
+                    <Input
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                      maxLength={255}
+                      className="bg-surface-2 border-border-subtle h-12"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">
+                      Telemóvel
+                    </label>
+                    <Input
+                      name="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      required
+                      maxLength={20}
+                      className="bg-surface-2 border-border-subtle h-12"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">
+                      Data de nascimento
+                    </label>
                     <div className="grid grid-cols-3 gap-2">
                       <div className="space-y-1">
-                        <label className="text-[10px] tracking-[0.12em] uppercase text-text-secondary">Dia</label>
+                        <label className="text-[10px] tracking-[0.12em] uppercase text-text-secondary">
+                          Dia
+                        </label>
                         <Input
                           name="birthDay"
                           type="text"
@@ -274,7 +334,9 @@ function RegisterPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] tracking-[0.12em] uppercase text-text-secondary">Mês</label>
+                        <label className="text-[10px] tracking-[0.12em] uppercase text-text-secondary">
+                          Mês
+                        </label>
                         <Input
                           name="birthMonth"
                           type="text"
@@ -289,7 +351,9 @@ function RegisterPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] tracking-[0.12em] uppercase text-text-secondary">Ano</label>
+                        <label className="text-[10px] tracking-[0.12em] uppercase text-text-secondary">
+                          Ano
+                        </label>
                         <Input
                           name="birthYear"
                           type="text"
@@ -305,58 +369,315 @@ function RegisterPage() {
                       </div>
                     </div>
                     {birthDateIso && calculatedAge !== null && calculatedAge >= 0 && (
-                      <p className="text-xs text-text-secondary">Idade calculada: {calculatedAge} anos</p>
+                      <p className="text-xs text-text-secondary">
+                        Idade calculada: {calculatedAge} anos
+                      </p>
                     )}
                   </div>
-                  <div className="space-y-2 md:col-span-2"><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Morada / freguesia</label><Input name="parishOrArea" type="text" value={formData.parishOrArea} onChange={handleChange} required maxLength={255} className="bg-surface-2 border-border-subtle h-12" /></div>
-                  <div className="space-y-2">
-                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Palavra-passe</label>
-                    <div className="relative"><Input name="password" type={showPassword ? "text" : "password"} value={formData.password} onChange={handleChange} required className="bg-surface-2 border-border-subtle h-12 pr-10" />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-foreground focus:outline-none">{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}</button></div>
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">
+                      Morada / freguesia
+                    </label>
+                    <Input
+                      name="parishOrArea"
+                      type="text"
+                      value={formData.parishOrArea}
+                      onChange={handleChange}
+                      required
+                      maxLength={255}
+                      className="bg-surface-2 border-border-subtle h-12"
+                    />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Confirmar Palavra-passe</label>
-                    <div className="relative"><Input name="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={formData.confirmPassword} onChange={handleChange} required className="bg-surface-2 border-border-subtle h-12 pr-10" />
-                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} aria-label={showConfirmPassword ? "Hide password" : "Show password"} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-foreground focus:outline-none">{showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}</button></div>
+                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">
+                      Palavra-passe
+                    </label>
+                    <div className="relative">
+                      <Input
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                        className="bg-surface-2 border-border-subtle h-12 pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-foreground focus:outline-none"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-5 h-5" />
+                        ) : (
+                          <Eye className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">
+                      Confirmar Palavra-passe
+                    </label>
+                    <div className="relative">
+                      <Input
+                        name="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        required
+                        className="bg-surface-2 border-border-subtle h-12 pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-foreground focus:outline-none"
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="w-5 h-5" />
+                        ) : (
+                          <Eye className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
 
               {currentStep === 2 && (
                 <div className="space-y-4">
-                  <div><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Pratica ou já praticou alguma arte marcial?</label><select name="hasMartialArtsExperience" value={formData.hasMartialArtsExperience} onChange={handleChange} required className="mt-2 w-full h-12 bg-surface-2 border border-border-subtle px-3"><option value="">Selecionar</option><option value="SIM">Sim</option><option value="NAO">Não</option></select></div>
-                   <div><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Se já praticou, descreva qual modalidade e quanto tempo</label><Textarea name="martialArtsExperienceDetails" value={formData.martialArtsExperienceDetails} onChange={handleChange} maxLength={1500} className="bg-surface-2 border-border-subtle mt-2" /></div>
-                   <div><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Objetivo com a arte marcial</label><Textarea required name="trainingGoal" value={formData.trainingGoal} onChange={handleChange} maxLength={2000} className="bg-surface-2 border-border-subtle mt-2" /></div>
-                  <div><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">A filosofia da arte marcial é importante?</label><select name="valuesMartialArtsPhilosophy" value={formData.valuesMartialArtsPhilosophy} onChange={handleChange} required className="mt-2 w-full h-12 bg-surface-2 border border-border-subtle px-3"><option value="">Selecionar</option><option value="SIM">Sim</option><option value="NAO">Não</option></select></div>
+                  <div>
+                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">
+                      Pratica ou já praticou alguma arte marcial?
+                    </label>
+                    <select
+                      name="hasMartialArtsExperience"
+                      value={formData.hasMartialArtsExperience}
+                      onChange={handleChange}
+                      required
+                      className="mt-2 w-full h-12 bg-surface-2 border border-border-subtle px-3"
+                    >
+                      <option value="">Selecionar</option>
+                      <option value="SIM">Sim</option>
+                      <option value="NAO">Não</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">
+                      Se já praticou, descreva qual modalidade e quanto tempo
+                    </label>
+                    <Textarea
+                      name="martialArtsExperienceDetails"
+                      value={formData.martialArtsExperienceDetails}
+                      onChange={handleChange}
+                      maxLength={1500}
+                      className="bg-surface-2 border-border-subtle mt-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">
+                      Objetivo com a arte marcial
+                    </label>
+                    <Textarea
+                      required
+                      name="trainingGoal"
+                      value={formData.trainingGoal}
+                      onChange={handleChange}
+                      maxLength={2000}
+                      className="bg-surface-2 border-border-subtle mt-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">
+                      A filosofia da arte marcial é importante?
+                    </label>
+                    <select
+                      name="valuesMartialArtsPhilosophy"
+                      value={formData.valuesMartialArtsPhilosophy}
+                      onChange={handleChange}
+                      required
+                      className="mt-2 w-full h-12 bg-surface-2 border border-border-subtle px-3"
+                    >
+                      <option value="">Selecionar</option>
+                      <option value="SIM">Sim</option>
+                      <option value="NAO">Não</option>
+                    </select>
+                  </div>
                 </div>
               )}
 
               {currentStep === 3 && (
                 <div className="space-y-4">
-                  <div><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Modalidade de maior interesse</label><select name="preferredModality" value={formData.preferredModality} onChange={handleChange} required className="mt-2 w-full h-12 bg-surface-2 border border-border-subtle px-3"><option value="">Selecionar</option><option value="KICKBOXING">Kickboxing</option><option value="JIU_JITSU">Jiu Jitsu</option><option value="CAPOEIRA">Capoeira</option><option value="BOXE">Boxe</option><option value="MMA">M.M.A</option><option value="JIU_JITSU_KIDS">Jiu Jitsu Kids</option><option value="CAPOEIRA_KIDS">Capoeira Kids</option><option value="KICKBOXING_KIDS">Kickboxing Kids</option><option value="OTHER">Outro</option></select></div>
-                  {formData.preferredModality === "OTHER" && <Input name="preferredModalityOther" value={formData.preferredModalityOther} onChange={handleChange} placeholder="Qual modalidade?" maxLength={255} className="bg-surface-2 border-border-subtle h-12" />}
-                  <div><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Horário pretendido</label><select name="preferredTrainingTime" value={formData.preferredTrainingTime} onChange={handleChange} required className="mt-2 w-full h-12 bg-surface-2 border border-border-subtle px-3"><option value="">Selecionar</option><option value="MORNING_BEFORE_0830">Manhã antes das 8h30</option><option value="LUNCH_1230">Almoço 12h30</option><option value="AFTERNOON_14_17">Tarde 14h a 17h</option><option value="NIGHT_AFTER_18">Noite depois das 18h</option><option value="OTHER">Outro</option></select></div>
-                  {formData.preferredTrainingTime === "OTHER" && <Input name="preferredTrainingTimeOther" value={formData.preferredTrainingTimeOther} onChange={handleChange} placeholder="Qual horário?" maxLength={255} className="bg-surface-2 border-border-subtle h-12" />}
-                  <div><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Dias da semana pretendidos</label><div className="grid grid-cols-2 gap-2 mt-2 text-sm">{[["MONDAY","Segunda-feira"],["TUESDAY","Terça-feira"],["WEDNESDAY","Quarta-feira"],["THURSDAY","Quinta-feira"],["FRIDAY","Sexta-feira"]].map(([value,label]) => <label key={value} className="flex items-center gap-2"><input type="checkbox" checked={formData.preferredTrainingDays.includes(value as PreferredTrainingDay)} onChange={() => handleToggleDay(value as PreferredTrainingDay)} />{label}</label>)}</div></div>
-                  <div><label className="text-xs tracking-[0.15em] uppercase text-text-secondary">Como prefere ser contactado?</label><select name="preferredContactMethod" value={formData.preferredContactMethod} onChange={handleChange} required className="mt-2 w-full h-12 bg-surface-2 border border-border-subtle px-3"><option value="">Selecionar</option><option value="CALL">Chamada</option><option value="MESSAGE">Mensagem</option><option value="OTHER">Outro</option></select></div>
-                  {formData.preferredContactMethod === "OTHER" && <Input name="preferredContactMethodOther" value={formData.preferredContactMethodOther} onChange={handleChange} placeholder="Preferência de contacto" maxLength={255} className="bg-surface-2 border-border-subtle h-12" />}
+                  <div>
+                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">
+                      Modalidade de maior interesse
+                    </label>
+                    <select
+                      name="preferredModality"
+                      value={formData.preferredModality}
+                      onChange={handleChange}
+                      required
+                      className="mt-2 w-full h-12 bg-surface-2 border border-border-subtle px-3"
+                    >
+                      <option value="">Selecionar</option>
+                      <option value="KICKBOXING">Kickboxing</option>
+                      <option value="JIU_JITSU">Jiu Jitsu</option>
+                      <option value="CAPOEIRA">Capoeira</option>
+                      <option value="BOXE">Boxe</option>
+                      <option value="MMA">M.M.A</option>
+                      <option value="JIU_JITSU_KIDS">Jiu Jitsu Kids</option>
+                      <option value="CAPOEIRA_KIDS">Capoeira Kids</option>
+                      <option value="KICKBOXING_KIDS">Kickboxing Kids</option>
+                      <option value="OTHER">Outro</option>
+                    </select>
+                  </div>
+                  {formData.preferredModality === "OTHER" && (
+                    <Input
+                      name="preferredModalityOther"
+                      value={formData.preferredModalityOther}
+                      onChange={handleChange}
+                      placeholder="Qual modalidade?"
+                      maxLength={255}
+                      className="bg-surface-2 border-border-subtle h-12"
+                    />
+                  )}
+                  <div>
+                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">
+                      Horário pretendido
+                    </label>
+                    <select
+                      name="preferredTrainingTime"
+                      value={formData.preferredTrainingTime}
+                      onChange={handleChange}
+                      required
+                      className="mt-2 w-full h-12 bg-surface-2 border border-border-subtle px-3"
+                    >
+                      <option value="">Selecionar</option>
+                      <option value="MORNING_BEFORE_0830">Manhã antes das 8h30</option>
+                      <option value="LUNCH_1230">Almoço 12h30</option>
+                      <option value="AFTERNOON_14_17">Tarde 14h a 17h</option>
+                      <option value="NIGHT_AFTER_18">Noite depois das 18h</option>
+                      <option value="OTHER">Outro</option>
+                    </select>
+                  </div>
+                  {formData.preferredTrainingTime === "OTHER" && (
+                    <Input
+                      name="preferredTrainingTimeOther"
+                      value={formData.preferredTrainingTimeOther}
+                      onChange={handleChange}
+                      placeholder="Qual horário?"
+                      maxLength={255}
+                      className="bg-surface-2 border-border-subtle h-12"
+                    />
+                  )}
+                  <div>
+                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">
+                      Dias da semana pretendidos
+                    </label>
+                    <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
+                      {[
+                        ["MONDAY", "Segunda-feira"],
+                        ["TUESDAY", "Terça-feira"],
+                        ["WEDNESDAY", "Quarta-feira"],
+                        ["THURSDAY", "Quinta-feira"],
+                        ["FRIDAY", "Sexta-feira"],
+                      ].map(([value, label]) => (
+                        <label key={value} className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={formData.preferredTrainingDays.includes(
+                              value as PreferredTrainingDay,
+                            )}
+                            onChange={() => handleToggleDay(value as PreferredTrainingDay)}
+                          />
+                          {label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs tracking-[0.15em] uppercase text-text-secondary">
+                      Como prefere ser contactado?
+                    </label>
+                    <select
+                      name="preferredContactMethod"
+                      value={formData.preferredContactMethod}
+                      onChange={handleChange}
+                      required
+                      className="mt-2 w-full h-12 bg-surface-2 border border-border-subtle px-3"
+                    >
+                      <option value="">Selecionar</option>
+                      <option value="CALL">Chamada</option>
+                      <option value="MESSAGE">Mensagem</option>
+                      <option value="OTHER">Outro</option>
+                    </select>
+                  </div>
+                  {formData.preferredContactMethod === "OTHER" && (
+                    <Input
+                      name="preferredContactMethodOther"
+                      value={formData.preferredContactMethodOther}
+                      onChange={handleChange}
+                      placeholder="Preferência de contacto"
+                      maxLength={255}
+                      className="bg-surface-2 border-border-subtle h-12"
+                    />
+                  )}
                 </div>
               )}
               {currentStep === 3 && (
                 <label className="flex items-start gap-2 text-xs text-text-secondary">
-                  <input type="checkbox" checked={acceptLegal} onChange={(e) => setAcceptLegal(e.target.checked)} className="mt-0.5" />
+                  <input
+                    type="checkbox"
+                    checked={acceptLegal}
+                    onChange={(e) => setAcceptLegal(e.target.checked)}
+                    className="mt-0.5"
+                  />
                   <span>
-                    Li e aceito a <Link to="/politica-privacidade" className="text-primary hover:underline">Política de Privacidade</Link> e os <Link to="/termos-utilizacao" className="text-primary hover:underline">Termos de Utilização</Link>.
+                    Li e aceito a{" "}
+                    <Link to="/politica-privacidade" className="text-primary hover:underline">
+                      Política de Privacidade
+                    </Link>{" "}
+                    e os{" "}
+                    <Link to="/termos-utilizacao" className="text-primary hover:underline">
+                      Termos de Utilização
+                    </Link>
+                    .
                   </span>
                 </label>
               )}
               <div className="flex gap-2">
-                <Button type="button" variant="outline" className="h-12 flex-1" disabled={currentStep === 1 || loading} onClick={() => setCurrentStep((s) => Math.max(1, s - 1))}>Anterior</Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-12 flex-1"
+                  disabled={currentStep === 1 || loading}
+                  onClick={() => setCurrentStep((s) => Math.max(1, s - 1))}
+                >
+                  Anterior
+                </Button>
                 {currentStep < 3 ? (
-                  <Button type="button" className="btn-red h-12 flex-1 tracking-[0.2em] uppercase text-xs font-semibold" onClick={() => setCurrentStep((s) => Math.min(3, s + 1))}>Seguinte</Button>
+                  <Button
+                    type="button"
+                    className="btn-red h-12 flex-1 tracking-[0.2em] uppercase text-xs font-semibold"
+                    onClick={() => setCurrentStep((s) => Math.min(3, s + 1))}
+                  >
+                    Seguinte
+                  </Button>
                 ) : (
-                  <Button type="submit" disabled={loading} className="btn-red h-12 flex-1 tracking-[0.2em] uppercase text-xs font-semibold">
-                    {loading ? <span className="flex items-center justify-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />Processando...</span> : "CRIAR CONTA"}
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="btn-red h-12 flex-1 tracking-[0.2em] uppercase text-xs font-semibold"
+                  >
+                    {loading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Processando...
+                      </span>
+                    ) : (
+                      "CRIAR CONTA"
+                    )}
                   </Button>
                 )}
               </div>

@@ -14,8 +14,13 @@ export function useAdminGraduationOptions(enabled = true) {
 export function useUpdateAdminStudentGraduation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ userId, payload }: { userId: string; payload: UpdateStudentGraduationRequest }) =>
-      api.admin.updateStudentGraduation(userId, payload),
+    mutationFn: ({
+      userId,
+      payload,
+    }: {
+      userId: string;
+      payload: UpdateStudentGraduationRequest;
+    }) => api.admin.updateStudentGraduation(userId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.adminStudents.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.graduationOptions.all });

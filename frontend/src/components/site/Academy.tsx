@@ -2,10 +2,26 @@ import { Shield, Trophy, Users, Star, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const features = [
-  { icon: Shield, title: "Instrutores Certificados", desc: "Pso de competição e formação especializada em Jiu-Jitsu e Boxe" },
-  { icon: Star, title: "5★ Avaliação Média", desc: "Alunos confirmam a qualidade do treino e atenção individual" },
-  { icon: Users, title: "Equipa de Elite", desc: "Treinadores com mais de 12 anos de experiência em competição" },
-  { icon: Trophy, title: "Preparação para Competição", desc: "Treino estruturado com atletas que já competiram internacionalmente" },
+  {
+    icon: Shield,
+    title: "Instrutores Certificados",
+    desc: "Pso de competição e formação especializada em Jiu-Jitsu e Boxe",
+  },
+  {
+    icon: Star,
+    title: "5★ Avaliação Média",
+    desc: "Alunos confirmam a qualidade do treino e atenção individual",
+  },
+  {
+    icon: Users,
+    title: "Equipa de Elite",
+    desc: "Treinadores com mais de 12 anos de experiência em competição",
+  },
+  {
+    icon: Trophy,
+    title: "Preparação para Competição",
+    desc: "Treino estruturado com atletas que já competiram internacionalmente",
+  },
 ];
 
 const facilities = [
@@ -92,16 +108,11 @@ export function Academy() {
               <div
                 className="absolute inset-0"
                 style={{
-                  background:
-                    "linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.5) 100%)",
+                  background: "linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.5) 100%)",
                 }}
               />
-              <div
-                className="absolute inset-x-0 bottom-6 text-center"
-              >
-                <Badge className="bg-primary/90 text-white border-0 mb-2">
-                  {f.badge}
-                </Badge>
+              <div className="absolute inset-x-0 bottom-6 text-center">
+                <Badge className="bg-primary/90 text-white border-0 mb-2">{f.badge}</Badge>
                 <p
                   style={{
                     fontSize: "11px",

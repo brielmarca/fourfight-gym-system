@@ -117,12 +117,18 @@ function MMAPage() {
         <div className="relative mx-auto w-full max-w-6xl px-4 py-24 text-center">
           <h1
             className="font-display"
-            style={{ fontSize: "clamp(58px, 12vw, 136px)", lineHeight: 0.9, letterSpacing: "0.04em", color: "#F5F5F5" }}
+            style={{
+              fontSize: "clamp(58px, 12vw, 136px)",
+              lineHeight: 0.9,
+              letterSpacing: "0.04em",
+              color: "#F5F5F5",
+            }}
           >
             MMA
           </h1>
           <p className="mx-auto mt-6 max-w-3xl text-lg text-text-secondary">
-            Combina striking, wrestling, grappling e condicionamento num treino completo, estruturado e focado na evolução real.
+            Combina striking, wrestling, grappling e condicionamento num treino completo,
+            estruturado e focado na evolução real.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button
@@ -149,13 +155,16 @@ function MMAPage() {
               A ciência da eficácia
             </h2>
             <p className="mt-5 text-lg leading-relaxed text-text-secondary">
-              O MMA na 4Four Fight Academy integra combate em pé, wrestling, grappling e preparação física específica num sistema progressivo e seguro. Cada aula desenvolve distância, controlo, timing e transições para que o aluno evolua em todas as fases do combate.
+              O MMA na 4Four Fight Academy integra combate em pé, wrestling, grappling e preparação
+              física específica num sistema progressivo e seguro. Cada aula desenvolve distância,
+              controlo, timing e transições para que o aluno evolua em todas as fases do combate.
             </p>
           </div>
           <div className="rounded-md border border-red-700/40 bg-black/40 p-6">
             <p className="text-[11px] uppercase tracking-[0.24em] text-red-400">Metodologia</p>
             <p className="mt-4 text-sm leading-relaxed text-text-secondary">
-              Progressão técnica com intensidade controlada, foco em segurança e evolução prática em todas as distâncias de combate.
+              Progressão técnica com intensidade controlada, foco em segurança e evolução prática em
+              todas as distâncias de combate.
             </p>
           </div>
         </div>
@@ -169,7 +178,10 @@ function MMAPage() {
           <div className="mx-auto mt-5 h-[2px] w-14" style={{ background: "#C1121F" }} />
           <div className="mt-12 grid gap-6 md:grid-cols-2">
             {trainingCards.map((card) => (
-              <Card key={card.title} className="border-border-subtle bg-surface transition-all duration-300 hover:border-red-600/70 hover:shadow-[0_0_24px_rgba(193,18,31,0.15)]">
+              <Card
+                key={card.title}
+                className="border-border-subtle bg-surface transition-all duration-300 hover:border-red-600/70 hover:shadow-[0_0_24px_rgba(193,18,31,0.15)]"
+              >
                 <CardContent className="pt-8">
                   <card.icon size={30} strokeWidth={1.7} style={{ color: "#C1121F" }} />
                   <h3 className="mt-4 font-display text-2xl" style={{ color: "#F5F5F5" }}>

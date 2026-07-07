@@ -9,7 +9,9 @@ function PoliticaCookiesPage() {
     <main className="min-h-screen bg-background px-4 pb-16 pt-28 text-foreground sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <h1 className="text-3xl font-semibold text-white sm:text-4xl">Política de Cookies</h1>
-        <p className="mt-4 text-sm leading-7 text-zinc-300">Última atualização: 27 de maio de 2026.</p>
+        <p className="mt-4 text-sm leading-7 text-zinc-300">
+          Última atualização: 27 de maio de 2026.
+        </p>
 
         <div className="mt-8 space-y-8 text-sm leading-7 text-zinc-300">
           <section>
@@ -23,14 +25,16 @@ function PoliticaCookiesPage() {
           <section>
             <h2 className="text-xl font-semibold text-white">2. Tipos de cookies utilizados</h2>
             <p className="mt-2">
-              O site utiliza cookies estritamente necessários para login, sessão, segurança e gestão de
-              preferências de cookies. Cookies de preferências, analíticos ou marketing só são
+              O site utiliza cookies estritamente necessários para login, sessão, segurança e gestão
+              de preferências de cookies. Cookies de preferências, analíticos ou marketing só são
               aplicados quando tecnicamente configurados e, quando exigido, após consentimento.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white">3. Cookies estritamente necessários</h2>
+            <h2 className="text-xl font-semibold text-white">
+              3. Cookies estritamente necessários
+            </h2>
             <p className="mt-2">
               São essenciais para autenticação, segurança, navegação e memorizar a escolha de
               consentimento. Sem estes cookies, funcionalidades críticas do site podem deixar de
@@ -42,49 +46,52 @@ function PoliticaCookiesPage() {
             <h2 className="text-xl font-semibold text-white">4. Cookies analíticos</h2>
             <p className="mt-2">
               Não são necessários ao funcionamento base do serviço. No projeto 4Four Fight Academy,
-              só são aplicados se estiverem tecnicamente configurados (por exemplo, com ID de medição)
-              e após consentimento explícito do utilizador.
+              só são aplicados se estiverem tecnicamente configurados (por exemplo, com ID de
+              medição) e após consentimento explícito do utilizador.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-white">5. Cookies de marketing</h2>
             <p className="mt-2">
-              Atualmente, não são usados cookies de marketing próprios nesta plataforma, salvo futura
-              configuração expressa e respetiva atualização desta política.
+              Atualmente, não são usados cookies de marketing próprios nesta plataforma, salvo
+              futura configuração expressa e respetiva atualização desta política.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-white">6. Tabela de categorias de cookies</h2>
             <p className="mt-2">
-              A tabela abaixo resume as categorias tratadas nesta política e o respetivo enquadramento
-              de finalidade, consentimento e conservação.
+              A tabela abaixo resume as categorias tratadas nesta política e o respetivo
+              enquadramento de finalidade, consentimento e conservação.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white">7. Preferências e gestão de cookies</h2>
+            <h2 className="text-xl font-semibold text-white">
+              7. Preferências e gestão de cookies
+            </h2>
             <p className="mt-2">
               Pode aceitar, rejeitar ou personalizar cookies opcionais no banner/centro de
               preferências, quando disponível.
             </p>
             <p className="mt-2">
               Também pode configurar o navegador para bloquear ou apagar cookies. O bloqueio de
-              cookies estritamente necessários pode impedir login, sessão e funcionalidades da conta,
-              incluindo áreas de aluno e administração.
+              cookies estritamente necessários pode impedir login, sessão e funcionalidades da
+              conta, incluindo áreas de aluno e administração.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-white">8. Serviços externos</h2>
             <p className="mt-2">
-              Ao abrir serviços externos, como WhatsApp/Meta ou Stripe, esses fornecedores podem usar
-              os seus próprios cookies nos respetivos ambientes, sob os termos e políticas deles.
+              Ao abrir serviços externos, como WhatsApp/Meta ou Stripe, esses fornecedores podem
+              usar os seus próprios cookies nos respetivos ambientes, sob os termos e políticas
+              deles.
             </p>
             <p className="mt-2">
-              Se forem adicionados no futuro conteúdos incorporados de terceiros (por exemplo, vídeos
-              embebidos), esta política poderá ser atualizada.
+              Se forem adicionados no futuro conteúdos incorporados de terceiros (por exemplo,
+              vídeos embebidos), esta política poderá ser atualizada.
             </p>
           </section>
 
@@ -120,8 +127,12 @@ function PoliticaCookiesPage() {
                 <td className="px-4 py-4">
                   Login, sessão, segurança e registo das preferências de cookies.
                 </td>
-                <td className="px-4 py-4">Cookies de sessão/autenticação e preferência de cookies.</td>
-                <td className="px-4 py-4">Não, quando estritamente necessários ao serviço solicitado.</td>
+                <td className="px-4 py-4">
+                  Cookies de sessão/autenticação e preferência de cookies.
+                </td>
+                <td className="px-4 py-4">
+                  Não, quando estritamente necessários ao serviço solicitado.
+                </td>
                 <td className="px-4 py-4">
                   Sessão e/ou até alteração das preferências, conforme o tipo de cookie.
                 </td>
@@ -145,7 +156,9 @@ function PoliticaCookiesPage() {
                 </td>
               </tr>
               <tr>
-                <td className="px-4 py-4 font-medium text-white">Marketing (não usado atualmente)</td>
+                <td className="px-4 py-4 font-medium text-white">
+                  Marketing (não usado atualmente)
+                </td>
                 <td className="px-4 py-4">Publicidade/segmentação comportamental.</td>
                 <td className="px-4 py-4">Não configurado atualmente na plataforma.</td>
                 <td className="px-4 py-4">Seria necessário consentimento prévio.</td>

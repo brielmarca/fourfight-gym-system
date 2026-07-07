@@ -73,19 +73,21 @@ function ContactPage() {
       <div className="pt-32 pb-20 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">FALA COMIGO</h1>
-              <p className="mt-4 text-text-secondary text-lg">
-                Tens dúvidas? Queres experimentar? Fala connosco!
-              </p>
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={whatsappAriaLabel}
-                className="mt-4 inline-flex text-primary hover:text-primary/80 transition-colors"
-              >
-                Abrir conversa no WhatsApp
-              </a>
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">
+              FALA COMIGO
+            </h1>
+            <p className="mt-4 text-text-secondary text-lg">
+              Tens dúvidas? Queres experimentar? Fala connosco!
+            </p>
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={whatsappAriaLabel}
+              className="mt-4 inline-flex text-primary hover:text-primary/80 transition-colors"
+            >
+              Abrir conversa no WhatsApp
+            </a>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
@@ -158,48 +160,48 @@ function ContactPage() {
                       <label className="text-xs tracking-wider uppercase text-text-secondary">
                         Email *
                       </label>
-                        <Input
-                          type="email"
-                          placeholder="teu@email.com"
-                          value={form.email}
-                          onChange={(e) => setForm({ ...form, email: e.target.value })}
-                          required
-                          maxLength={255}
-                          disabled={createContact.isPending}
-                          className="bg-surface-2 border-border-subtle"
-                        />
+                      <Input
+                        type="email"
+                        placeholder="teu@email.com"
+                        value={form.email}
+                        onChange={(e) => setForm({ ...form, email: e.target.value })}
+                        required
+                        maxLength={255}
+                        disabled={createContact.isPending}
+                        className="bg-surface-2 border-border-subtle"
+                      />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs tracking-wider uppercase text-text-secondary">
                         Assunto *
                       </label>
-                        <Input
-                          placeholder="Assunto da mensagem"
-                          value={form.subject}
-                          onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                          required
-                          maxLength={255}
-                          disabled={createContact.isPending}
-                          className="bg-surface-2 border-border-subtle"
-                        />
+                      <Input
+                        placeholder="Assunto da mensagem"
+                        value={form.subject}
+                        onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                        required
+                        maxLength={255}
+                        disabled={createContact.isPending}
+                        className="bg-surface-2 border-border-subtle"
+                      />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs tracking-wider uppercase text-text-secondary">
                         Mensagem *
                       </label>
-                        <Textarea
-                          placeholder="O que queres saber?"
-                          value={form.message}
-                          onChange={(e) => setForm({ ...form, message: e.target.value })}
-                          required
-                          maxLength={5000}
-                          disabled={createContact.isPending}
-                          className="bg-surface-2 border-border-subtle min-h-[120px]"
-                        />
-                        <p className="text-[11px] text-text-muted text-right">
-                          {form.message.length}/5000 caracteres
-                        </p>
-                      </div>
+                      <Textarea
+                        placeholder="O que queres saber?"
+                        value={form.message}
+                        onChange={(e) => setForm({ ...form, message: e.target.value })}
+                        required
+                        maxLength={5000}
+                        disabled={createContact.isPending}
+                        className="bg-surface-2 border-border-subtle min-h-[120px]"
+                      />
+                      <p className="text-[11px] text-text-muted text-right">
+                        {form.message.length}/5000 caracteres
+                      </p>
+                    </div>
                     <Button
                       type="submit"
                       disabled={createContact.isPending}
@@ -238,8 +240,12 @@ function ContactPage() {
                           <a
                             href={href}
                             target={href.startsWith("https://wa.me/") ? "_blank" : undefined}
-                            rel={href.startsWith("https://wa.me/") ? "noopener noreferrer" : undefined}
-                            aria-label={href.startsWith("https://wa.me/") ? whatsappAriaLabel : undefined}
+                            rel={
+                              href.startsWith("https://wa.me/") ? "noopener noreferrer" : undefined
+                            }
+                            aria-label={
+                              href.startsWith("https://wa.me/") ? whatsappAriaLabel : undefined
+                            }
                             className="text-foreground transition-colors hover:text-primary"
                           >
                             {value[0]}

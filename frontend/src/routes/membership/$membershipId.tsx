@@ -77,7 +77,9 @@ function MembershipMethodPage() {
 
       <main className="max-w-2xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-wider">Metodo de Pagamento</h1>
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-wider">
+            Metodo de Pagamento
+          </h1>
           <p className="mt-4 text-text-secondary">Escolha o método de pagamento</p>
         </div>
 

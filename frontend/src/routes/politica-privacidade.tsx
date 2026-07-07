@@ -25,8 +25,8 @@ function PoliticaPrivacidadePage() {
             <h2 className="text-xl font-semibold text-white">2. Âmbito e introdução</h2>
             <p className="mt-2">
               Esta política aplica-se às páginas públicas do site, registo/login, fluxos de
-              pré-inscrição e pré-venda, planos/adesões, formulário de contacto, links para WhatsApp,
-              área de aluno e área administrativa.
+              pré-inscrição e pré-venda, planos/adesões, formulário de contacto, links para
+              WhatsApp, área de aluno e área administrativa.
             </p>
           </section>
 
@@ -44,24 +44,33 @@ function PoliticaPrivacidadePage() {
             <h2 className="text-xl font-semibold text-white">4. Dados pessoais tratados</h2>
             <ul className="mt-2 list-disc space-y-1 pl-5">
               <li>Identificação e contacto: nome, email, telefone e conteúdo de mensagens.</li>
-              <li>Conta: email de login, palavra-passe cifrada por hash, estado da conta e perfil/role.</li>
+              <li>
+                Conta: email de login, palavra-passe cifrada por hash, estado da conta e
+                perfil/role.
+              </li>
               <li>Pré-inscrição, pré-venda, planos e adesões.</li>
               <li>Estado de pagamento e referências técnicas associadas ao fluxo de pagamento.</li>
               <li>Dados de treino e gestão do ginásio, quando aplicável ao serviço.</li>
-              <li>Logs técnicos e de segurança: IP, user-agent, tentativas de autenticação e eventos de segurança.</li>
+              <li>
+                Logs técnicos e de segurança: IP, user-agent, tentativas de autenticação e eventos
+                de segurança.
+              </li>
               <li>
                 Uploads por administradores/professores/equipa autorizada: imagens, vídeos,
-                documentos e ficheiros, incluindo metadados (nome, tipo, tamanho, data e utilizador que carregou).
+                documentos e ficheiros, incluindo metadados (nome, tipo, tamanho, data e utilizador
+                que carregou).
               </li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white">5. Dados sensíveis e informação de saúde</h2>
+            <h2 className="text-xl font-semibold text-white">
+              5. Dados sensíveis e informação de saúde
+            </h2>
             <p className="mt-2">
               Sempre que sejam necessários dados de saúde, limitações médicas ou contactos de
-              emergência para segurança e gestão do treino, esses dados devem ser tratados com cuidado
-              reforçado, apenas na medida do necessário e com base jurídica adequada.
+              emergência para segurança e gestão do treino, esses dados devem ser tratados com
+              cuidado reforçado, apenas na medida do necessário e com base jurídica adequada.
             </p>
           </section>
 
@@ -75,7 +84,10 @@ function PoliticaPrivacidadePage() {
               <li>Permitir contacto via WhatsApp quando o utilizador seleciona essa opção.</li>
               <li>Prevenir fraude, abuso e incidentes de segurança.</li>
               <li>Cumprir obrigações legais, fiscais e contabilísticas.</li>
-              <li>Gerir conteúdos carregados por equipa autorizada para finalidades pedagógicas e operacionais.</li>
+              <li>
+                Gerir conteúdos carregados por equipa autorizada para finalidades pedagógicas e
+                operacionais.
+              </li>
             </ul>
           </section>
 
@@ -92,12 +104,12 @@ function PoliticaPrivacidadePage() {
           <section>
             <h2 className="text-xl font-semibold text-white">8. Pagamentos</h2>
             <p className="mt-2">
-              Quando ativados, os pagamentos online são processados pela Stripe. A aplicação da 4Four
-              Fight Academy não armazena dados completos de cartão bancário.
+              Quando ativados, os pagamentos online são processados pela Stripe. A aplicação da
+              4Four Fight Academy não armazena dados completos de cartão bancário.
             </p>
             <p className="mt-2">
-              Enquanto a ativação pública do pagamento online estiver em transição, poderão ser usados
-              fluxos de pré-venda, contacto por WhatsApp ou tratamento presencial na receção.
+              Enquanto a ativação pública do pagamento online estiver em transição, poderão ser
+              usados fluxos de pré-venda, contacto por WhatsApp ou tratamento presencial na receção.
             </p>
           </section>
 
@@ -111,19 +123,21 @@ function PoliticaPrivacidadePage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white">10. Uploads por professores/admin/equipa autorizada</h2>
+            <h2 className="text-xl font-semibold text-white">
+              10. Uploads por professores/admin/equipa autorizada
+            </h2>
             <p className="mt-2">
               As funcionalidades de upload destinam-se a administradores, professores e membros da
               equipa autorizados. Por omissão, alunos/clientes não carregam ficheiros na plataforma.
             </p>
             <p className="mt-2">
               Os conteúdos podem incluir imagens, vídeos, documentos e outros ficheiros relacionados
-              com aulas, movimentos técnicos, modalidades, comunicação institucional e gestão interna
-              do ginásio.
+              com aulas, movimentos técnicos, modalidades, comunicação institucional e gestão
+              interna do ginásio.
             </p>
             <p className="mt-2">
-              Sempre que um conteúdo inclua pessoas identificáveis, deve ser tratado como dado pessoal
-              e carregado apenas com finalidade válida e autorização/base jurídica adequada.
+              Sempre que um conteúdo inclua pessoas identificáveis, deve ser tratado como dado
+              pessoal e carregado apenas com finalidade válida e autorização/base jurídica adequada.
             </p>
             <p className="mt-2">
               Se forem adicionadas no futuro funcionalidades de upload para alunos/clientes, esta
@@ -147,17 +161,27 @@ function PoliticaPrivacidadePage() {
             <h2 className="text-xl font-semibold text-white">12. Transferências internacionais</h2>
             <p className="mt-2">
               Alguns fornecedores tecnológicos podem tratar dados fora do Espaço Económico Europeu.
-              Quando aplicável, devem ser adotadas as salvaguardas exigidas pela legislação em vigor.
+              Quando aplicável, devem ser adotadas as salvaguardas exigidas pela legislação em
+              vigor.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-white">13. Conservação dos dados</h2>
             <ul className="mt-2 list-disc space-y-1 pl-5">
-              <li>Dados de conta: durante a relação ativa e pelo período necessário às obrigações legais.</li>
-              <li>Pré-inscrição e contacto: pelo tempo necessário à gestão do pedido e seguimento comercial.</li>
+              <li>
+                Dados de conta: durante a relação ativa e pelo período necessário às obrigações
+                legais.
+              </li>
+              <li>
+                Pré-inscrição e contacto: pelo tempo necessário à gestão do pedido e seguimento
+                comercial.
+              </li>
               <li>Pagamentos e dados fiscais/contabilísticos: pelos prazos legalmente exigidos.</li>
-              <li>Logs e eventos de segurança: por período limitado e proporcional às finalidades de segurança.</li>
+              <li>
+                Logs e eventos de segurança: por período limitado e proporcional às finalidades de
+                segurança.
+              </li>
               <li>
                 Conteúdos carregados por equipa autorizada: enquanto forem úteis/necessários a fins
                 pedagógicos e administrativos, ou até remoção/pedido aplicável.
@@ -178,7 +202,9 @@ function PoliticaPrivacidadePage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white">15. Direitos dos titulares dos dados</h2>
+            <h2 className="text-xl font-semibold text-white">
+              15. Direitos dos titulares dos dados
+            </h2>
             <p className="mt-2">Nos termos legais, pode exercer os seguintes direitos:</p>
             <ul className="mt-2 list-disc space-y-1 pl-5">
               <li>Acesso.</li>
@@ -199,9 +225,12 @@ function PoliticaPrivacidadePage() {
           <section>
             <h2 className="text-xl font-semibold text-white">16. Cookies</h2>
             <p className="mt-2">
-              Para informação detalhada sobre categorias de cookies e gestão de preferências, consulte
-              a{" "}
-              <Link to="/politica-cookies" className="text-red-400 underline underline-offset-4 hover:text-red-300">
+              Para informação detalhada sobre categorias de cookies e gestão de preferências,
+              consulte a{" "}
+              <Link
+                to="/politica-cookies"
+                className="text-red-400 underline underline-offset-4 hover:text-red-300"
+              >
                 Política de Cookies
               </Link>
               .

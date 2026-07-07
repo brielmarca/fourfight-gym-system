@@ -33,9 +33,18 @@ const features = [
 ];
 
 const facilities = [
-  { src: "/assets/optimized/gallery/dsc06344-training-area.webp", label: "ÁREA PRINCIPAL DE TREINO" },
-  { src: "/assets/optimized/gallery/dsc06357-conditioning-area.webp", label: "GINÁSIO & CONDICIONAMENTO" },
-  { src: "/assets/optimized/gallery/dsc06369-recovery-area.webp", label: "BALNEÁRIO & RECUPERAÇÃO" },
+  {
+    src: "/assets/optimized/gallery/dsc06344-training-area.webp",
+    label: "ÁREA PRINCIPAL DE TREINO",
+  },
+  {
+    src: "/assets/optimized/gallery/dsc06357-conditioning-area.webp",
+    label: "GINÁSIO & CONDICIONAMENTO",
+  },
+  {
+    src: "/assets/optimized/gallery/dsc06369-recovery-area.webp",
+    label: "BALNEÁRIO & RECUPERAÇÃO",
+  },
 ];
 
 const stats = [
@@ -51,7 +60,9 @@ function AboutPage() {
       <div className="pt-32 pb-20 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">SOBRE NÓS</h1>
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wider">
+              SOBRE NÓS
+            </h1>
             <p className="mt-4 text-text-secondary text-lg">
               Mais do que uma academia. Uma família de lutadores.
             </p>

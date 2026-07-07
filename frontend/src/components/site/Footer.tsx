@@ -66,7 +66,10 @@ export function Footer() {
               Navegação
             </h3>
             <div className="mx-auto max-w-[340px] space-y-7">
-              <nav className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3" aria-label="Navegação principal">
+              <nav
+                className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3"
+                aria-label="Navegação principal"
+              >
                 {navigationLinks.map((l) => (
                   <Link
                     key={l.to}

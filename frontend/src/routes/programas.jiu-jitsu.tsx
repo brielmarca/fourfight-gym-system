@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useSchedule } from "@/queries";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/use-auth";
 import { Shield, Target, Users, Heart } from "lucide-react";
 
 const jiuJitsuHero = "/assets/optimized/jiu-jitsu/dsc06312-jiu-jitsu-hero.webp";

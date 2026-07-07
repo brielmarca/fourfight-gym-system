@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/use-auth";
 import { isAuthenticated, getUser } from "@/lib/api";
 import {
   useApproveReceptionRequest,

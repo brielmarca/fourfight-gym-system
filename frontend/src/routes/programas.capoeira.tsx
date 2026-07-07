@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/use-auth";
 import { Circle, Drum, Shield, Sparkles, Users, Waves } from "lucide-react";
 
 const capoeiraHero = "/assets/optimized/gallery/espaco-pv-2-academy-hero.webp";

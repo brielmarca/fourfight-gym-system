@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Menu, X, User, LogOut } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/use-auth";
 
 const links = [
   { label: "ACADEMIA", href: "/about" },

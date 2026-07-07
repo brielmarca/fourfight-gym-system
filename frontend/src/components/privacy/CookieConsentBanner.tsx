@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { getCookieConsent, saveCookieConsent, type CookieConsent } from "@/lib/cookie-consent";
 import { disableGoogleAnalytics, loadGoogleAnalytics } from "@/lib/analytics";
-
-const OPEN_PREFERENCES_EVENT = "fourfight:open-cookie-preferences";
+import { OPEN_PREFERENCES_EVENT } from "@/components/privacy/open-cookie-preferences";
 
 export function CookieConsentBanner() {
   const [isVisible, setIsVisible] = useState(false);
@@ -167,10 +166,4 @@ export function CookieConsentBanner() {
       </div>
     </div>
   );
-}
-
-export function openCookiePreferences() {
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new Event(OPEN_PREFERENCES_EVENT));
-  }
 }

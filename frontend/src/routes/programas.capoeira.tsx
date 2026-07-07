@@ -101,14 +101,26 @@ function CapoeiraPage() {
         />
 
         <div className="relative mx-auto w-full max-w-6xl px-4 py-24 text-center">
-          <h1 className="font-display" style={{ fontSize: "clamp(58px, 12vw, 140px)", lineHeight: 0.9, letterSpacing: "0.04em", color: "#F5F5F5" }}>
+          <h1
+            className="font-display"
+            style={{
+              fontSize: "clamp(58px, 12vw, 140px)",
+              lineHeight: 0.9,
+              letterSpacing: "0.04em",
+              color: "#F5F5F5",
+            }}
+          >
             CAPOEIRA
           </h1>
           <p className="mx-auto mt-6 max-w-3xl text-lg text-text-secondary">
-            Ritmo, mobilidade, expressão corporal e técnica numa arte marcial brasileira completa e cheia de identidade.
+            Ritmo, mobilidade, expressão corporal e técnica numa arte marcial brasileira completa e
+            cheia de identidade.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button onClick={handleMainCta} className="btn-red w-full rounded-[2px] px-10 py-5 text-[12px] font-semibold uppercase tracking-[0.2em] sm:w-auto">
+            <Button
+              onClick={handleMainCta}
+              className="btn-red w-full rounded-[2px] px-10 py-5 text-[12px] font-semibold uppercase tracking-[0.2em] sm:w-auto"
+            >
               Começar treino
             </Button>
             <Button
@@ -129,13 +141,16 @@ function CapoeiraPage() {
               A essência do jogo
             </h2>
             <p className="mt-5 text-lg leading-relaxed text-text-secondary">
-              A Capoeira na 4Four Fight Academy une tradição, ritmo, mobilidade e técnica para desenvolver corpo, mente e expressão. Cada treino trabalha ginga, esquivas, coordenação, musicalidade e jogo, respeitando o nível de cada aluno.
+              A Capoeira na 4Four Fight Academy une tradição, ritmo, mobilidade e técnica para
+              desenvolver corpo, mente e expressão. Cada treino trabalha ginga, esquivas,
+              coordenação, musicalidade e jogo, respeitando o nível de cada aluno.
             </p>
           </div>
           <div className="rounded-md border border-red-700/40 bg-black/40 p-6">
             <p className="text-[11px] uppercase tracking-[0.24em] text-red-400">Capoeira</p>
             <p className="mt-4 text-sm leading-relaxed text-text-secondary">
-              Evolução técnica com identidade brasileira, progressão segura e foco no jogo dentro da roda.
+              Evolução técnica com identidade brasileira, progressão segura e foco no jogo dentro da
+              roda.
             </p>
           </div>
         </div>
@@ -144,10 +159,16 @@ function CapoeiraPage() {
       <section className="section-pad px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="font-display" style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}>
+            <h2
+              className="font-display"
+              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
+            >
               O que vais aprender
             </h2>
-            <div className="mx-auto mt-6" style={{ width: "48px", height: "2px", background: "#C1121F" }} />
+            <div
+              className="mx-auto mt-6"
+              style={{ width: "48px", height: "2px", background: "#C1121F" }}
+            />
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -232,13 +253,19 @@ function CapoeiraPage() {
       <section className="border-y border-border-subtle bg-[#0B0B0B] px-4 py-20">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="font-display" style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}>
+            <h2
+              className="font-display"
+              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
+            >
               Sistema de cordas
             </h2>
             <p className="mt-4 text-text-secondary text-lg max-w-2xl mx-auto">
               Progressão técnica através de etapas de aprendizagem e responsabilidade.
             </p>
-            <div className="mx-auto mt-6" style={{ width: "48px", height: "2px", background: "#C1121F" }} />
+            <div
+              className="mx-auto mt-6"
+              style={{ width: "48px", height: "2px", background: "#C1121F" }}
+            />
           </div>
 
           <div className="mx-auto grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -246,7 +273,9 @@ function CapoeiraPage() {
               <Card key={corda.name} className="border-border-subtle bg-[#111111]">
                 <CardContent className="pt-6">
                   <div className="mb-4 flex items-center justify-between">
-                    <span className="text-xs uppercase tracking-[0.2em] text-text-secondary">Corda</span>
+                    <span className="text-xs uppercase tracking-[0.2em] text-text-secondary">
+                      Corda
+                    </span>
                     <Circle size={14} className="text-red-500" />
                   </div>
                   <h3 className="font-display text-2xl" style={{ color: "#F5F5F5" }}>
@@ -273,7 +302,11 @@ function CapoeiraPage() {
               <p className="mx-auto mt-4 max-w-2xl text-lg text-text-secondary">
                 Consulta os horários atualizados e encontra a sessão ideal para começar.
               </p>
-              <Button asChild variant="outline" className="mt-8 border-red-600/60 bg-black/40 px-8 py-5 text-[12px] font-semibold uppercase tracking-[0.2em] text-foreground hover:bg-red-950/30">
+              <Button
+                asChild
+                variant="outline"
+                className="mt-8 border-red-600/60 bg-black/40 px-8 py-5 text-[12px] font-semibold uppercase tracking-[0.2em] text-foreground hover:bg-red-950/30"
+              >
                 <Link to="/schedule">Ver horários</Link>
               </Button>
             </CardContent>
@@ -295,7 +328,10 @@ function CapoeiraPage() {
                 Escolhe um plano e entra na roda com acompanhamento estruturado.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button onClick={handleMainCta} className="btn-red w-full sm:w-auto px-10 py-4 text-[12px] tracking-[0.25em] uppercase font-semibold rounded-[2px]">
+                <Button
+                  onClick={handleMainCta}
+                  className="btn-red w-full sm:w-auto px-10 py-4 text-[12px] tracking-[0.25em] uppercase font-semibold rounded-[2px]"
+                >
                   Ver planos
                 </Button>
               </div>

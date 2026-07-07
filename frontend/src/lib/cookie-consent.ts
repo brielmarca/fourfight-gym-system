@@ -43,7 +43,9 @@ export function getCookieConsent(): CookieConsent | null {
   }
 }
 
-export function saveCookieConsent(consent: Omit<CookieConsent, "updatedAt"> & { updatedAt?: string }): CookieConsent {
+export function saveCookieConsent(
+  consent: Omit<CookieConsent, "updatedAt"> & { updatedAt?: string },
+): CookieConsent {
   const normalized: CookieConsent = {
     version: 1,
     necessary: true,

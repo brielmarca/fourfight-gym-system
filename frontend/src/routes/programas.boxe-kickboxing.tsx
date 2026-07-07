@@ -83,7 +83,10 @@ function BoxeKickboxingPage() {
     () =>
       schedule
         .filter((entry) => entry.modality === "BOXE_KICKBOXING")
-        .sort((a, b) => a.dayOfWeek.localeCompare(b.dayOfWeek) || a.startTime.localeCompare(b.startTime))
+        .sort(
+          (a, b) =>
+            a.dayOfWeek.localeCompare(b.dayOfWeek) || a.startTime.localeCompare(b.startTime),
+        )
         .slice(0, 6),
     [schedule],
   );
@@ -110,12 +113,16 @@ function BoxeKickboxingPage() {
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(11,11,11,0.78) 58%, #0B0B0B 100%)",
+              background:
+                "linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(11,11,11,0.78) 58%, #0B0B0B 100%)",
             }}
           />
         </div>
 
-        <div className="relative px-4 text-center max-w-[980px] mx-auto pt-24" style={{ zIndex: 10 }}>
+        <div
+          className="relative px-4 text-center max-w-[980px] mx-auto pt-24"
+          style={{ zIndex: 10 }}
+        >
           <div className="flex items-center justify-center gap-4 mb-8">
             <span className="block w-12 h-px" style={{ background: "#C1121F" }} />
             <p className="text-[10px] tracking-[0.4em] uppercase" style={{ color: "#888" }}>
@@ -136,8 +143,12 @@ function BoxeKickboxingPage() {
             BOXE / KICKBOXING
           </h1>
 
-          <p className="mt-6 mx-auto hero-word" style={{ color: "#888", fontSize: "18px", maxWidth: "620px" }}>
-            Desenvolve potência, precisão, resistência e confiança através de um treino estruturado de striking.
+          <p
+            className="mt-6 mx-auto hero-word"
+            style={{ color: "#888", fontSize: "18px", maxWidth: "620px" }}
+          >
+            Desenvolve potência, precisão, resistência e confiança através de um treino estruturado
+            de striking.
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 hero-word">
@@ -154,16 +165,22 @@ function BoxeKickboxingPage() {
       <section className="section-pad px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="font-display" style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}>
+            <h2
+              className="font-display"
+              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
+            >
               BOXE E KICKBOXING NA 4FOUR FIGHT ACADEMY
             </h2>
-            <div className="mx-auto mt-6" style={{ width: "48px", height: "2px", background: "#C1121F" }} />
+            <div
+              className="mx-auto mt-6"
+              style={{ width: "48px", height: "2px", background: "#C1121F" }}
+            />
           </div>
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-10 items-center">
             <p className="text-lg text-text-secondary leading-relaxed">
-              O treino de Boxe e Kickboxing combina técnica de golpes, deslocamento, defesa, timing e
-              condicionamento físico. Na 4Four Fight Academy, cada aula é pensada para desenvolver coordenação,
-              potência, resistência e confiança, respeitando o nível de cada aluno.
+              O treino de Boxe e Kickboxing combina técnica de golpes, deslocamento, defesa, timing
+              e condicionamento físico. Na 4Four Fight Academy, cada aula é pensada para desenvolver
+              coordenação, potência, resistência e confiança, respeitando o nível de cada aluno.
             </p>
             <div className="group rounded-lg overflow-hidden border border-border-subtle transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_24px_rgba(193,18,31,0.2)]">
               <img
@@ -180,13 +197,20 @@ function BoxeKickboxingPage() {
       <section className="section-pad px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="font-display" style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}>
+            <h2
+              className="font-display"
+              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
+            >
               BENEFÍCIOS DO BOXE E KICKBOXING
             </h2>
             <p className="mt-4 text-text-secondary text-lg max-w-3xl mx-auto">
-              Mais do que golpes, o treino desenvolve foco, preparação física, controlo emocional e confiança.
+              Mais do que golpes, o treino desenvolve foco, preparação física, controlo emocional e
+              confiança.
             </p>
-            <div className="mx-auto mt-6" style={{ width: "48px", height: "2px", background: "#C1121F" }} />
+            <div
+              className="mx-auto mt-6"
+              style={{ width: "48px", height: "2px", background: "#C1121F" }}
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -197,8 +221,15 @@ function BoxeKickboxingPage() {
                 style={{ transitionDelay: `${idx * 100}ms` }}
               >
                 <CardContent className="pt-8">
-                  <benefit.icon size={32} strokeWidth={1.5} style={{ color: "#C1121F", marginBottom: "20px" }} />
-                  <h3 className="font-display text-2xl mb-4" style={{ color: "#F5F5F5", letterSpacing: "0.05em" }}>
+                  <benefit.icon
+                    size={32}
+                    strokeWidth={1.5}
+                    style={{ color: "#C1121F", marginBottom: "20px" }}
+                  />
+                  <h3
+                    className="font-display text-2xl mb-4"
+                    style={{ color: "#F5F5F5", letterSpacing: "0.05em" }}
+                  >
                     {benefit.title}
                   </h3>
                   <p className="text-sm" style={{ color: "#888", lineHeight: 1.8 }}>
@@ -211,24 +242,38 @@ function BoxeKickboxingPage() {
         </div>
       </section>
 
-      <section className="px-4 py-20" style={{ background: "#0B0B0B", borderTop: "1px solid #1E1E1E" }}>
+      <section
+        className="px-4 py-20"
+        style={{ background: "#0B0B0B", borderTop: "1px solid #1E1E1E" }}
+      >
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="font-display" style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}>
+            <h2
+              className="font-display"
+              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
+            >
               PROGRESSÃO NO STRIKING
             </h2>
             <p className="mt-4 text-text-secondary text-lg max-w-2xl mx-auto">
               Evolução técnica por etapas, com critérios claros e treino consistente.
             </p>
-            <div className="mx-auto mt-6" style={{ width: "48px", height: "2px", background: "#C1121F" }} />
+            <div
+              className="mx-auto mt-6"
+              style={{ width: "48px", height: "2px", background: "#C1121F" }}
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 max-w-6xl mx-auto">
             {progressionLevels.map((level, idx) => (
               <Card key={level.name} className="bg-surface border-border-subtle">
                 <CardContent className="pt-6 text-center">
-                  <p className="text-xs tracking-[0.2em] uppercase text-text-secondary">Etapa {idx + 1}</p>
-                  <h3 className="font-display text-lg mt-3" style={{ color: "#F5F5F5", letterSpacing: "0.05em" }}>
+                  <p className="text-xs tracking-[0.2em] uppercase text-text-secondary">
+                    Etapa {idx + 1}
+                  </p>
+                  <h3
+                    className="font-display text-lg mt-3"
+                    style={{ color: "#F5F5F5", letterSpacing: "0.05em" }}
+                  >
                     {level.name}
                   </h3>
                   <p className="text-sm mt-3" style={{ color: "#888", lineHeight: 1.7 }}>
@@ -244,13 +289,19 @@ function BoxeKickboxingPage() {
       <section className="section-pad px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="font-display" style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}>
+            <h2
+              className="font-display"
+              style={{ fontSize: "clamp(36px, 6vw, 56px)", color: "#F5F5F5" }}
+            >
               HORÁRIOS
             </h2>
             <p className="mt-4 text-text-secondary text-lg max-w-2xl mx-auto">
               Pré-visualização das aulas de Boxe / Kickboxing disponíveis.
             </p>
-            <div className="mx-auto mt-6" style={{ width: "48px", height: "2px", background: "#C1121F" }} />
+            <div
+              className="mx-auto mt-6"
+              style={{ width: "48px", height: "2px", background: "#C1121F" }}
+            />
           </div>
 
           {isScheduleLoading ? (
@@ -267,8 +318,12 @@ function BoxeKickboxingPage() {
                     <thead>
                       <tr className="border-b border-border-subtle">
                         <th className="text-left py-3 px-4 text-text-secondary font-medium">Dia</th>
-                        <th className="text-left py-3 px-4 text-text-secondary font-medium">Horário</th>
-                        <th className="text-left py-3 px-4 text-text-secondary font-medium">Nível</th>
+                        <th className="text-left py-3 px-4 text-text-secondary font-medium">
+                          Horário
+                        </th>
+                        <th className="text-left py-3 px-4 text-text-secondary font-medium">
+                          Nível
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="text-text-secondary">
@@ -277,7 +332,9 @@ function BoxeKickboxingPage() {
                           key={entry.id}
                           className="border-b border-border-subtle last:border-0 hover:bg-surface-2 transition-colors"
                         >
-                          <td className="py-3 px-4">{dayLabels[entry.dayOfWeek] ?? entry.dayOfWeek}</td>
+                          <td className="py-3 px-4">
+                            {dayLabels[entry.dayOfWeek] ?? entry.dayOfWeek}
+                          </td>
                           <td className="py-3 px-4">
                             {entry.startTime} - {entry.endTime}
                           </td>
@@ -288,15 +345,22 @@ function BoxeKickboxingPage() {
                   </table>
                 </div>
                 <p className="text-xs text-text-secondary mt-4 text-center">
-                  Agenda sujeita a alterações. Consulta a página de agenda semanal para mais detalhes.
+                  Agenda sujeita a alterações. Consulta a página de agenda semanal para mais
+                  detalhes.
                 </p>
               </CardContent>
             </Card>
           ) : (
             <Card className="bg-surface border-border-subtle">
               <CardContent className="pt-6 text-center">
-                <p className="text-text-secondary">Consulta a agenda atualizada na página de agenda semanal.</p>
-                <Button asChild variant="outline" className="mt-4 border-border-subtle hover:border-red-500">
+                <p className="text-text-secondary">
+                  Consulta a agenda atualizada na página de agenda semanal.
+                </p>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="mt-4 border-border-subtle hover:border-red-500"
+                >
                   <Link to="/schedule">Ver horários</Link>
                 </Button>
               </CardContent>
@@ -309,11 +373,18 @@ function BoxeKickboxingPage() {
         <div className="max-w-4xl mx-auto text-center">
           <Card className="bg-surface border-border-subtle" style={{ padding: "60px 40px" }}>
             <CardContent>
-              <Target size={40} strokeWidth={1.5} style={{ color: "#C1121F", marginBottom: "24px" }} />
+              <Target
+                size={40}
+                strokeWidth={1.5}
+                style={{ color: "#C1121F", marginBottom: "24px" }}
+              />
               <h2 className="font-display text-4xl mb-4" style={{ color: "#F5F5F5" }}>
                 Começa o teu treino de striking
               </h2>
-              <p className="text-lg mb-8 mx-auto max-w-md" style={{ color: "#666", lineHeight: 1.8 }}>
+              <p
+                className="text-lg mb-8 mx-auto max-w-md"
+                style={{ color: "#666", lineHeight: 1.8 }}
+              >
                 Escolhe um plano e começa a treinar Boxe/Kickboxing com acompanhamento estruturado.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

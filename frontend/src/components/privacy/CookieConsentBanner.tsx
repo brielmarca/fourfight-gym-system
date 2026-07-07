@@ -2,11 +2,7 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import {
-  getCookieConsent,
-  saveCookieConsent,
-  type CookieConsent,
-} from "@/lib/cookie-consent";
+import { getCookieConsent, saveCookieConsent, type CookieConsent } from "@/lib/cookie-consent";
 import { disableGoogleAnalytics, loadGoogleAnalytics } from "@/lib/analytics";
 
 const OPEN_PREFERENCES_EVENT = "fourfight:open-cookie-preferences";
@@ -77,8 +73,8 @@ export function CookieConsentBanner() {
       <div className="mx-auto w-full max-w-4xl rounded-xl border border-red-900/60 bg-[#0C0C0C] p-4 text-white shadow-2xl shadow-black/40 sm:p-6">
         <p className="text-sm leading-6 text-zinc-200">
           Usamos cookies para garantir o funcionamento do site, melhorar a segurança e, apenas com o
-          teu consentimento, analisar a navegação para melhorar a experiência. Podes aceitar, rejeitar
-          ou personalizar as tuas preferências.
+          teu consentimento, analisar a navegação para melhorar a experiência. Podes aceitar,
+          rejeitar ou personalizar as tuas preferências.
         </p>
 
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
@@ -98,18 +94,30 @@ export function CookieConsentBanner() {
           >
             Personalizar
           </Button>
-          <Button type="button" className="bg-[#C1121F] text-white hover:bg-[#A30F1A]" onClick={() => applyConsent(true)}>
+          <Button
+            type="button"
+            className="bg-[#C1121F] text-white hover:bg-[#A30F1A]"
+            onClick={() => applyConsent(true)}
+          >
             Aceitar todos
           </Button>
         </div>
 
         {isPreferencesOpen && (
-          <div className="mt-4 rounded-lg border border-zinc-800 bg-[#121212] p-4" role="dialog" aria-label="Preferências de cookies">
+          <div
+            className="mt-4 rounded-lg border border-zinc-800 bg-[#121212] p-4"
+            role="dialog"
+            aria-label="Preferências de cookies"
+          >
             <div className="space-y-4">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold text-zinc-100">Cookies estritamente necessários</p>
-                  <p className="text-xs text-zinc-400">Essenciais para segurança, autenticação e funcionamento do site.</p>
+                  <p className="text-sm font-semibold text-zinc-100">
+                    Cookies estritamente necessários
+                  </p>
+                  <p className="text-xs text-zinc-400">
+                    Essenciais para segurança, autenticação e funcionamento do site.
+                  </p>
                 </div>
                 <Switch checked disabled aria-label="Cookies estritamente necessários" />
               </div>
@@ -117,7 +125,9 @@ export function CookieConsentBanner() {
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-semibold text-zinc-100">Cookies analíticos</p>
-                  <p className="text-xs text-zinc-400">Ajudam a melhorar conteúdos e experiência de navegação.</p>
+                  <p className="text-xs text-zinc-400">
+                    Ajudam a melhorar conteúdos e experiência de navegação.
+                  </p>
                 </div>
                 <Switch
                   checked={analyticsEnabled}

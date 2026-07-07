@@ -37,7 +37,7 @@ export const Route = createFileRoute("/membership/$membershipId/form")({
 function MembershipFormPage() {
   const { membershipId } = Route.useParams();
   const search = useSearch({ from: "/membership/$membershipId/form" });
-  const method = (search as any).method || "CARD";
+  const method = (search as { method?: string }).method || "CARD";
   const navigate = useNavigate();
   const isDemoMode = membershipId.startsWith("demo-");
   const processPayment = useProcessPayment();

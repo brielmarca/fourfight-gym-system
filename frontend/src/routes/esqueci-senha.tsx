@@ -35,7 +35,9 @@ function ForgotPasswordPage() {
       <Card className="w-full max-w-md bg-surface border-border-subtle">
         <CardHeader>
           <CardTitle>Recuperar Palavra-passe</CardTitle>
-          <CardDescription>Introduz o teu email para receber o link de recuperacao.</CardDescription>
+          <CardDescription>
+            Introduz o teu email para receber o link de recuperacao.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">

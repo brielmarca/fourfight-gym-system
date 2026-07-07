@@ -158,7 +158,12 @@ function CheckoutPage() {
               <p className="text-sm text-text-secondary">{PRESALE_MESSAGE}</p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button asChild className="btn-red w-full sm:w-auto">
-                  <a href={whatsappUrl} target="_blank" rel="noreferrer" aria-label={whatsappAriaLabel}>
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={whatsappAriaLabel}
+                  >
                     Falar no WhatsApp
                   </a>
                 </Button>
@@ -271,37 +276,36 @@ function CheckoutPage() {
                     </Label>
                   </RadioGroup>
 
-                    {STRIPE_CHECKOUT_ENABLED && paymentMethod === "STRIPE" && (
-                      <div className="p-4 rounded-md bg-primary/5 border border-primary/20 flex gap-3 text-sm text-text-secondary">
-                        <CreditCard className="h-5 w-5 flex-shrink-0 text-primary mt-0.5" />
-                        <p>
-                         Será redirecionado para o Stripe para concluir o pagamento de forma segura.
-                         Aceitamos cartões, MB WAY, SEPA, Apple Pay e Google Pay.
-                         Disponível apenas para Portugal. Pagamento em EUR.
-                       </p>
-                     </div>
-                   )}
+                  {STRIPE_CHECKOUT_ENABLED && paymentMethod === "STRIPE" && (
+                    <div className="p-4 rounded-md bg-primary/5 border border-primary/20 flex gap-3 text-sm text-text-secondary">
+                      <CreditCard className="h-5 w-5 flex-shrink-0 text-primary mt-0.5" />
+                      <p>
+                        Será redirecionado para o Stripe para concluir o pagamento de forma segura.
+                        Aceitamos cartões, MB WAY, SEPA, Apple Pay e Google Pay. Disponível apenas
+                        para Portugal. Pagamento em EUR.
+                      </p>
+                    </div>
+                  )}
 
-                   {paymentMethod === "RECECAO" && (
-                     <div className="p-4 rounded-md bg-primary/5 border border-primary/20 flex gap-3 text-sm text-text-secondary">
-                       <Building className="h-5 w-5 flex-shrink-0 text-primary mt-0.5" />
-                       <p>
-                         Dirija-se à receção da 4Four Fight Academy para efetuar o pagamento
-                         presencialmente. Se preferir, também pode
-                         {" "}
-                         <a
-                           href={whatsappUrl}
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           aria-label={whatsappAriaLabel}
-                           className="text-primary hover:text-primary/80"
-                         >
-                           falar connosco no WhatsApp
-                         </a>
-                         .
-                       </p>
-                     </div>
-                   )}
+                  {paymentMethod === "RECECAO" && (
+                    <div className="p-4 rounded-md bg-primary/5 border border-primary/20 flex gap-3 text-sm text-text-secondary">
+                      <Building className="h-5 w-5 flex-shrink-0 text-primary mt-0.5" />
+                      <p>
+                        Dirija-se à receção da 4Four Fight Academy para efetuar o pagamento
+                        presencialmente. Se preferir, também pode{" "}
+                        <a
+                          href={whatsappUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={whatsappAriaLabel}
+                          className="text-primary hover:text-primary/80"
+                        >
+                          falar connosco no WhatsApp
+                        </a>
+                        .
+                      </p>
+                    </div>
+                  )}
 
                   <Button
                     type="submit"

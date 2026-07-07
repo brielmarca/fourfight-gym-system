@@ -167,7 +167,12 @@ function PlansPage() {
             <p className="text-sm text-text-secondary text-center">{PRESALE_MESSAGE}</p>
             <div className="mt-4 flex justify-center">
               <Button asChild className="btn-red text-xs tracking-[0.15em] uppercase">
-                <a href={whatsappUrl} target="_blank" rel="noreferrer" aria-label={whatsappAriaLabel}>
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={whatsappAriaLabel}
+                >
                   Falar no WhatsApp
                 </a>
               </Button>
@@ -200,102 +205,118 @@ function PlansPage() {
                   key={plan.id}
                   variants={{
                     hidden: { opacity: 0, y: 20 },
-                   show: {
-                     opacity: 1,
-                     y: 0,
-                    transition: { duration: 0.42, ease: "easeOut" },
-                  },
-                }}
-                animate={i === 1 ? { boxShadow: ["0 0 30px rgba(193,18,31,0.1)", "0 0 42px rgba(193,18,31,0.16)", "0 0 30px rgba(193,18,31,0.1)"] } : undefined}
-                transition={i === 1 ? { duration: 3.2, repeat: Infinity, ease: "easeInOut" } : undefined}
-              >
-                <Card
-                  onMouseEnter={() => setHoveredPlanId(plan.id)}
-                  className={`relative flex h-full flex-col bg-surface transition-all duration-300 ${
-                    isActiveHighlight ? "border-primary" : "border-border-subtle"
-                  }`}
-                  style={{
-                    borderTop: isActiveHighlight ? "2px solid #C1121F" : "2px solid #1E1E1E",
+                    show: {
+                      opacity: 1,
+                      y: 0,
+                      transition: { duration: 0.42, ease: "easeOut" },
+                    },
                   }}
+                  animate={
+                    i === 1
+                      ? {
+                          boxShadow: [
+                            "0 0 30px rgba(193,18,31,0.1)",
+                            "0 0 42px rgba(193,18,31,0.16)",
+                            "0 0 30px rgba(193,18,31,0.1)",
+                          ],
+                        }
+                      : undefined
+                  }
+                  transition={
+                    i === 1 ? { duration: 3.2, repeat: Infinity, ease: "easeInOut" } : undefined
+                  }
                 >
-                  {isPopular && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] tracking-[0.2em] uppercase">
-                      Mais Popular
-                    </Badge>
-                  )}
-                  <CardHeader className="text-center pb-2">
-                    <CardTitle className="font-display text-2xl tracking-wider">
-                      {plan.name}
-                    </CardTitle>
-                    <CardDescription className="text-text-secondary">
-                      {plan.durationDays} dias
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-1 flex flex-col">
-                    <div className="text-center mb-6">
-                      <span
-                        className="font-display text-5xl"
-                        style={{ color: i === 1 ? "#C1121F" : "#F5F5F5" }}
-                      >
-                        €{plan.price}
-                      </span>
-                      <span className="text-text-secondary text-sm">
-                        /{plan.durationDays === 30 ? "mês" : "meses"}
-                      </span>
-                    </div>
-
-                  <ul className="flex-1 mb-6 space-y-3">
-                    {plan.maxClasses && (
-                      <li className="flex items-center gap-2 text-sm text-text-secondary">
-                        <span className="text-primary">*</span>
-                        {plan.maxClasses === -1
-                          ? "Aulas ilimitadas"
-                          : `${plan.maxClasses} aulas por semana`}
-                      </li>
-                    )}
-                    <li className="flex items-center gap-2 text-sm text-text-secondary">
-                      <span className="text-primary">+</span>
-                      Acesso ao vestiário
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-text-secondary">
-                      <span className="text-primary">+</span>
-                      App da comunidade
-                    </li>
-                  </ul>
-
-                  <Button
-                    onClick={() => handleSelectPlan(plan.id)}
-                    className={`w-full tracking-[0.2em] uppercase text-xs font-semibold ${
-                      i === 1 ? "btn-red" : "btn-ghost border-border-subtle"
+                  <Card
+                    onMouseEnter={() => setHoveredPlanId(plan.id)}
+                    className={`relative flex h-full flex-col bg-surface transition-all duration-300 ${
+                      isActiveHighlight ? "border-primary" : "border-border-subtle"
                     }`}
+                    style={{
+                      borderTop: isActiveHighlight ? "2px solid #C1121F" : "2px solid #1E1E1E",
+                    }}
                   >
-                     {selectedPlan === plan.id ? (
-                       <span className="flex items-center justify-center gap-2">+ Selecionado</span>
-                     ) : (
-                        STRIPE_CHECKOUT_ENABLED ? "Selecionar" : "Pre-registrar"
+                    {isPopular && (
+                      <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] tracking-[0.2em] uppercase">
+                        Mais Popular
+                      </Badge>
+                    )}
+                    <CardHeader className="text-center pb-2">
+                      <CardTitle className="font-display text-2xl tracking-wider">
+                        {plan.name}
+                      </CardTitle>
+                      <CardDescription className="text-text-secondary">
+                        {plan.durationDays} dias
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-1 flex flex-col">
+                      <div className="text-center mb-6">
+                        <span
+                          className="font-display text-5xl"
+                          style={{ color: i === 1 ? "#C1121F" : "#F5F5F5" }}
+                        >
+                          €{plan.price}
+                        </span>
+                        <span className="text-text-secondary text-sm">
+                          /{plan.durationDays === 30 ? "mês" : "meses"}
+                        </span>
+                      </div>
+
+                      <ul className="flex-1 mb-6 space-y-3">
+                        {plan.maxClasses && (
+                          <li className="flex items-center gap-2 text-sm text-text-secondary">
+                            <span className="text-primary">*</span>
+                            {plan.maxClasses === -1
+                              ? "Aulas ilimitadas"
+                              : `${plan.maxClasses} aulas por semana`}
+                          </li>
+                        )}
+                        <li className="flex items-center gap-2 text-sm text-text-secondary">
+                          <span className="text-primary">+</span>
+                          Acesso ao vestiário
+                        </li>
+                        <li className="flex items-center gap-2 text-sm text-text-secondary">
+                          <span className="text-primary">+</span>
+                          App da comunidade
+                        </li>
+                      </ul>
+
+                      <Button
+                        onClick={() => handleSelectPlan(plan.id)}
+                        className={`w-full tracking-[0.2em] uppercase text-xs font-semibold ${
+                          i === 1 ? "btn-red" : "btn-ghost border-border-subtle"
+                        }`}
+                      >
+                        {selectedPlan === plan.id ? (
+                          <span className="flex items-center justify-center gap-2">
+                            + Selecionado
+                          </span>
+                        ) : STRIPE_CHECKOUT_ENABLED ? (
+                          "Selecionar"
+                        ) : (
+                          "Pre-registrar"
+                        )}
+                      </Button>
+                      <p className="mt-2 text-[11px] text-text-muted text-center">
+                        Seras redirecionado para login se ainda nao tiveres sessao iniciada.
+                      </p>
+                      {i === 1 && (
+                        <p className="mt-3 text-xs text-text-secondary text-center">
+                          Inclui tudo do Basico + aulas coletivas e avaliacao mensal
+                        </p>
                       )}
-                    </Button>
-                  <p className="mt-2 text-[11px] text-text-muted text-center">
-                    Seras redirecionado para login se ainda nao tiveres sessao iniciada.
-                  </p>
-                  {i === 1 && (
-                    <p className="mt-3 text-xs text-text-secondary text-center">
-                      Inclui tudo do Basico + aulas coletivas e avaliacao mensal
-                    </p>
-                  )}
-                  {i === 0 && (
-                    <p className="mt-3 text-xs text-text-secondary text-center">
-                      Ideal para iniciantes
-                    </p>
-                  )}
-                  {i === 2 && (
-                    <p className="mt-3 text-xs text-text-secondary text-center">
-                      Acesso 24h + nutricionista incluso
-                    </p>
-                  )}
-                  </CardContent>
-                </Card>
-              </motion.div>
+                      {i === 0 && (
+                        <p className="mt-3 text-xs text-text-secondary text-center">
+                          Ideal para iniciantes
+                        </p>
+                      )}
+                      {i === 2 && (
+                        <p className="mt-3 text-xs text-text-secondary text-center">
+                          Acesso 24h + nutricionista incluso
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
               );
             })}
           </motion.div>
@@ -331,20 +352,19 @@ function PlansPage() {
               <h3 className="font-semibold mb-2 text-sm sm:text-base">
                 Posso experimentar uma aula grátis?
               </h3>
-               <p className="text-text-secondary text-sm">
-                 Sim! Oferecemos uma aula experimental gratuita para novos alunos. Contacta-nos para
-                 {" "}
-                 <a
-                   href={whatsappUrl}
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   aria-label={whatsappAriaLabel}
-                   className="text-primary hover:text-primary/80"
-                 >
-                   agendares
-                 </a>
-                 .
-               </p>
+              <p className="text-text-secondary text-sm">
+                Sim! Oferecemos uma aula experimental gratuita para novos alunos. Contacta-nos para{" "}
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={whatsappAriaLabel}
+                  className="text-primary hover:text-primary/80"
+                >
+                  agendares
+                </a>
+                .
+              </p>
             </div>
             <div
               className="bg-surface p-4 sm:p-6 border border-border-subtle"

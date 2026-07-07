@@ -30,8 +30,7 @@ interface ReceptionRequestItem {
 
 export function useStripeCheckout() {
   return useMutation({
-    mutationFn: (planId: string) =>
-      api.stripe.createCheckoutSession(planId),
+    mutationFn: (planId: string) => api.stripe.createCheckoutSession(planId),
   });
 }
 

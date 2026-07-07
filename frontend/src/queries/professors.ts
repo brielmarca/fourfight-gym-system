@@ -28,8 +28,13 @@ export function usePromoteProfessor() {
 export function useUpdateProfessorModalities() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ professorId, payload }: { professorId: string; payload: UpdateProfessorModalitiesRequest }) =>
-      api.admin.updateProfessorModalities(professorId, payload),
+    mutationFn: ({
+      professorId,
+      payload,
+    }: {
+      professorId: string;
+      payload: UpdateProfessorModalitiesRequest;
+    }) => api.admin.updateProfessorModalities(professorId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.professors.list() });
     },
@@ -47,7 +52,8 @@ export function useProfessorAssignments(enabled = true) {
 export function useCreateProfessorAssignment() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: CreateProfessorAssignmentRequest) => api.admin.createProfessorAssignment(payload),
+    mutationFn: (payload: CreateProfessorAssignmentRequest) =>
+      api.admin.createProfessorAssignment(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.professors.assignments() });
     },

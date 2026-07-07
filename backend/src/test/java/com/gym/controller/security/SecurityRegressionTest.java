@@ -33,6 +33,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.nio.charset.StandardCharsets;
 import java.math.BigDecimal;
@@ -368,6 +369,49 @@ class SecurityRegressionTest {
     }
 
     @Test
+    @DisplayName("Unauthenticated nonexistent protected API route remains 401")
+    void unauthenticatedNonexistentProtectedApiRouteRemainsUnauthorized() throws Exception {
+        mockMvc.perform(get("/api/trainer/nonexistent-probe"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Authenticated ADMIN nonexistent API GET returns 404")
+    void authenticatedAdminNonexistentApiGetReturnsNotFound() throws Exception {
+        assertAuthenticatedNotFound(get("/api/admin/nonexistent-probe"), validAdminToken);
+    }
+
+    @Test
+    @DisplayName("Authenticated MANAGER nonexistent API GET returns 404")
+    void authenticatedManagerNonexistentApiGetReturnsNotFound() throws Exception {
+        assertAuthenticatedNotFound(get("/api/nonexistent-probe"), validManagerToken);
+    }
+
+    @Test
+    @DisplayName("Authenticated TRAINER nonexistent API GET returns 404")
+    void authenticatedTrainerNonexistentApiGetReturnsNotFound() throws Exception {
+        assertAuthenticatedNotFound(get("/api/trainer/nonexistent-probe"), validTrainerToken);
+    }
+
+    @Test
+    @DisplayName("Authenticated PROFESSOR nonexistent API GET returns 404")
+    void authenticatedProfessorNonexistentApiGetReturnsNotFound() throws Exception {
+        assertAuthenticatedNotFound(get("/api/nonexistent-probe"), validProfessorToken);
+    }
+
+    @Test
+    @DisplayName("Authenticated CLIENT nonexistent API GET returns 404")
+    void authenticatedClientNonexistentApiGetReturnsNotFound() throws Exception {
+        assertAuthenticatedNotFound(get("/api/nonexistent-probe"), validUserToken);
+    }
+
+    @Test
+    @DisplayName("Authenticated nonexistent API POST returns 404")
+    void authenticatedNonexistentApiPostReturnsNotFound() throws Exception {
+        assertAuthenticatedNotFound(post("/api/nonexistent-probe").contentType(MediaType.APPLICATION_JSON), validAdminToken);
+    }
+
+    @Test
     @DisplayName("Valid JWT token is accepted (returns non-401)")
     void validJwtTokenIsAccepted() throws Exception {
         mockMvc.perform(get("/api/payments/" + testPaymentId)
@@ -505,24 +549,18 @@ class SecurityRegressionTest {
     }
 
     @Test
-    @DisplayName("Nonexistent singular trainer API path has no dedicated role rule")
+    @DisplayName("Nonexistent singular trainer API path returns 404 for authenticated users")
     void nonexistentSingularTrainerApiPathHasNoDedicatedRoleRule() throws Exception {
         String probePath = "/api/trainer/nonexistent-probe";
 
         mockMvc.perform(get(probePath))
                 .andExpect(status().isUnauthorized());
 
-        mockMvc.perform(get(probePath).header("Authorization", "Bearer " + validUserToken))
-                .andExpect(status().isInternalServerError());
-        mockMvc.perform(get(probePath).header("Authorization", "Bearer " + validProfessorToken))
-                .andExpect(status().isInternalServerError());
-
-        mockMvc.perform(get(probePath).header("Authorization", "Bearer " + validTrainerToken))
-                .andExpect(status().isInternalServerError());
-        mockMvc.perform(get(probePath).header("Authorization", "Bearer " + validManagerToken))
-                .andExpect(status().isInternalServerError());
-        mockMvc.perform(get(probePath).header("Authorization", "Bearer " + validAdminToken))
-                .andExpect(status().isInternalServerError());
+        assertAuthenticatedNotFound(get(probePath), validUserToken);
+        assertAuthenticatedNotFound(get(probePath), validProfessorToken);
+        assertAuthenticatedNotFound(get(probePath), validTrainerToken);
+        assertAuthenticatedNotFound(get(probePath), validManagerToken);
+        assertAuthenticatedNotFound(get(probePath), validAdminToken);
     }
 
     @Test
@@ -1631,6 +1669,25 @@ class SecurityRegressionTest {
     void publicProgramsEndpointRemainsAccessible() throws Exception {
         mockMvc.perform(get("/api/programs"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Public health endpoint remains accessible")
+    void publicHealthEndpointRemainsAccessible() throws Exception {
+        mockMvc.perform(get("/api/health"))
+                .andExpect(status().isOk());
+    }
+
+    private void assertAuthenticatedNotFound(MockHttpServletRequestBuilder request, String token) throws Exception {
+        mockMvc.perform(request.header("Authorization", "Bearer " + token))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.title").value("Not Found"))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("NoResourceFoundException"))))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("NoHandlerFoundException"))))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("No static resource"))))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("org.springframework"))))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("/home/"))));
     }
 
     private static String extractField(String json, String fieldName) {

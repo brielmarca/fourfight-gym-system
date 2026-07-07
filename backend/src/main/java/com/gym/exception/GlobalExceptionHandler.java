@@ -1,6 +1,7 @@
 package com.gym.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -8,10 +9,13 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+import java.net.URI;
 import java.util.Map;
 
 @Slf4j
@@ -87,6 +91,17 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Access denied");
         problem.setTitle("Forbidden");
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(problem);
+    }
+
+    @ExceptionHandler({NoResourceFoundException.class, NoHandlerFoundException.class})
+    public ResponseEntity<org.springframework.http.ProblemDetail> handleMissingApiRoute(Exception ex, HttpServletRequest request) {
+        log.warn("Route not found: {} {}", request.getMethod(), request.getRequestURI());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Resource not found");
+        problem.setTitle("Not Found");
+        problem.setType(URI.create("https://api.gym.com/errors/not-found"));
+        problem.setInstance(URI.create(request.getRequestURI()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(problem);
     }
 

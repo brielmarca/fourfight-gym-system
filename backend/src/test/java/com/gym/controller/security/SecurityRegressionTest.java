@@ -504,6 +504,65 @@ class SecurityRegressionTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    @DisplayName("Nonexistent singular trainer API path has no dedicated role rule")
+    void nonexistentSingularTrainerApiPathHasNoDedicatedRoleRule() throws Exception {
+        String probePath = "/api/trainer/nonexistent-probe";
+
+        mockMvc.perform(get(probePath))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(get(probePath).header("Authorization", "Bearer " + validUserToken))
+                .andExpect(status().isInternalServerError());
+        mockMvc.perform(get(probePath).header("Authorization", "Bearer " + validProfessorToken))
+                .andExpect(status().isInternalServerError());
+
+        mockMvc.perform(get(probePath).header("Authorization", "Bearer " + validTrainerToken))
+                .andExpect(status().isInternalServerError());
+        mockMvc.perform(get(probePath).header("Authorization", "Bearer " + validManagerToken))
+                .andExpect(status().isInternalServerError());
+        mockMvc.perform(get(probePath).header("Authorization", "Bearer " + validAdminToken))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @DisplayName("Plural trainer management mutation keeps intended role behavior")
+    void pluralTrainerManagementMutationKeepsIntendedRoleBehavior() throws Exception {
+        String updateJson = "{\"bio\":\"Security test trainer\",\"specialties\":\"MMA\",\"maxClients\":10,\"isActive\":true}";
+
+        mockMvc.perform(put("/api/trainers/" + trainerId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateJson))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(put("/api/trainers/" + trainerId)
+                        .header("Authorization", "Bearer " + validUserToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateJson))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(put("/api/trainers/" + trainerId)
+                        .header("Authorization", "Bearer " + validTrainerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateJson))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(put("/api/trainers/" + trainerId)
+                        .header("Authorization", "Bearer " + validProfessorToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateJson))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(put("/api/trainers/" + trainerId)
+                        .header("Authorization", "Bearer " + validManagerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateJson))
+                .andExpect(status().isOk());
+        mockMvc.perform(put("/api/trainers/" + trainerId)
+                        .header("Authorization", "Bearer " + validAdminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateJson))
+                .andExpect(status().isOk());
+    }
+
     // ===== TEST 2: Checkout Protection =====
 
     @Test

@@ -100,8 +100,6 @@ public class SecurityConfig {
                 // Martial arts and graduations
                 .requestMatchers("/api/martial-arts/**").hasAnyRole("ADMIN", "MANAGER", "TRAINER")
                 .requestMatchers("/api/graduations/**").hasAnyRole("ADMIN", "MANAGER", "TRAINER")
-                // Trainer
-                .requestMatchers("/api/trainer/**").hasAnyRole("ADMIN", "MANAGER", "TRAINER")
                 // Professor
                 .requestMatchers("/api/professor/**").hasRole("PROFESSOR")
                 // User endpoints

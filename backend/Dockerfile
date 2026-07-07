@@ -29,4 +29,6 @@ EXPOSE 8080
 
 ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC -XX:+ParallelRefProcEnabled"
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 CMD for port in ${SERVER_PORT:-} ${PORT:-} 10000 8080; do wget -qO- "http://127.0.0.1:${port}/api/health" 2>/dev/null | grep -q '"status":"ok"' && exit 0; done; exit 1
+
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar app.jar"]

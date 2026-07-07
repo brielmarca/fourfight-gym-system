@@ -48,6 +48,21 @@ caddy
 
 If there is an immediate `502`, wait 20-30 seconds and repeat the health checks.
 
+## Backend Container Health
+
+The backend image includes a Docker `HEALTHCHECK` that probes the app from inside the backend container at `/api/health`. It uses the runtime port from `SERVER_PORT` or `PORT`, then falls back to the production app port and the development app port.
+
+Expected Docker states after backend startup are `starting`, then `healthy`. If the Spring Boot app stops serving `/api/health`, Docker can report the container as `unhealthy` instead of only `running`.
+
+Inspect container health from `/opt/fourfight`:
+
+```bash
+docker inspect --format '{{json .State.Health}}' fourfight-backend
+docker ps
+```
+
+This container healthcheck does not require Caddy or the public API domain, and it does not replace external uptime monitoring.
+
 ## Development
 
 The development Compose file is intentionally explicit and development-only:

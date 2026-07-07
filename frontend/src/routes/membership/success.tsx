@@ -6,7 +6,14 @@ import { CheckCircle2, ArrowRight, User } from "lucide-react";
 import { useEffect } from "react";
 import { isAuthenticated } from "@/lib/api";
 
+interface MembershipSuccessSearch {
+  userId?: string;
+}
+
 export const Route = createFileRoute("/membership/success")({
+  validateSearch: (search: Record<string, unknown>): MembershipSuccessSearch => ({
+    userId: typeof search.userId === "string" ? search.userId : undefined,
+  }),
   beforeLoad: () => {
     if (!isAuthenticated()) {
       throw redirect({ to: "/login" });

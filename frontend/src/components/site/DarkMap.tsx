@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
+import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 const ACADEMY_COORDS: [number, number] = [41.1401, -8.535];

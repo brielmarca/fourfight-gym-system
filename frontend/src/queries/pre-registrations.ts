@@ -1,9 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import type {
+  AdminPreRegistrationDetail,
+  AdminPreRegistrationListItem,
+  PageResponse,
+} from "@/types";
 import queryKeys from "./query-keys";
 
 export function usePreRegistrations(page = 0, size = 50, enabled = true) {
-  return useQuery({
+  return useQuery<PageResponse<AdminPreRegistrationListItem>>({
     queryKey: queryKeys.preRegistrations.list(page, size),
     queryFn: () => api.admin.listPreRegistrations(page, size),
     enabled,
@@ -11,7 +16,7 @@ export function usePreRegistrations(page = 0, size = 50, enabled = true) {
 }
 
 export function usePreRegistrationDetail(id: string, enabled = true) {
-  return useQuery({
+  return useQuery<AdminPreRegistrationDetail>({
     queryKey: queryKeys.preRegistrations.detail(id),
     queryFn: () => api.admin.getPreRegistrationById(id),
     enabled: enabled && !!id,

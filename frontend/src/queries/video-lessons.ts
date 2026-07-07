@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import type { UpsertVideoLessonRequest } from "@/types";
+import type { UpsertVideoLessonRequest, VideoLesson } from "@/types";
 import queryKeys from "./query-keys";
 
 export function useManageVideoLessons(enabled = true) {
-  return useQuery({
+  return useQuery<VideoLesson[]>({
     queryKey: queryKeys.videoLessons.manage(),
     queryFn: () => api.videoLessons.getManage(),
     enabled,
@@ -12,7 +12,7 @@ export function useManageVideoLessons(enabled = true) {
 }
 
 export function useMyVideoLessons(enabled = true) {
-  return useQuery({
+  return useQuery<VideoLesson[]>({
     queryKey: queryKeys.videoLessons.my(),
     queryFn: () => api.videoLessons.getMy(),
     enabled,
@@ -20,7 +20,7 @@ export function useMyVideoLessons(enabled = true) {
 }
 
 export function useMyVideoLesson(id: string, enabled = true) {
-  return useQuery({
+  return useQuery<VideoLesson>({
     queryKey: queryKeys.videoLessons.detail(id),
     queryFn: () => api.videoLessons.getMyById(id),
     enabled: enabled && !!id,

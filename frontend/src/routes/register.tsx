@@ -191,13 +191,13 @@ function RegisterPage() {
         martialArtsExperienceDetails:
           normalizeText(formData.martialArtsExperienceDetails) || undefined,
         trainingGoal: normalizeText(formData.trainingGoal),
-        preferredModality: formData.preferredModality,
+        preferredModality: formData.preferredModality as PreferredModality,
         preferredModalityOther: normalizeText(formData.preferredModalityOther) || undefined,
-        preferredTrainingTime: formData.preferredTrainingTime,
+        preferredTrainingTime: formData.preferredTrainingTime as PreferredTrainingTime,
         preferredTrainingTimeOther: normalizeText(formData.preferredTrainingTimeOther) || undefined,
         preferredTrainingDays: formData.preferredTrainingDays,
         valuesMartialArtsPhilosophy: formData.valuesMartialArtsPhilosophy === "SIM",
-        preferredContactMethod: formData.preferredContactMethod,
+        preferredContactMethod: formData.preferredContactMethod as PreferredContactMethod,
         preferredContactMethodOther:
           normalizeText(formData.preferredContactMethodOther) || undefined,
       });

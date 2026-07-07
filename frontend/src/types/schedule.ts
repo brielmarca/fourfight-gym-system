@@ -1,4 +1,4 @@
-export type Modality = "Jiu-Jitsu" | "Boxe / Kickboxing" | "Capoeira" | "MMA";
+export type ScheduleModalityLabel = "Jiu-Jitsu" | "Boxe / Kickboxing" | "Capoeira" | "MMA";
 
 export type PlanType = "Basic" | "Standard" | "Premium";
 
@@ -8,7 +8,7 @@ export type ClassLevel = "Iniciante" | "Intermédio" | "Avançado" | "Todos";
 
 export interface ScheduleClass {
   id: string;
-  modality: Modality;
+  modality: ScheduleModalityLabel;
   dayOfWeek: DayOfWeek;
   time: string;
   startTime: string;
@@ -37,7 +37,7 @@ export const dayNames: Record<DayOfWeek, string> = {
   6: "Sábado",
 };
 
-export const modalityColors: Record<Modality, string> = {
+export const modalityColors: Record<ScheduleModalityLabel, string> = {
   "Jiu-Jitsu": "#3B82F6",
   "Boxe / Kickboxing": "#F59E0B",
   Capoeira: "#10B981",

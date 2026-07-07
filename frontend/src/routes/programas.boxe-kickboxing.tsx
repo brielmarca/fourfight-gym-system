@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useSchedule } from "@/queries";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/use-auth";
 import { Dumbbell, Flame, Shield, Target } from "lucide-react";
 
 const boxeHero = "/assets/optimized/boxe/espaco-pv-2-boxe-kickboxing-hero.webp";

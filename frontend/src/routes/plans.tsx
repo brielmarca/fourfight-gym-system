@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { isAuthenticated } from "@/lib/api";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/use-auth";
 import { usePlans } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -28,7 +28,7 @@ function PlansPage() {
   const [hoveredPlanId, setHoveredPlanId] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const displayPlans = plans && plans.length > 0 ? plans : [];
+  const displayPlans = useMemo(() => (plans && plans.length > 0 ? plans : []), [plans]);
   const popularPlanId =
     displayPlans.find((plan) => plan.popular)?.id ??
     displayPlans.find((plan) => plan.id === "standard")?.id ??

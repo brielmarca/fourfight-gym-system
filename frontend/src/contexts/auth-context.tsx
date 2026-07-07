@@ -1,12 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useCallback,
-  useRef,
-  useState,
-  useEffect,
-  type ReactNode,
-} from "react";
+import { useCallback, useRef, useState, useEffect, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   api,
@@ -19,6 +11,7 @@ import {
   isAuthenticated as checkIsAuthenticated,
 } from "@/lib/api";
 import type { RegisterRequest, User, UserRole } from "@/types";
+import { AuthContext } from "./use-auth";
 
 const protectedRoutePrefixes = [
   "/admin",
@@ -34,20 +27,6 @@ function isProtectedRoute(pathname: string): boolean {
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
 }
-
-interface AuthContextValue {
-  user: User | null;
-  role: UserRole | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (data: RegisterRequest) => Promise<void>;
-  logout: () => Promise<void>;
-  clearAuthState: () => void;
-  hasRole: (roles: UserRole[]) => boolean;
-}
-
-const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
@@ -202,12 +181,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth(): AuthContextValue {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 }

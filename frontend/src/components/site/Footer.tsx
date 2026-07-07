@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
-import { openCookiePreferences } from "@/components/privacy/CookieConsentBanner";
+import { openCookiePreferences } from "@/components/privacy/open-cookie-preferences";
 import { whatsappAriaLabel, whatsappNumberDisplay, whatsappUrl } from "@/lib/contact";
 
 const navigationLinks = [

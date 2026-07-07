@@ -50,3 +50,43 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: docker build -t fourfight-backend:ci ./backend
+
+  flyway-migration:
+    name: Flyway Migration
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: fourfight_ci
+          POSTGRES_USER: fourfight_ci
+          POSTGRES_PASSWORD: fourfight_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+      - name: Run Flyway migration
+        run: >
+          mvn flyway:migrate
+          -Dflyway.url=jdbc:postgresql://localhost:5432/fourfight_ci
+          -Dflyway.user=fourfight_ci
+          -Dflyway.password=fourfight_ci
+      - name: Verify migration with Flyway info
+        run: >
+          mvn flyway:info
+          -Dflyway.url=jdbc:postgresql://localhost:5432/fourfight_ci
+          -Dflyway.user=fourfight_ci
+          -Dflyway.password=fourfight_ci

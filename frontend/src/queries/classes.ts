@@ -20,7 +20,7 @@ export function useClass(id: string) {
 }
 
 export function useClassRoster(classId: string, page = 0, size = 50) {
-  return useQuery<PageResponse<ClassEnrollment> | ClassEnrollment[]>({
+  return useQuery<ClassEnrollment[]>({
     queryKey: queryKeys.classes.roster(classId, page, size),
     queryFn: () => api.classes.getRoster(classId, page, size),
     enabled: !!classId,

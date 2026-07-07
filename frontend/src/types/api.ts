@@ -50,7 +50,6 @@ export interface VideoLesson {
   streamUrl?: string;
   status?: VideoLessonStatus;
   isActive?: boolean;
-  active?: boolean;
   embedUrl: string | null;
   provider: VideoProvider;
   minimumPlanRank: 1 | 2 | 3;
@@ -223,6 +222,7 @@ export interface Plan {
   level?: string | null;
   instructor?: string | null;
   schedule?: string[] | null;
+  popular?: boolean;
   isActive: boolean;
 }
 

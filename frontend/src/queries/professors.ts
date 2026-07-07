@@ -1,14 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type {
+  AssignedProfessorStudent,
   CreateProfessorAssignmentRequest,
+  ProfessorAssignment,
+  ProfessorSummary,
   PromoteProfessorRequest,
   UpdateProfessorModalitiesRequest,
 } from "@/types";
 import queryKeys from "./query-keys";
 
 export function useProfessors(enabled = true) {
-  return useQuery({
+  return useQuery<ProfessorSummary[]>({
     queryKey: queryKeys.professors.list(),
     queryFn: () => api.admin.getProfessors(),
     enabled,
@@ -42,7 +45,7 @@ export function useUpdateProfessorModalities() {
 }
 
 export function useProfessorAssignments(enabled = true) {
-  return useQuery({
+  return useQuery<ProfessorAssignment[]>({
     queryKey: queryKeys.professors.assignments(),
     queryFn: () => api.admin.getProfessorAssignments(),
     enabled,
@@ -71,7 +74,7 @@ export function useDeactivateProfessorAssignment() {
 }
 
 export function useMyProfessorStudents(enabled = true) {
-  return useQuery({
+  return useQuery<AssignedProfessorStudent[]>({
     queryKey: queryKeys.professors.myStudents(),
     queryFn: () => api.professor.getMyProfessorStudents(),
     enabled,

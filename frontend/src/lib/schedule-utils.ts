@@ -1,4 +1,10 @@
-import type { ScheduleClass, UserPlan, PlanType, Modality, DayOfWeek } from "@/types/schedule";
+import type {
+  ScheduleClass,
+  UserPlan,
+  PlanType,
+  ScheduleModalityLabel,
+  DayOfWeek,
+} from "@/types/schedule";
 
 const planHierarchy: Record<PlanType, number> = {
   Basic: 1,
@@ -58,7 +64,7 @@ export function hasReachedWeeklyLimit(userPlan: UserPlan | null, currentCount: n
  */
 export function filterByModality(
   classes: ScheduleClass[],
-  modality: Modality | "Todos",
+  modality: ScheduleModalityLabel | "Todos",
 ): ScheduleClass[] {
   if (modality === "Todos") return classes;
   return classes.filter((c) => c.modality === modality);

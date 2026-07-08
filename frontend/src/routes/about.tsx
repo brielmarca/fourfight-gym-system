@@ -34,8 +34,9 @@ const features = [
 
 const facilities = [
   {
-    src: "/assets/optimized/gallery/dsc06344-training-area.webp",
+    src: "/assets/espacodetreino.webp",
     label: "ÁREA PRINCIPAL DE TREINO",
+    alt: "Área de treino da 4Four Fight Academy",
   },
   {
     src: "/assets/optimized/gallery/dsc06357-conditioning-area.webp",
@@ -95,7 +96,7 @@ function AboutPage() {
                 >
                   <img
                     src={f.src}
-                    alt={f.label}
+                    alt={f.alt ?? f.label}
                     className="absolute inset-0 w-full h-full object-cover"
                     style={{ filter: "brightness(0.6)" }}
                   />

@@ -25,7 +25,12 @@ const features = [
 ];
 
 const facilities = [
-  { src: "/assets/DSC06344.webp", label: "Área Principal de Treino", badge: "500m²" },
+  {
+    src: "/assets/espacodetreino.webp",
+    label: "Área Principal de Treino",
+    badge: "500m²",
+    alt: "Área de treino da 4Four Fight Academy",
+  },
   { src: "/assets/DSC06357.webp", label: "Ginásio & Condicionamento", badge: "Equipamento Pro" },
   { src: "/assets/DSC06369(1).webp", label: "Balneário & Recuperação", badge: "Sauna Incluída" },
 ];
@@ -94,7 +99,7 @@ export function Academy() {
             >
               <img
                 src={f.src}
-                alt={f.label}
+                alt={f.alt ?? f.label}
                 loading="lazy"
                 className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-[1.06]"
                 style={{ filter: "brightness(0.7) contrast(1.1)" }}

@@ -6,8 +6,7 @@ import { useSchedule } from "@/queries";
 import { useAuth } from "@/contexts/use-auth";
 import { Dumbbell, Flame, Shield, Target } from "lucide-react";
 
-const boxeHero = "/assets/optimized/boxe/espaco-pv-2-boxe-kickboxing-hero.webp";
-const boxeAbout = "/assets/optimized/boxe/espaco-pv-4-striking-area.webp";
+const boxeTraining = "/assets/optimized/boxe/boxe-kickboxing-training.webp";
 
 export const Route = createFileRoute("/programas/boxe-kickboxing")({
   component: BoxeKickboxingPage,
@@ -105,7 +104,7 @@ function BoxeKickboxingPage() {
       <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src={boxeHero}
+            src={boxeTraining}
             alt="Treino de Boxe e Kickboxing na 4Four Fight Academy"
             loading="eager"
             className="absolute inset-0 w-full h-full object-cover"
@@ -184,8 +183,8 @@ function BoxeKickboxingPage() {
             </p>
             <div className="group rounded-lg overflow-hidden border border-border-subtle transition-all duration-300 hover:border-red-500 hover:shadow-[0_0_24px_rgba(193,18,31,0.2)]">
               <img
-                src={boxeAbout}
-                alt="Treino técnico de Boxe e Kickboxing"
+                src={boxeTraining}
+                alt="Treino de Boxe e Kickboxing na 4Four Fight Academy"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.01]"
                 loading="lazy"
               />

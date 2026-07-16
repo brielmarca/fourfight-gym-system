@@ -1,6 +1,7 @@
 type GalleryImage = {
   src: string;
   alt: string;
+  objectPositionClass?: string;
 };
 
 type ModalityGalleryProps = {
@@ -36,7 +37,7 @@ export function ModalityGallery({ heading, images }: ModalityGalleryProps) {
                 alt={image.alt}
                 loading="lazy"
                 decoding="async"
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.01]"
+                className={`absolute inset-0 h-full w-full object-cover ${image.objectPositionClass ?? "object-center"} transition-transform duration-500 group-hover:scale-[1.01]`}
               />
             </div>
           ))}

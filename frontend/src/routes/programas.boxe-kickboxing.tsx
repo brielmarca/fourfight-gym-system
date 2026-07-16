@@ -7,20 +7,23 @@ import { useSchedule } from "@/queries";
 import { useAuth } from "@/contexts/use-auth";
 import { Dumbbell, Flame, Shield, Target } from "lucide-react";
 
-const boxeTraining = "/assets/optimized/boxe/boxe-kickboxing-training.webp";
+const boxeTraining = "/assets/optimized/boxe/boxe-kickboxing-hero.webp";
 
 const boxeGallery = [
   {
-    src: "/assets/optimized/boxe/boxe-kickboxing-training-01.webp",
-    alt: "Treino de Boxe e Kickboxing na 4Four Fight Academy",
+    src: "/assets/optimized/boxe/boxe-kickboxing-gallery-01.webp",
+    alt: "Treino de Kickboxing na 4Four Fight Academy",
+    objectPositionClass: "object-[50%_18%]",
   },
   {
-    src: "/assets/optimized/boxe/boxe-kickboxing-training-02.webp",
-    alt: "Aula de striking na 4Four Fight Academy",
+    src: "/assets/optimized/boxe/boxe-kickboxing-gallery-02.webp",
+    alt: "Aula de Kickboxing na 4Four Fight Academy",
+    objectPositionClass: "object-[50%_40%]",
   },
   {
-    src: "/assets/optimized/boxe/boxe-kickboxing-training-03.webp",
-    alt: "Treino de Kickboxing no saco na 4Four Fight Academy",
+    src: "/assets/optimized/boxe/boxe-kickboxing-gallery-03.webp",
+    alt: "Treino de pontapés de Kickboxing na 4Four Fight Academy",
+    objectPositionClass: "object-[50%_25%]",
   },
 ];
 
@@ -123,7 +126,7 @@ function BoxeKickboxingPage() {
             src={boxeTraining}
             alt="Treino de Boxe e Kickboxing na 4Four Fight Academy"
             loading="eager"
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover object-[50%_35%]"
           />
           <div
             className="absolute inset-0"

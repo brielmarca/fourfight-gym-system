@@ -1,93 +1,74 @@
-# Four Fight Gym System
+# 4Four Fight — Academy Management Platform
 
-A full-stack gym management system for Four Fight Academy - a martial arts academy.
+Production full-stack platform for 4Four Fight Academy. It centralizes student management, classes, memberships, payments and administrative routines in a responsive web application.
 
-## Structure
+**Live:** [4fourfight.com](https://4fourfight.com/)
 
-```
-fourfight-gym-system/
-├── backend/          # Spring Boot backend
-│   ├── src/main/java/com/gym/
-│   │   ├── config/       # Spring configuration
-│   │   ├── controller/   # REST API endpoints
-│   │   ├── dto/          # Data transfer objects
-│   │   ├── entity/       # JPA entities
-│   │   ├── security/     # JWT auth, rate limiting
-│   │   └── service/      # Business logic
-│   └── docker-compose.yml
-├── frontend/         # React/Vite frontend
-│   └── src/
-│       ├── contexts/     # Auth context (global state)
-│       ├── queries/      # TanStack Query hooks (API data)
-│       ├── providers/    # Query provider
-│       ├── types/        # Centralized TypeScript types
-│       ├── routes/       # File-based routes
-│       ├── components/   # UI components
-│       └── lib/          # API client, utilities
-├── media/            # Media assets
-├── logs/             # Runtime logs
-├── docs/             # Documentation
-├── scripts/          # Start/stop scripts
-├── archive/          # Old/unused items
-├── package.json      # Root scripts
-└── README.md
-```
+## Product overview
 
-## Quick Start
+The platform replaces fragmented manual processes with a single environment for administrators and students.
 
-### Prerequisites
-- Java 21+
-- Node.js 18+
-- Maven 3.8+
-- MySQL 8+
+- Role-based authentication and authorization
+- Student profiles and membership management
+- Class schedules and enrollment workflows
+- Administrative dashboard and operational records
+- Payment integration and transaction history
+- Audit-oriented logging and protected routes
+- Responsive interfaces for desktop and mobile
 
-### Start the System
+## Architecture
 
-```bash
-# From fourfight-gym-system directory
-./scripts/start-local.sh
-```
+    Browser
+       │
+       ▼
+    React + TypeScript
+       │ REST / JWT
+       ▼
+    Spring Boot API
+       │
+       ▼
+    PostgreSQL
 
-Or use npm scripts:
+The production environment is containerized with Docker and served through Nginx and Cloudflare on a Linux VPS.
 
-```bash
-npm run dev:full    # Start both frontend and backend
-npm run dev:frontend  # Start only frontend
-npm run dev:backend   # Start only backend
-```
+## Technology
 
-### Stop the System
+- **Back end:** Java 21, Spring Boot, Spring Security, JPA/Hibernate
+- **Front end:** React, Vite, TypeScript
+- **Database:** PostgreSQL
+- **Infrastructure:** Docker, Docker Compose, Nginx, Linux and Cloudflare
+- **Integrations:** Stripe payment workflows
 
-```bash
-./scripts/stop-local.sh
-```
+## Local development
 
-## Services
+### Requirements
 
-- **Backend**: http://localhost:8080
-- **Frontend**: http://localhost:5173
-- **Health Check**: http://localhost:8080/actuator/health
+- Java 21
+- Node.js 20+
+- PostgreSQL
+- Docker and Docker Compose (recommended)
 
-## Frontend Architecture
+### Setup
 
-The frontend uses a clear state management strategy:
+1. Clone the repository.
+2. Copy the provided environment example and configure local values.
+3. Start the database and supporting services.
+4. Install front-end dependencies.
+5. Run the API and web application.
 
-| Layer | Tool | Purpose |
-|-------|------|---------|
-| Auth State | React Context (`useAuth`) | Logged user, login, logout, roles |
-| API Data | TanStack Query | All server data (plans, memberships, classes, etc.) |
-| UI State | Local `useState` | Forms, modals, filters, loading states |
+    npm install
+    npm run dev:full
 
-See `frontend/README.md` for full details.
+Never commit production credentials or real customer data. Use separate secrets for each environment.
 
-## Documentation
+## Quality and documentation
 
-See `docs/` directory:
-- `PROJECT_CONTEXT.md` - Full project context
-- `DEV_SETUP.md` - Development setup guide
+The repository includes dedicated documentation for deployment, payments and operational setup. Before a production change, validate both applications, database migrations and the authentication flows for every role.
 
-## Testing
+## Status
 
-```bash
-./scripts/test-dev-setup.sh
-```
+Active production project. Features and infrastructure continue to evolve according to the academy's operational needs.
+
+## Author
+
+Developed and maintained by [Gabriel Marca](https://github.com/brielmarca).

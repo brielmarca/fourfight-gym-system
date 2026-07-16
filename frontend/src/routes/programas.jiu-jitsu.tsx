@@ -2,12 +2,28 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ModalityGallery } from "@/components/site/ModalityGallery";
 import { useSchedule } from "@/queries";
 import { useAuth } from "@/contexts/use-auth";
 import { Shield, Target, Users, Heart } from "lucide-react";
 
 const jiuJitsuHero = "/assets/optimized/jiu-jitsu/dsc06312-jiu-jitsu-hero.webp";
 const jiuJitsuAbout = "/assets/optimized/jiu-jitsu/dsc06300-jiu-jitsu-training.webp";
+
+const jiuJitsuGallery = [
+  {
+    src: "/assets/optimized/jiu-jitsu/jiu-jitsu-training-01.webp",
+    alt: "Treino técnico de Jiu-Jitsu na 4Four Fight Academy",
+  },
+  {
+    src: "/assets/optimized/jiu-jitsu/jiu-jitsu-training-02.webp",
+    alt: "Treino de Jiu-Jitsu na 4Four Fight Academy",
+  },
+  {
+    src: "/assets/optimized/jiu-jitsu/jiu-jitsu-training-03.webp",
+    alt: "Aula de Jiu-Jitsu na 4Four Fight Academy",
+  },
+];
 
 export const Route = createFileRoute("/programas/jiu-jitsu")({
   component: JiuJitsuPage,
@@ -231,6 +247,8 @@ function JiuJitsuPage() {
           </div>
         </div>
       </section>
+
+      <ModalityGallery heading="TREINO DE JIU-JITSU" images={jiuJitsuGallery} />
 
       <section className="section-pad px-4">
         <div className="max-w-6xl mx-auto">

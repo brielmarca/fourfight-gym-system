@@ -149,8 +149,7 @@ function PlansPage() {
             viewport={{ once: true, amount: 0.6 }}
             transition={{ duration: 0.45, delay: 0.08, ease: "easeOut" }}
           >
-            Comece hoje mesmo. Todos os planos incluem acesso academia, vestirios completos e app da
-            comunidade.
+            Conheça os planos disponíveis na 4Four Fight Academy.
           </motion.p>
         </motion.div>
 
@@ -304,59 +303,6 @@ function PlansPage() {
             }
           />
         )}
-
-        <div id="faq" className="mt-14 sm:mt-20 max-w-2xl mx-auto px-2">
-          <h2 className="font-display text-2xl sm:text-3xl tracking-wider text-center mb-8 sm:mb-10">
-            PERGUNTAS FREQUENTES
-          </h2>
-          <div className="space-y-4 sm:space-y-6">
-            <div
-              className="bg-surface p-4 sm:p-6 border border-border-subtle"
-              style={{ borderLeft: "3px solid #C1121F" }}
-            >
-              <h3 className="font-semibold mb-2 text-sm sm:text-base">
-                Posso experimentar uma aula grátis?
-              </h3>
-              <p className="text-text-secondary text-sm">
-                Sim! Oferecemos uma aula experimental gratuita para novos alunos. Contacta-nos para{" "}
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={whatsappAriaLabel}
-                  className="text-primary hover:text-primary/80"
-                >
-                  agendares
-                </a>
-                .
-              </p>
-            </div>
-            <div
-              className="bg-surface p-4 sm:p-6 border border-border-subtle"
-              style={{ borderLeft: "3px solid #C1121F" }}
-            >
-              <h3 className="font-semibold mb-2 text-sm sm:text-base">
-                Como funciona o cancelamento?
-              </h3>
-              <p className="text-text-secondary text-sm">
-                Podes cancelar a qualquer momento. Sem contratos, sem burocracia. O cancelamento
-                entra em vigor no fim do período pago.
-              </p>
-            </div>
-            <div
-              className="bg-surface p-4 sm:p-6 border border-border-subtle"
-              style={{ borderLeft: "3px solid #C1121F" }}
-            >
-              <h3 className="font-semibold mb-2 text-sm sm:text-base">
-                O que está incluído no plano?
-              </h3>
-              <p className="text-text-secondary text-sm">
-                Todos os planos incluem acesso às aulas selecionadas, vestiários e app da
-                comunidade. Planos superiores incluem benefícios adicionais.
-              </p>
-            </div>
-          </div>
-        </div>
       </main>
     </div>
   );

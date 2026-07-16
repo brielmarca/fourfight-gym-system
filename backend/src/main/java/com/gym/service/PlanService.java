@@ -41,6 +41,9 @@ public class PlanService {
     public PlanResponse getById(UUID id) {
         Plan plan = planRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Plan", id));
+        if (!Boolean.TRUE.equals(plan.getIsActive())) {
+            throw new ResourceNotFoundException("Plan", id);
+        }
         return PlanResponse.from(plan);
     }
 

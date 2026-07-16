@@ -12,12 +12,8 @@ import com.gym.repository.UserRepository;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import com.stripe.model.Price;
-import com.stripe.model.Product;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.CustomerCreateParams;
-import com.stripe.param.PriceCreateParams;
-import com.stripe.param.PriceListParams;
-import com.stripe.param.ProductCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -71,6 +66,11 @@ public class StripeCheckoutService {
             throw new BusinessRuleException("Checkout is only available in EUR");
         }
 
+        if (plan.getStripePriceId() == null || plan.getStripePriceId().isBlank()) {
+            throw new BusinessRuleException(
+                    "Pagamento Stripe indisponível para este plano. Escolhe pagamento na receção.");
+        }
+
         String customerId;
         try {
             customerId = getOrCreateStripeCustomer(user);
@@ -81,10 +81,10 @@ public class StripeCheckoutService {
 
         String stripePriceId;
         try {
-            stripePriceId = resolveOrCreateStripePriceId(plan);
+            stripePriceId = validateStripePriceId(plan);
         } catch (StripeException e) {
-            log.error("Failed to resolve Stripe price for plan {}", plan.getId(), e);
-            throw new BusinessRuleException("Failed to prepare Stripe price: " + e.getMessage());
+            log.error("Failed to validate Stripe price for plan {}", plan.getId(), e);
+            throw new BusinessRuleException("Failed to validate Stripe price: " + e.getMessage());
         }
 
         SessionCreateParams.Builder sessionBuilder = SessionCreateParams.builder()
@@ -147,50 +147,15 @@ public class StripeCheckoutService {
         return customer.getId();
     }
 
-    private String resolveOrCreateStripePriceId(Plan plan) throws StripeException {
-        String existingPriceId = plan.getStripePriceId();
-        if (existingPriceId != null && !existingPriceId.isBlank()) {
-            Price existing = Price.retrieve(existingPriceId);
-            if (isEurMonthlyPrice(existing, plan)) {
-                return existingPriceId;
-            }
-            log.warn("Existing Stripe price {} for plan {} is not EUR monthly with expected amount", existingPriceId, plan.getId());
+    private String validateStripePriceId(Plan plan) throws StripeException {
+        String stripePriceId = plan.getStripePriceId();
+        Price existing = Price.retrieve(stripePriceId);
+        if (!isEurMonthlyPrice(existing, plan)) {
+            log.warn("Configured Stripe price {} does not match plan {}", stripePriceId, plan.getId());
+            throw new BusinessRuleException(
+                    "Pagamento Stripe indisponível para este plano. Contacta a receção.");
         }
-
-        String lookupKey = "fourfight_plan_" + plan.getId() + "_eur_monthly";
-        PriceListParams listParams = PriceListParams.builder()
-            .addLookupKey(lookupKey)
-            .setActive(true)
-            .setLimit(1L)
-            .build();
-        var priceList = Price.list(listParams);
-        if (!priceList.getData().isEmpty()) {
-            Price matched = priceList.getData().get(0);
-            if (isEurMonthlyPrice(matched, plan)) {
-                persistStripeIds(plan, matched.getProduct(), matched.getId());
-                return matched.getId();
-            }
-        }
-
-        String productId = ensureStripeProduct(plan);
-        long unitAmount = plan.getPrice().movePointRight(2).longValueExact();
-
-        PriceCreateParams createParams = PriceCreateParams.builder()
-            .setCurrency("eur")
-            .setUnitAmount(unitAmount)
-            .setProduct(productId)
-            .setLookupKey(lookupKey)
-            .setRecurring(
-                PriceCreateParams.Recurring.builder()
-                    .setInterval(PriceCreateParams.Recurring.Interval.MONTH)
-                    .build()
-            )
-            .putMetadata("planId", plan.getId().toString())
-            .build();
-
-        Price created = Price.create(createParams);
-        persistStripeIds(plan, productId, created.getId());
-        return created.getId();
+        return stripePriceId;
     }
 
     private boolean isEurMonthlyPrice(Price price, Plan plan) {
@@ -203,25 +168,4 @@ public class StripeCheckoutService {
         return eur && monthly && expected == price.getUnitAmount();
     }
 
-    private String ensureStripeProduct(Plan plan) throws StripeException {
-        if (plan.getStripeProductId() != null && !plan.getStripeProductId().isBlank()) {
-            return plan.getStripeProductId();
-        }
-
-        ProductCreateParams productParams = ProductCreateParams.builder()
-            .setName(plan.getName() + " - 4Four Fight Academy")
-            .setDescription(plan.getDescription())
-            .putMetadata("planId", plan.getId().toString())
-            .build();
-        Product product = Product.create(productParams);
-        plan.setStripeProductId(product.getId());
-        planRepository.save(plan);
-        return product.getId();
-    }
-
-    private void persistStripeIds(Plan plan, String productId, String priceId) {
-        plan.setStripeProductId(productId);
-        plan.setStripePriceId(priceId);
-        planRepository.save(plan);
-    }
 }

@@ -19,6 +19,7 @@ public record PlanResponse(
     String instructor,
     List<String> schedule,
     Boolean isActive,
+    Boolean stripeCheckoutAvailable,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {
@@ -40,6 +41,7 @@ public record PlanResponse(
             plan.getInstructor(),
             plan.getSchedule(),
             plan.getIsActive(),
+            plan.getStripePriceId() != null && !plan.getStripePriceId().isBlank(),
             plan.getCreatedAt(),
             plan.getUpdatedAt()
         );

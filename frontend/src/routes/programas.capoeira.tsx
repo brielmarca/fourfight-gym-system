@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/use-auth";
 import { Circle, Drum, Shield, Sparkles, Users, Waves } from "lucide-react";
 
-const capoeiraHero = "/assets/optimized/gallery/espaco-pv-2-academy-hero.webp";
+const capoeiraHero = "/assets/optimized/capoeira/capoeira-training.webp";
 
 export const Route = createFileRoute("/programas/capoeira")({
   component: CapoeiraPage,

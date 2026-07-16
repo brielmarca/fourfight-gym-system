@@ -16,6 +16,11 @@ import { AlertTriangle } from "lucide-react";
 const STRIPE_CHECKOUT_ENABLED = import.meta.env.VITE_STRIPE_CHECKOUT_ENABLED === "true";
 const PRESALE_MESSAGE =
   "As inscricoes estao em pre-venda. Para finalizar a inscricao, fale connosco pelo WhatsApp ou na rececao.";
+const FOUNDER_PREFIX = "Sócio Fundador";
+const priceFormatter = new Intl.NumberFormat("pt-PT", {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
 
 export const Route = createFileRoute("/plans")({
   component: PlansPage,
@@ -29,19 +34,25 @@ function PlansPage() {
   const navigate = useNavigate();
 
   const displayPlans = useMemo(() => (plans && plans.length > 0 ? plans : []), [plans]);
-  const popularPlanId =
-    displayPlans.find((plan) => plan.popular)?.id ??
-    displayPlans.find((plan) => plan.id === "standard")?.id ??
-    displayPlans[1]?.id ??
-    displayPlans[0]?.id ??
-    "standard";
+  const planGroups = useMemo(
+    () =>
+      [
+        {
+          title: "Planos Sócio Fundador",
+          description: "Condições específicas para Sócios Fundadores.",
+          plans: displayPlans.filter((plan) => plan.name.startsWith(FOUNDER_PREFIX)),
+        },
+        {
+          title: "Planos Normais",
+          description: "Mensalidades normais para adultos e crianças.",
+          plans: displayPlans.filter((plan) => !plan.name.startsWith(FOUNDER_PREFIX)),
+        },
+      ].filter((group) => group.plans.length > 0),
+    [displayPlans],
+  );
 
   useEffect(() => {
     if (selectedPlan || displayPlans.length === 0) return;
-    if (displayPlans.length > 1) {
-      setSelectedPlan(displayPlans[1].id);
-      return;
-    }
     setSelectedPlan(displayPlans[0].id);
   }, [displayPlans, selectedPlan]);
 
@@ -141,15 +152,6 @@ function PlansPage() {
             Comece hoje mesmo. Todos os planos incluem acesso academia, vestirios completos e app da
             comunidade.
           </motion.p>
-          <motion.p
-            className="mt-2 text-sm text-primary font-semibold px-2"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, amount: 0.6 }}
-            transition={{ duration: 0.45, delay: 0.14, ease: "easeOut" }}
-          >
-            Plano Popular: Padrao melhor custo-beneficio
-          </motion.p>
         </motion.div>
 
         {error && !plans ? (
@@ -181,145 +183,108 @@ function PlansPage() {
         )}
 
         {displayPlans.length > 0 ? (
-          <motion.div
-            className="grid md:grid-cols-3 gap-6"
-            onMouseLeave={() => setHoveredPlanId(null)}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={{
-              hidden: {},
-              show: {
-                transition: {
-                  staggerChildren: 0.08,
-                },
-              },
-            }}
-          >
-            {displayPlans.map((plan, i) => {
-              const isActiveHighlight = (hoveredPlanId ?? popularPlanId) === plan.id;
-              const isPopular = plan.id === popularPlanId;
-
-              return (
+          <div className="space-y-14" onMouseLeave={() => setHoveredPlanId(null)}>
+            {planGroups.map((group) => (
+              <section key={group.title}>
+                <div className="mb-7 text-center">
+                  <h2 className="font-display text-3xl tracking-wider">{group.title}</h2>
+                  <p className="mt-2 text-sm text-text-secondary">{group.description}</p>
+                </div>
                 <motion.div
-                  key={plan.id}
+                  className="grid gap-6 md:grid-cols-2 xl:grid-cols-3"
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, amount: 0.15 }}
                   variants={{
-                    hidden: { opacity: 0, y: 20 },
-                    show: {
-                      opacity: 1,
-                      y: 0,
-                      transition: { duration: 0.42, ease: "easeOut" },
-                    },
+                    hidden: {},
+                    show: { transition: { staggerChildren: 0.06 } },
                   }}
-                  animate={
-                    i === 1
-                      ? {
-                          boxShadow: [
-                            "0 0 30px rgba(193,18,31,0.1)",
-                            "0 0 42px rgba(193,18,31,0.16)",
-                            "0 0 30px rgba(193,18,31,0.1)",
-                          ],
-                        }
-                      : undefined
-                  }
-                  transition={
-                    i === 1 ? { duration: 3.2, repeat: Infinity, ease: "easeInOut" } : undefined
-                  }
                 >
-                  <Card
-                    onMouseEnter={() => setHoveredPlanId(plan.id)}
-                    className={`relative flex h-full flex-col bg-surface transition-all duration-300 ${
-                      isActiveHighlight ? "border-primary" : "border-border-subtle"
-                    }`}
-                    style={{
-                      borderTop: isActiveHighlight ? "2px solid #C1121F" : "2px solid #1E1E1E",
-                    }}
-                  >
-                    {isPopular && (
-                      <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] tracking-[0.2em] uppercase">
-                        Mais Popular
-                      </Badge>
-                    )}
-                    <CardHeader className="text-center pb-2">
-                      <CardTitle className="font-display text-2xl tracking-wider">
-                        {plan.name}
-                      </CardTitle>
-                      <CardDescription className="text-text-secondary">
-                        {plan.durationDays} dias
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-1 flex flex-col">
-                      <div className="text-center mb-6">
-                        <span
-                          className="font-display text-5xl"
-                          style={{ color: i === 1 ? "#C1121F" : "#F5F5F5" }}
-                        >
-                          €{plan.price}
-                        </span>
-                        <span className="text-text-secondary text-sm">
-                          /{plan.durationDays === 30 ? "mês" : "meses"}
-                        </span>
-                      </div>
+                  {group.plans.map((plan) => {
+                    const isActiveHighlight = (hoveredPlanId ?? selectedPlan) === plan.id;
 
-                      <ul className="flex-1 mb-6 space-y-3">
-                        {plan.maxClasses && (
-                          <li className="flex items-center gap-2 text-sm text-text-secondary">
-                            <span className="text-primary">*</span>
-                            {plan.maxClasses === -1
-                              ? "Aulas ilimitadas"
-                              : `${plan.maxClasses} aulas por semana`}
-                          </li>
-                        )}
-                        <li className="flex items-center gap-2 text-sm text-text-secondary">
-                          <span className="text-primary">+</span>
-                          Acesso ao vestiário
-                        </li>
-                        <li className="flex items-center gap-2 text-sm text-text-secondary">
-                          <span className="text-primary">+</span>
-                          App da comunidade
-                        </li>
-                      </ul>
-
-                      <Button
-                        onClick={() => handleSelectPlan(plan.id)}
-                        className={`w-full tracking-[0.2em] uppercase text-xs font-semibold ${
-                          i === 1 ? "btn-red" : "btn-ghost border-border-subtle"
-                        }`}
+                    return (
+                      <motion.div
+                        key={plan.id}
+                        variants={{
+                          hidden: { opacity: 0, y: 20 },
+                          show: {
+                            opacity: 1,
+                            y: 0,
+                            transition: { duration: 0.42, ease: "easeOut" },
+                          },
+                        }}
                       >
-                        {selectedPlan === plan.id ? (
-                          <span className="flex items-center justify-center gap-2">
-                            + Selecionado
-                          </span>
-                        ) : STRIPE_CHECKOUT_ENABLED ? (
-                          "Selecionar"
-                        ) : (
-                          "Pre-registrar"
-                        )}
-                      </Button>
-                      <p className="mt-2 text-[11px] text-text-muted text-center">
-                        Seras redirecionado para login se ainda nao tiveres sessao iniciada.
-                      </p>
-                      {i === 1 && (
-                        <p className="mt-3 text-xs text-text-secondary text-center">
-                          Inclui tudo do Basico + aulas coletivas e avaliacao mensal
-                        </p>
-                      )}
-                      {i === 0 && (
-                        <p className="mt-3 text-xs text-text-secondary text-center">
-                          Ideal para iniciantes
-                        </p>
-                      )}
-                      {i === 2 && (
-                        <p className="mt-3 text-xs text-text-secondary text-center">
-                          Acesso 24h + nutricionista incluso
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
+                        <Card
+                          onMouseEnter={() => setHoveredPlanId(plan.id)}
+                          className={`flex h-full flex-col bg-surface transition-all duration-300 ${
+                            isActiveHighlight ? "border-primary" : "border-border-subtle"
+                          }`}
+                          style={{
+                            borderTop: isActiveHighlight
+                              ? "2px solid #C1121F"
+                              : "2px solid #1E1E1E",
+                          }}
+                        >
+                          <CardHeader className="text-center pb-2">
+                            <div className="mb-2 flex justify-center">
+                              <Badge variant="outline">{plan.level ?? "Mensal"}</Badge>
+                            </div>
+                            <CardTitle className="font-display text-xl tracking-wider">
+                              {plan.name}
+                            </CardTitle>
+                            <CardDescription className="text-text-secondary">
+                              {plan.durationDays} dias
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent className="flex flex-1 flex-col">
+                            <div className="mb-6 text-center">
+                              <span className="font-display text-5xl text-foreground">
+                                {priceFormatter.format(plan.price)}€
+                              </span>
+                              <span className="text-sm text-text-secondary">/mês</span>
+                            </div>
+
+                            <ul className="mb-6 flex-1 space-y-3">
+                              {(plan.features ?? []).map((feature) => (
+                                <li
+                                  key={feature}
+                                  className="flex items-center gap-2 text-sm text-text-secondary"
+                                >
+                                  <span className="text-primary">+</span>
+                                  {feature}
+                                </li>
+                              ))}
+                            </ul>
+
+                            <Button
+                              onClick={() => handleSelectPlan(plan.id)}
+                              className={`w-full text-xs font-semibold uppercase tracking-[0.2em] ${
+                                selectedPlan === plan.id
+                                  ? "btn-red"
+                                  : "btn-ghost border-border-subtle"
+                              }`}
+                            >
+                              {selectedPlan === plan.id
+                                ? "+ Selecionado"
+                                : STRIPE_CHECKOUT_ENABLED
+                                  ? "Selecionar"
+                                  : "Pre-registrar"}
+                            </Button>
+                            {STRIPE_CHECKOUT_ENABLED && !plan.stripeCheckoutAvailable && (
+                              <p className="mt-3 text-center text-xs text-text-secondary">
+                                Pagamento disponível na receção. Stripe ainda não configurado.
+                              </p>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    );
+                  })}
                 </motion.div>
-              );
-            })}
-          </motion.div>
+              </section>
+            ))}
+          </div>
         ) : (
           <EmptyState
             icon={AlertTriangle}

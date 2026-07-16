@@ -191,6 +191,7 @@ export interface AdminStudent {
   userEmail: string;
   planId?: string | null;
   planName?: string | null;
+  planPrice?: number | null;
   startDate?: string | null;
   endDate?: string | null;
   status:
@@ -224,6 +225,7 @@ export interface Plan {
   schedule?: string[] | null;
   popular?: boolean;
   isActive: boolean;
+  stripeCheckoutAvailable: boolean;
 }
 
 export interface PageResponse<T> {

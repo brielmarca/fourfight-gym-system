@@ -93,7 +93,7 @@ type MembershipItem = {
   userName: string;
   userEmail: string;
   planName?: string | null;
-  plan?: { price: number } | null;
+  planPrice?: number | null;
   startDate?: string | null;
   endDate?: string | null;
   status: string;
@@ -361,7 +361,7 @@ function AdminPage() {
 
   const estimatedMonthlyRevenue = activeBusinessStudents.reduce((total, membership) => {
     const plan = plansByName.get(normalizeText(membership.planName ?? undefined));
-    return total + (membership.plan?.price ?? plan?.price ?? 0);
+    return total + (membership.planPrice ?? plan?.price ?? 0);
   }, 0);
 
   const estimatedMonthlyRevenueLabel = new Intl.NumberFormat("pt-PT", {

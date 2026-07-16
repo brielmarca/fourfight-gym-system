@@ -1,5 +1,6 @@
 package com.gym.dto.response;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -13,6 +14,7 @@ public record AdminStudentResponse(
     String userEmail,
     UUID planId,
     String planName,
+    BigDecimal planPrice,
     LocalDate startDate,
     LocalDate endDate,
     String status,
@@ -30,6 +32,7 @@ public record AdminStudentResponse(
                 null,
                 null,
                 null,
+                null,
                 "REGISTERED",
                 user.getCreatedAt(),
                 user.getUpdatedAt()
@@ -43,6 +46,7 @@ public record AdminStudentResponse(
             user.getEmail(),
             membership.getPlan().getId(),
             membership.getPlan().getName(),
+            membership.getPlan().getPrice(),
             membership.getStartDate(),
             membership.getEndDate(),
             membership.getStatus().name(),

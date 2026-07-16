@@ -191,6 +191,7 @@ export interface AdminStudent {
   userEmail: string;
   planId?: string | null;
   planName?: string | null;
+  planPrice?: number | null;
   startDate?: string | null;
   endDate?: string | null;
   status:

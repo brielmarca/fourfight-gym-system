@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
-import { api, getUser, isAuthenticated } from "@/lib/api";
+import { getUser, isAuthenticated } from "@/lib/api";
 import { useCreateReceptionRequest, usePlan, useStripeCheckout } from "@/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -13,6 +13,12 @@ import { CreditCard, Loader2, Building, ExternalLink } from "lucide-react";
 const STRIPE_CHECKOUT_ENABLED = import.meta.env.VITE_STRIPE_CHECKOUT_ENABLED === "true";
 const PRESALE_MESSAGE =
   "As inscricoes estao em pre-venda. Para finalizar a inscricao, fale connosco pelo WhatsApp ou na rececao.";
+const STRIPE_UNAVAILABLE_MESSAGE =
+  "O pagamento Stripe ainda não está configurado para este plano. Escolhe pagamento na receção.";
+const priceFormatter = new Intl.NumberFormat("pt-PT", {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
 
 export const Route = createFileRoute("/checkout/$planId")({
   beforeLoad: ({ params }) => {
@@ -26,25 +32,14 @@ export const Route = createFileRoute("/checkout/$planId")({
 function CheckoutPage() {
   const { planId } = Route.useParams();
   const navigate = useNavigate();
-  const { data: plan, isLoading } = usePlan(planId);
+  const { data: plan, isLoading, error: planError } = usePlan(planId);
   const stripeCheckout = useStripeCheckout();
   const receptionRequest = useCreateReceptionRequest();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"STRIPE" | "RECECAO">(
-    STRIPE_CHECKOUT_ENABLED ? "STRIPE" : "RECECAO",
-  );
-
-  const displayPlan = plan || {
-    id: planId,
-    name: planId.includes("basic") ? "Basic" : planId.includes("premium") ? "Premium" : "Standard",
-    price: planId.includes("basic") ? 29.99 : planId.includes("premium") ? 79.99 : 49.99,
-    durationDays: 30,
-    maxClasses: planId.includes("basic") ? 3 : -1,
-    isActive: true,
-    description: "Plano demo",
-  };
+  const [paymentMethod, setPaymentMethod] = useState<"STRIPE" | "RECECAO">("RECECAO");
+  const stripeCheckoutAvailable = STRIPE_CHECKOUT_ENABLED && Boolean(plan?.stripeCheckoutAvailable);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,8 +53,8 @@ function CheckoutPage() {
     }
 
     if (paymentMethod === "STRIPE") {
-      if (!STRIPE_CHECKOUT_ENABLED) {
-        setError(PRESALE_MESSAGE);
+      if (!stripeCheckoutAvailable) {
+        setError(STRIPE_UNAVAILABLE_MESSAGE);
         return;
       }
 
@@ -111,11 +106,14 @@ function CheckoutPage() {
     );
   }
 
-  if (error && !plan) {
+  if (planError || !plan) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center space-y-4">
-          <p className="text-text-secondary">{error}</p>
+          <p className="text-text-secondary">Este plano não está disponível.</p>
+          <Button asChild variant="outline">
+            <Link to="/plans">Voltar aos planos</Link>
+          </Button>
         </div>
       </div>
     );
@@ -145,7 +143,7 @@ function CheckoutPage() {
           <h1 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-wider">Checkout</h1>
           <p className="mt-4 text-text-secondary">
             Complete a tua adesão para{" "}
-            <span className="text-foreground font-semibold">{displayPlan.name}</span>
+            <span className="text-foreground font-semibold">{plan.name}</span>
           </p>
         </div>
 
@@ -188,15 +186,17 @@ function CheckoutPage() {
                 <div className="space-y-4">
                   <div className="flex justify-between">
                     <span className="text-text-secondary">Plano</span>
-                    <span className="font-semibold">{displayPlan.name}</span>
+                    <span className="font-semibold">{plan.name}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-text-secondary">Duração</span>
-                    <span>{displayPlan.durationDays} dias</span>
+                    <span>{plan.durationDays} dias</span>
                   </div>
                   <div className="border-t border-border-subtle pt-4 flex justify-between">
                     <span className="text-lg font-semibold">Total</span>
-                    <span className="text-2xl font-display text-primary">€{displayPlan.price}</span>
+                    <span className="text-2xl font-display text-primary">
+                      {priceFormatter.format(plan.price)}€
+                    </span>
                   </div>
                 </div>
               </CardContent>
@@ -237,7 +237,7 @@ function CheckoutPage() {
                     }}
                     className="grid gap-4"
                   >
-                    {STRIPE_CHECKOUT_ENABLED && (
+                    {stripeCheckoutAvailable && (
                       <Label
                         htmlFor="stripe"
                         className={`${
@@ -276,7 +276,13 @@ function CheckoutPage() {
                     </Label>
                   </RadioGroup>
 
-                  {STRIPE_CHECKOUT_ENABLED && paymentMethod === "STRIPE" && (
+                  {STRIPE_CHECKOUT_ENABLED && !stripeCheckoutAvailable && (
+                    <div className="p-4 rounded-md bg-primary/5 border border-primary/20 text-sm text-text-secondary">
+                      {STRIPE_UNAVAILABLE_MESSAGE}
+                    </div>
+                  )}
+
+                  {stripeCheckoutAvailable && paymentMethod === "STRIPE" && (
                     <div className="p-4 rounded-md bg-primary/5 border border-primary/20 flex gap-3 text-sm text-text-secondary">
                       <CreditCard className="h-5 w-5 flex-shrink-0 text-primary mt-0.5" />
                       <p>

@@ -73,6 +73,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const priceFormatter = new Intl.NumberFormat("pt-PT", {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
+
 export const Route = createFileRoute("/admin")({
   beforeLoad: () => {
     if (!isAuthenticated()) {
@@ -88,6 +93,7 @@ type MembershipItem = {
   userName: string;
   userEmail: string;
   planName?: string | null;
+  plan?: { price: number } | null;
   startDate?: string | null;
   endDate?: string | null;
   status: string;
@@ -140,7 +146,7 @@ function AdminPage() {
   const deactivateSchedule = useDeactivateScheduleEntry();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [studentsFilter, setStudentsFilter] = useState<
-    "ALL" | "ACTIVE" | "REGISTERED" | "CANCELLED" | "BASIC" | "STANDARD" | "PREMIUM"
+    "ALL" | "ACTIVE" | "REGISTERED" | "CANCELLED"
   >("ALL");
   const [selectedPreRegistrationId, setSelectedPreRegistrationId] = useState<string>("");
   const [selectedCsvFile, setSelectedCsvFile] = useState<File | null>(null);
@@ -345,15 +351,6 @@ function AdminPage() {
   const activeVisibleStudents = dedupedVisibleStudents.filter((m) => m.status === "ACTIVE");
   const registeredVisibleStudents = dedupedVisibleStudents.filter((m) => m.status === "REGISTERED");
   const cancelledVisibleStudents = dedupedVisibleStudents.filter((m) => m.status === "CANCELLED");
-  const basicStudents = activeVisibleStudents.filter(
-    (m) => normalizeText(m.planName ?? undefined) === "basic",
-  );
-  const standardStudents = activeVisibleStudents.filter(
-    (m) => normalizeText(m.planName ?? undefined) === "standard",
-  );
-  const premiumStudents = activeVisibleStudents.filter(
-    (m) => normalizeText(m.planName ?? undefined) === "premium",
-  );
   const activeBusinessStudents = businessStudents.filter((m) => m.status === "ACTIVE");
   const cancelledBusinessStudents = businessStudents.filter((m) => m.status === "CANCELLED");
   const preRegistrationsCount =
@@ -364,7 +361,7 @@ function AdminPage() {
 
   const estimatedMonthlyRevenue = activeBusinessStudents.reduce((total, membership) => {
     const plan = plansByName.get(normalizeText(membership.planName ?? undefined));
-    return total + (plan?.price ?? 0);
+    return total + (membership.plan?.price ?? plan?.price ?? 0);
   }, 0);
 
   const estimatedMonthlyRevenueLabel = new Intl.NumberFormat("pt-PT", {
@@ -394,13 +391,7 @@ function AdminPage() {
         ? activeVisibleStudents
         : studentsFilter === "REGISTERED"
           ? registeredVisibleStudents
-          : studentsFilter === "CANCELLED"
-            ? cancelledVisibleStudents
-            : studentsFilter === "BASIC"
-              ? basicStudents
-              : studentsFilter === "STANDARD"
-                ? standardStudents
-                : premiumStudents;
+          : cancelledVisibleStudents;
 
   const studentsTotalPages = Math.max(memberships?.totalPages ?? 1, 1);
   const studentsCurrentPage = memberships?.number ?? studentsPage;
@@ -529,13 +520,7 @@ function AdminPage() {
         ? "Nenhum aluno ativo encontrado."
         : studentsFilter === "REGISTERED"
           ? "Nenhum aluno registado sem plano encontrado."
-          : studentsFilter === "CANCELLED"
-            ? "Nenhum aluno cancelado encontrado."
-            : studentsFilter === "BASIC"
-              ? "Nenhum aluno ativo no plano Basic."
-              : studentsFilter === "STANDARD"
-                ? "Nenhum aluno ativo no plano Standard."
-                : "Nenhum aluno ativo no plano Premium.";
+          : "Nenhum aluno cancelado encontrado.";
 
   const handleImportCsv = async () => {
     if (!selectedCsvFile) {
@@ -1070,27 +1055,6 @@ function AdminPage() {
                     onClick={() => setStudentsFilter("CANCELLED")}
                   >
                     Cancelados
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={studentsFilter === "BASIC" ? "default" : "outline"}
-                    onClick={() => setStudentsFilter("BASIC")}
-                  >
-                    Basic
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={studentsFilter === "STANDARD" ? "default" : "outline"}
-                    onClick={() => setStudentsFilter("STANDARD")}
-                  >
-                    Standard
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={studentsFilter === "PREMIUM" ? "default" : "outline"}
-                    onClick={() => setStudentsFilter("PREMIUM")}
-                  >
-                    Premium
                   </Button>
                 </div>
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-xs text-text-secondary">
@@ -2299,11 +2263,11 @@ function AdminPage() {
                         <div>
                           <p className="font-medium">{plan.name}</p>
                           <p className="text-xs text-text-secondary">
-                            {plan.durationDays} dias · {plan.maxClasses || "Ilimitadas"} aulas
+                            {plan.level ?? "Mensal"} · {plan.durationDays} dias
                           </p>
                         </div>
                         <p className="font-display text-xl" style={{ color: "#C1121F" }}>
-                          €{plan.price}
+                          {priceFormatter.format(plan.price)}€
                         </p>
                       </div>
                     ))}

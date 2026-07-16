@@ -50,78 +50,30 @@ public class DataInitializer {
 
         log.info("Seeding plans...");
         
-        Plan basic = Plan.builder()
-                .name("Basic")
-                .description("Ideal for beginners who want to start their fitness journey with a solid foundation. This plan offers essential gym access with free weights, allowing you to establish a consistent workout routine. Perfect for those seeking quality at an affordable price.")
-                .price(new BigDecimal("29.90"))
+        planRepository.saveAll(List.of(
+                officialPlan("Sócio Fundador — Mensalidade 1 Modalidade — Adulto", "38.50", "Adulto", "1 modalidade", "Plano Sócio Fundador"),
+                officialPlan("Sócio Fundador — Livre — Adulto", "63.00", "Adulto", "Modalidades livres", "Plano Sócio Fundador"),
+                officialPlan("Sócio Fundador — Kids 1 Modalidade — Kids", "24.50", "Kids", "1 modalidade", "Plano Sócio Fundador"),
+                officialPlan("Sócio Fundador — Kids 2 Modalidades — Kids", "38.50", "Kids", "2 modalidades", "Plano Sócio Fundador"),
+                officialPlan("Mensalidade 1 Modalidade — Adulto", "55.00", "Adulto", "1 modalidade", "Plano Normal"),
+                officialPlan("Mensalidade 2 Modalidades — Adulto", "75.00", "Adulto", "2 modalidades", "Plano Normal"),
+                officialPlan("Livre — Adulto", "90.00", "Adulto", "Modalidades livres", "Plano Normal"),
+                officialPlan("Kids 1 Modalidade — Kids", "35.00", "Kids", "1 modalidade", "Plano Normal"),
+                officialPlan("Kids 2 Modalidades — Kids", "55.00", "Kids", "2 modalidades", "Plano Normal")));
+        log.info("Official academy plans seeded successfully.");
+    }
+
+    private Plan officialPlan(String name, String price, String audience, String access, String group) {
+        return Plan.builder()
+                .name(name)
+                .description(group + " para " + audience.toLowerCase() + " com " + access.toLowerCase() + ".")
+                .price(new BigDecimal(price))
                 .currency("EUR")
                 .durationDays(30)
-                .maxClasses(8)
-                .features(List.of(
-                    "Gym access",
-                    "Free weights",
-                    "Lockers",
-                    "Basic workout app",
-                    "Initial guidance support"
-                ))
-                .level("Beginner")
-                .instructor("General Instructor")
-                .schedule(List.of("Mon/Wed/Fri: 06h-10h", "Tue/Thu: 18h-22h"))
+                .features(List.of(audience, access, group))
+                .level(audience)
                 .isActive(true)
                 .build();
-
-        Plan standard = Plan.builder()
-                .name("Standard")
-                .description("Perfect for regular practitioners who want variety in their workouts. In addition to full gym access, you have group classes (limited to 20 per month), monthly physical assessments to track your progress, and one monthly session with a personal trainer to optimize your results.")
-                .price(new BigDecimal("49.90"))
-                .currency("EUR")
-                .durationDays(30)
-                .maxClasses(20)
-                .features(List.of(
-                    "Gym access",
-                    "Free weights",
-                    "Group classes (up to 20/month)",
-                    "Monthly physical assessment",
-                    "Complete lockers",
-                    "Premium workout app",
-                    "1 monthly session with personal trainer",
-                    "Access to rest area"
-                ))
-                .level("Intermediate")
-                .instructor("Specialized Instructor")
-                .schedule(List.of("Mon-Fri: 06h-22h", "Sat: 08h-14h"))
-                .isActive(true)
-                .build();
-
-        Plan premium = Plan.builder()
-                .name("Premium")
-                .description("The ultimate experience for dedicated athletes. Enjoy 24-hour access, unlimited group classes, weekly personalized physical assessments, and exclusive benefits like included nutritionist, premium lockers with sauna, and invitations to special events. The most complete plan for those who demand excellence.")
-                .price(new BigDecimal("79.90"))
-                .currency("EUR")
-                .durationDays(30)
-                .maxClasses(100)
-                .features(List.of(
-                    "24h gym access",
-                    "Free weights",
-                    "Unlimited group classes",
-                    "Weekly physical assessment",
-                    "Kids waiting room",
-                    "Coffee lounge area",
-                    "2 monthly sessions with personal trainer",
-                    "Nutritionist included",
-                    "Premium lockers with sauna",
-                    "Elite workout app",
-                    "Invitations to exclusive events",
-                    "Partner parking"
-                ))
-                .level("Advanced")
-                .instructor("Jiu-Jitsu Master")
-                .schedule(List.of("Mon-Sun: 24h", "Special classes on Saturdays"))
-                .isActive(true)
-                .build();
-
-        planRepository.saveAll(List.of(basic, standard, premium));
-        log.info("Plans seeded successfully: Basic, Standard, Premium");
     }
 
     private void initMartialArts() {

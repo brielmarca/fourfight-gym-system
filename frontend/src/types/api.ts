@@ -224,6 +224,7 @@ export interface Plan {
   schedule?: string[] | null;
   popular?: boolean;
   isActive: boolean;
+  stripeCheckoutAvailable: boolean;
 }
 
 export interface PageResponse<T> {

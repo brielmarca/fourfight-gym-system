@@ -2,11 +2,27 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ModalityGallery } from "@/components/site/ModalityGallery";
 import { useSchedule } from "@/queries";
 import { useAuth } from "@/contexts/use-auth";
 import { Dumbbell, Flame, Shield, Target } from "lucide-react";
 
 const boxeTraining = "/assets/optimized/boxe/boxe-kickboxing-training.webp";
+
+const boxeGallery = [
+  {
+    src: "/assets/optimized/boxe/boxe-kickboxing-training-01.webp",
+    alt: "Treino de Boxe e Kickboxing na 4Four Fight Academy",
+  },
+  {
+    src: "/assets/optimized/boxe/boxe-kickboxing-training-02.webp",
+    alt: "Aula de striking na 4Four Fight Academy",
+  },
+  {
+    src: "/assets/optimized/boxe/boxe-kickboxing-training-03.webp",
+    alt: "Treino de Kickboxing no saco na 4Four Fight Academy",
+  },
+];
 
 export const Route = createFileRoute("/programas/boxe-kickboxing")({
   component: BoxeKickboxingPage,
@@ -192,6 +208,8 @@ function BoxeKickboxingPage() {
           </div>
         </div>
       </section>
+
+      <ModalityGallery heading="TREINO DE BOXE E KICKBOXING" images={boxeGallery} />
 
       <section className="section-pad px-4">
         <div className="max-w-6xl mx-auto">

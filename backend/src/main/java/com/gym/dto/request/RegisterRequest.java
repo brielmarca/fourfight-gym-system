@@ -53,7 +53,7 @@ public record RegisterRequest(
     @Size(max = 1500, message = "Martial arts experience details must not exceed 1500 characters")
     String martialArtsExperienceDetails,
 
-    @NotBlank(message = "Training goal is required")
+    @NotBlank(message = "Seleciona o teu objetivo de treino.")
     @Size(max = 2000, message = "Training goal must not exceed 2000 characters")
     String trainingGoal,
 

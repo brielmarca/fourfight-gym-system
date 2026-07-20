@@ -70,6 +70,8 @@ const queryKeys = {
     all: ["adminStudents"] as const,
     list: (page: number, size: number) =>
       [...queryKeys.adminStudents.all, "list", page, size] as const,
+    registrationProfile: (userId: string) =>
+      [...queryKeys.adminStudents.all, "registration-profile", userId] as const,
   },
   professors: {
     all: ["professors"] as const,

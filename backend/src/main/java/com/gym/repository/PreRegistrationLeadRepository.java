@@ -12,7 +12,7 @@ public interface PreRegistrationLeadRepository extends JpaRepository<PreRegistra
 
     Page<PreRegistrationLead> findAllByOrderBySubmittedAtDesc(Pageable pageable);
 
-    Page<PreRegistrationLead> findAllByStatusNotOrderBySubmittedAtDesc(String status, Pageable pageable);
+    Page<PreRegistrationLead> findAllByStatusNotOrderBySubmittedAtDescIdDesc(String status, Pageable pageable);
 
     List<PreRegistrationLead> findAllByStatusNotAndPhoneIsNotNull(String status);
 

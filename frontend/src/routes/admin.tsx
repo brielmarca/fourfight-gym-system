@@ -14,7 +14,6 @@ import {
   useDeactivateScheduleEntry,
   useUpdateScheduleEntry,
   usePreRegistrations,
-  usePreRegistrationDetail,
   useImportPreRegistrationsCsv,
   useAcceptPreRegistration,
   useArchivePreRegistration,
@@ -31,6 +30,7 @@ import {
   useDeactivateVideoLesson,
   useDeactivateAdminStudent,
   useAdminGraduationOptions,
+  useAdminStudentRegistrationProfile,
   useUpdateAdminStudentGraduation,
 } from "@/queries";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,13 @@ import { Loader2, LogOut, Users, Shield, CreditCard, Clock, MoreHorizontal } fro
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import type { CreateScheduleEntryRequest, GraduationModality, Modality } from "@/types";
+import type {
+  AdminRegistration,
+  AdminStudent,
+  CreateScheduleEntryRequest,
+  GraduationModality,
+  Modality,
+} from "@/types";
 import {
   Select,
   SelectContent,
@@ -87,23 +93,124 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type MembershipItem = {
-  id: string;
-  userId: string;
-  userName: string;
-  userEmail: string;
-  planName?: string | null;
-  planPrice?: number | null;
-  startDate?: string | null;
-  endDate?: string | null;
-  status: string;
+type MembershipItem = AdminStudent;
+
+const registrationLabels: Record<string, string> = {
+  KICKBOXING: "Kickboxing",
+  JIU_JITSU: "Jiu Jitsu",
+  CAPOEIRA: "Capoeira",
+  BOXE: "Boxe",
+  MMA: "M.M.A",
+  JIU_JITSU_KIDS: "Jiu Jitsu Kids",
+  CAPOEIRA_KIDS: "Capoeira Kids",
+  KICKBOXING_KIDS: "Kickboxing Kids",
+  MORNING_BEFORE_0830: "Manhã antes das 8h30",
+  LUNCH_1230: "Almoço 12h30",
+  AFTERNOON_14_17: "Tarde 14h a 17h",
+  NIGHT_AFTER_18: "Noite depois das 18h",
+  MONDAY: "Segunda-feira",
+  TUESDAY: "Terça-feira",
+  WEDNESDAY: "Quarta-feira",
+  THURSDAY: "Quinta-feira",
+  FRIDAY: "Sexta-feira",
+  CALL: "Chamada",
+  MESSAGE: "Mensagem",
+  OTHER: "Outro",
 };
+
+const formatRegistrationValue = (value?: string | null, other?: string | null) => {
+  if (!value) return "-";
+  if (value === "OTHER" && other) return other;
+  return value
+    .split(",")
+    .map((item) => registrationLabels[item.trim()] || item.trim())
+    .join(", ");
+};
+
+const formatNullableBoolean = (value: boolean | null) => {
+  if (value === null) return "-";
+  return value ? "Sim" : "Não";
+};
+
+const formatRegistrationDate = (value?: string | null) => {
+  if (!value) return "-";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "-" : date.toLocaleString("pt-PT");
+};
+
+function RegistrationDetails({ registration }: { registration: AdminRegistration }) {
+  return (
+    <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-2">
+      <div>
+        <strong>Nome:</strong> {registration.fullName || "-"}
+      </div>
+      <div>
+        <strong>Email:</strong> {registration.email || "-"}
+      </div>
+      <div>
+        <strong>Telefone:</strong> {registration.phone || "-"}
+      </div>
+      <div>
+        <strong>Idade:</strong> {registration.age ?? "-"}
+      </div>
+      <div>
+        <strong>Freguesia/área:</strong> {registration.parish || "-"}
+      </div>
+      <div>
+        <strong>Data do registo:</strong> {formatRegistrationDate(registration.submittedAt)}
+      </div>
+      <div>
+        <strong>Experiência:</strong> {formatNullableBoolean(registration.hasMartialArtsExperience)}
+      </div>
+      <div>
+        <strong>Detalhes da experiência:</strong> {registration.martialArtsExperienceDetails || "-"}
+      </div>
+      <div className="md:col-span-2">
+        <strong>Objetivo de treino:</strong> {registration.trainingGoal || "-"}
+      </div>
+      <div>
+        <strong>Modalidades:</strong>{" "}
+        {formatRegistrationValue(
+          registration.preferredModalities,
+          registration.preferredModalityOther,
+        )}
+      </div>
+      <div>
+        <strong>Horário preferido:</strong>{" "}
+        {formatRegistrationValue(
+          registration.preferredTrainingTimes,
+          registration.preferredTrainingTimeOther,
+        )}
+      </div>
+      <div>
+        <strong>Dias disponíveis:</strong>{" "}
+        {formatRegistrationValue(registration.preferredTrainingDays)}
+      </div>
+      <div>
+        <strong>Contacto preferido:</strong>{" "}
+        {formatRegistrationValue(
+          registration.preferredContactMethod,
+          registration.preferredContactMethodOther,
+        )}
+      </div>
+      <div>
+        <strong>Filosofia das artes marciais:</strong>{" "}
+        {formatNullableBoolean(registration.philosophyImportant)}
+      </div>
+      <div>
+        <strong>Observações:</strong> {registration.notes || "-"}
+      </div>
+    </div>
+  );
+}
 
 function AdminPage() {
   const navigate = useNavigate();
   const { user, hasRole, logout } = useAuth();
   const studentsPageSize = 50;
   const [studentsPage, setStudentsPage] = useState(0);
+  const registrationsPageSize = 50;
+  const [registrationsPage, setRegistrationsPage] = useState(0);
   const { data: graduations = [], isLoading: graduationsLoading } = useAdminGraduations(
     hasRole(["ADMIN", "MANAGER"]),
   );
@@ -148,7 +255,7 @@ function AdminPage() {
   const [studentsFilter, setStudentsFilter] = useState<
     "ALL" | "ACTIVE" | "REGISTERED" | "CANCELLED"
   >("ALL");
-  const [selectedPreRegistrationId, setSelectedPreRegistrationId] = useState<string>("");
+  const [selectedRegistration, setSelectedRegistration] = useState<AdminRegistration | null>(null);
   const [selectedCsvFile, setSelectedCsvFile] = useState<File | null>(null);
   const [graduationFilter, setGraduationFilter] = useState<
     "ALL" | "JIU_JITSU" | "BOXE_KICKBOXING" | "CAPOEIRA" | "MMA"
@@ -165,6 +272,7 @@ function AdminPage() {
   const [professorFeedback, setProfessorFeedback] = useState<string | null>(null);
   const [assignmentFeedback, setAssignmentFeedback] = useState<string | null>(null);
   const [studentToDeactivate, setStudentToDeactivate] = useState<MembershipItem | null>(null);
+  const [studentForMoreInfo, setStudentForMoreInfo] = useState<MembershipItem | null>(null);
   const [deactivationReason, setDeactivationReason] = useState("");
   const [deactivationFeedback, setDeactivationFeedback] = useState<string | null>(null);
   const [studentToEditGraduation, setStudentToEditGraduation] = useState<MembershipItem | null>(
@@ -204,13 +312,17 @@ function AdminPage() {
   const loading =
     graduationsLoading || membershipsLoading || plansLoading || pendingReceptionLoading;
   const { data: preRegistrationsData, isLoading: preRegistrationsLoading } = usePreRegistrations(
-    0,
-    100,
+    registrationsPage,
+    registrationsPageSize,
     canManageReception,
   );
-  const { data: preRegistrationDetail } = usePreRegistrationDetail(
-    selectedPreRegistrationId,
-    canManageReception && !!selectedPreRegistrationId,
+  const {
+    data: studentRegistrationProfile,
+    isLoading: studentRegistrationProfileLoading,
+    isError: studentRegistrationProfileError,
+  } = useAdminStudentRegistrationProfile(
+    studentForMoreInfo?.userId || "",
+    canDeactivateStudents && !!studentForMoreInfo,
   );
 
   if (user && !hasRole(["ADMIN", "MANAGER"])) {
@@ -240,6 +352,13 @@ function AdminPage() {
 
   const handleAcceptPreRegistration = (id: string) => {
     acceptPreRegistration.mutate(id, {
+      onSuccess: () => {
+        if (selectedRegistration?.leadId === id) {
+          setSelectedRegistration((registration) =>
+            registration ? { ...registration, status: "ACCEPTED" } : null,
+          );
+        }
+      },
       onError: () => {
         setImportFeedback("Nao foi possivel aceitar a pre-inscricao. Tente novamente.");
       },
@@ -251,8 +370,11 @@ function AdminPage() {
     if (!shouldArchive) return;
     archivePreRegistration.mutate(id, {
       onSuccess: () => {
-        if (selectedPreRegistrationId === id) {
-          setSelectedPreRegistrationId("");
+        if (selectedRegistration?.leadId === id) {
+          setSelectedRegistration(null);
+        }
+        if ((preRegistrationsData?.content.length ?? 0) === 1 && registrationsPage > 0) {
+          setRegistrationsPage((page) => page - 1);
         }
       },
       onError: () => {
@@ -1167,6 +1289,9 @@ function AdminPage() {
                                     align="end"
                                     className="bg-surface border-border-subtle"
                                   >
+                                    <DropdownMenuItem onSelect={() => setStudentForMoreInfo(m)}>
+                                      Mais informações
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem onSelect={() => openEditGraduationDialog(m)}>
                                       Editar graduação
                                     </DropdownMenuItem>
@@ -1195,6 +1320,49 @@ function AdminPage() {
                     </TableBody>
                   </Table>
                 </div>
+                <Dialog
+                  open={!!studentForMoreInfo}
+                  onOpenChange={(open) => {
+                    if (!open) setStudentForMoreInfo(null);
+                  }}
+                >
+                  <DialogContent className="max-h-[85vh] overflow-y-auto border-border-subtle bg-surface text-foreground sm:max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle className="font-display tracking-wider">
+                        Informações do registo
+                      </DialogTitle>
+                      <DialogDescription>
+                        Dados preenchidos pelo aluno durante o registo no site.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="rounded-md border border-border-subtle bg-background/50 p-3 text-sm">
+                      <p className="font-medium">{studentForMoreInfo?.userName || "Aluno"}</p>
+                      <p className="text-xs text-text-secondary">
+                        {studentForMoreInfo?.userEmail || "Sem email"}
+                      </p>
+                    </div>
+                    {studentRegistrationProfileLoading ? (
+                      <div className="flex items-center justify-center gap-2 py-8 text-sm text-text-secondary">
+                        <Loader2 size={18} className="animate-spin" />A carregar informações...
+                      </div>
+                    ) : studentRegistrationProfileError ? (
+                      <p className="py-8 text-center text-sm text-destructive">
+                        Não foi possível carregar as informações do registo.
+                      </p>
+                    ) : studentRegistrationProfile ? (
+                      <RegistrationDetails registration={studentRegistrationProfile} />
+                    ) : (
+                      <p className="py-8 text-center text-sm text-text-secondary">
+                        Sem informações de registo disponíveis.
+                      </p>
+                    )}
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setStudentForMoreInfo(null)}>
+                        Fechar
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
                 <Dialog
                   open={!!studentToEditGraduation}
                   onOpenChange={(open) => {
@@ -1958,11 +2126,45 @@ function AdminPage() {
                   </Button>
                 </div>
                 {importFeedback && <p className="text-xs text-text-secondary">{importFeedback}</p>}
+                <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-text-secondary">
+                  <span>
+                    Página {(preRegistrationsData?.number ?? 0) + 1} de{" "}
+                    {Math.max(preRegistrationsData?.totalPages ?? 1, 1)}
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={registrationsPage <= 0 || preRegistrationsLoading}
+                      onClick={() => {
+                        setSelectedRegistration(null);
+                        setRegistrationsPage((page) => Math.max(page - 1, 0));
+                      }}
+                    >
+                      Anterior
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={
+                        registrationsPage >= (preRegistrationsData?.totalPages ?? 1) - 1 ||
+                        preRegistrationsLoading
+                      }
+                      onClick={() => {
+                        setSelectedRegistration(null);
+                        setRegistrationsPage((page) => page + 1);
+                      }}
+                    >
+                      Seguinte
+                    </Button>
+                  </div>
+                </div>
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow className="border-border-subtle hover:bg-transparent">
                         <TableHead>Nome</TableHead>
+                        <TableHead>Origem</TableHead>
                         <TableHead>Telefone</TableHead>
                         <TableHead>Idade</TableHead>
                         <TableHead>Freguesia</TableHead>
@@ -1978,61 +2180,114 @@ function AdminPage() {
                     <TableBody>
                       {preRegistrationsLoading ? (
                         <TableRow>
-                          <TableCell colSpan={11}>A carregar pré-inscrições...</TableCell>
+                          <TableCell colSpan={12}>A carregar pré-inscrições...</TableCell>
                         </TableRow>
                       ) : (preRegistrationsData?.content?.length ?? 0) === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={11}>Sem pré-inscrições registadas.</TableCell>
+                          <TableCell colSpan={12}>Sem pré-inscrições registadas.</TableCell>
                         </TableRow>
                       ) : (
                         preRegistrationsData?.content?.map((item) => (
                           <TableRow
                             key={item.id}
                             className="cursor-pointer"
-                            onClick={() => setSelectedPreRegistrationId(item.id)}
+                            onClick={() => setSelectedRegistration(item)}
                           >
                             <TableCell>{item.fullName}</TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={
+                                  item.source === "SITE"
+                                    ? "border-blue-500/40 bg-blue-500/10 text-blue-300"
+                                    : "border-border-subtle bg-surface-2 text-text-secondary"
+                                }
+                              >
+                                {item.source === "SITE" ? "Site" : "CSV"}
+                              </Badge>
+                            </TableCell>
                             <TableCell>{item.phone}</TableCell>
                             <TableCell>{item.age ?? "-"}</TableCell>
                             <TableCell>{item.parish || "-"}</TableCell>
-                            <TableCell>{item.preferredModalities || "-"}</TableCell>
-                            <TableCell>{item.preferredTrainingTimes || "-"}</TableCell>
-                            <TableCell>{item.preferredTrainingDays || "-"}</TableCell>
-                            <TableCell>{item.preferredContactMethod || "-"}</TableCell>
+                            <TableCell>
+                              {formatRegistrationValue(
+                                item.preferredModalities,
+                                item.preferredModalityOther,
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {formatRegistrationValue(
+                                item.preferredTrainingTimes,
+                                item.preferredTrainingTimeOther,
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {formatRegistrationValue(item.preferredTrainingDays)}
+                            </TableCell>
+                            <TableCell>
+                              {formatRegistrationValue(
+                                item.preferredContactMethod,
+                                item.preferredContactMethodOther,
+                              )}
+                            </TableCell>
                             <TableCell>
                               {new Date(item.submittedAt).toLocaleDateString("pt-PT")}
                             </TableCell>
-                            <TableCell>{item.status}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">
+                                {item.status === "REGISTERED"
+                                  ? "Registado"
+                                  : item.status === "PRE_REGISTERED"
+                                    ? "Pré-inscrito"
+                                    : item.status === "ACCEPTED"
+                                      ? "Aceite"
+                                      : item.status}
+                              </Badge>
+                            </TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end gap-2">
                                 <Button
                                   size="sm"
+                                  variant="outline"
                                   onClick={(event) => {
                                     event.stopPropagation();
-                                    handleAcceptPreRegistration(item.id);
+                                    setSelectedRegistration(item);
                                   }}
-                                  disabled={
-                                    acceptPreRegistration.isPending ||
-                                    archivePreRegistration.isPending ||
-                                    item.status === "ACCEPTED"
-                                  }
                                 >
-                                  Aceitar
+                                  Ver detalhes
                                 </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={(event) => {
-                                    event.stopPropagation();
-                                    handleArchivePreRegistration(item.id);
-                                  }}
-                                  disabled={
-                                    archivePreRegistration.isPending ||
-                                    acceptPreRegistration.isPending
-                                  }
-                                >
-                                  Remover
-                                </Button>
+                                {item.source === "CSV" && item.leadId && (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        handleAcceptPreRegistration(item.leadId!);
+                                      }}
+                                      disabled={
+                                        acceptPreRegistration.isPending ||
+                                        archivePreRegistration.isPending ||
+                                        item.status === "ACCEPTED"
+                                      }
+                                    >
+                                      Aceitar
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        handleArchivePreRegistration(item.leadId!);
+                                      }}
+                                      disabled={
+                                        archivePreRegistration.isPending ||
+                                        acceptPreRegistration.isPending
+                                      }
+                                    >
+                                      Remover
+                                    </Button>
+                                  </>
+                                )}
                               </div>
                             </TableCell>
                           </TableRow>
@@ -2042,69 +2297,28 @@ function AdminPage() {
                   </Table>
                 </div>
 
-                {preRegistrationDetail && (
+                {selectedRegistration && (
                   <Card className="bg-surface-2 border-border-subtle">
-                    <CardHeader>
+                    <CardHeader className="flex flex-row items-center justify-between gap-3">
                       <CardTitle className="text-sm tracking-[0.1em] uppercase">
                         Detalhes completos do cliente
                       </CardTitle>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setSelectedRegistration(null)}
+                      >
+                        Fechar
+                      </Button>
                     </CardHeader>
-                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <strong>Nome:</strong> {preRegistrationDetail.fullName}
+                    <CardContent className="space-y-4">
+                      <div className="flex flex-wrap gap-2">
+                        <Badge variant="outline">
+                          Origem: {selectedRegistration.source === "SITE" ? "Site" : "CSV"}
+                        </Badge>
+                        <Badge variant="outline">Status: {selectedRegistration.status}</Badge>
                       </div>
-                      <div>
-                        <strong>Telefone:</strong> {preRegistrationDetail.phone}
-                      </div>
-                      <div>
-                        <strong>Idade:</strong> {preRegistrationDetail.age}
-                      </div>
-                      <div>
-                        <strong>Submetido em:</strong>{" "}
-                        {new Date(preRegistrationDetail.submittedAt).toLocaleString("pt-PT")}
-                      </div>
-                      <div>
-                        <strong>Morada/Freguesia:</strong> {preRegistrationDetail.parish || "-"}
-                      </div>
-                      <div>
-                        <strong>Experiência prévia:</strong>{" "}
-                        {preRegistrationDetail.hasMartialArtsExperience ? "Sim" : "Não"}
-                      </div>
-                      <div>
-                        <strong>Detalhes experiência:</strong>{" "}
-                        {preRegistrationDetail.martialArtsExperienceDetails || "-"}
-                      </div>
-                      <div className="md:col-span-2">
-                        <strong>Objetivo:</strong> {preRegistrationDetail.trainingGoal || "-"}
-                      </div>
-                      <div>
-                        <strong>Modalidade:</strong>{" "}
-                        {preRegistrationDetail.preferredModalities || "-"}
-                      </div>
-                      <div>
-                        <strong>Horário:</strong>{" "}
-                        {preRegistrationDetail.preferredTrainingTimes || "-"}
-                      </div>
-                      <div>
-                        <strong>Dias:</strong> {preRegistrationDetail.preferredTrainingDays || "-"}
-                      </div>
-                      <div>
-                        <strong>Filosofia importante:</strong>{" "}
-                        {preRegistrationDetail.philosophyImportant ? "Sim" : "Não"}
-                      </div>
-                      <div>
-                        <strong>Contacto preferido:</strong>{" "}
-                        {preRegistrationDetail.preferredContactMethod}
-                      </div>
-                      <div>
-                        <strong>Origem:</strong> {preRegistrationDetail.source}
-                      </div>
-                      <div>
-                        <strong>Status:</strong> {preRegistrationDetail.status}
-                      </div>
-                      <div className="md:col-span-2">
-                        <strong>Notas:</strong> {preRegistrationDetail.notes || "-"}
-                      </div>
+                      <RegistrationDetails registration={selectedRegistration} />
                     </CardContent>
                   </Card>
                 )}

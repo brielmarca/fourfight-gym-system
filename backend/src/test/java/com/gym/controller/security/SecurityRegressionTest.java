@@ -9,6 +9,7 @@ import com.gym.entity.ScheduleRequest;
 import com.gym.entity.GymClass;
 import com.gym.entity.Trainer;
 import com.gym.entity.StudentProfile;
+import com.gym.entity.PreRegistrationLead;
 import com.gym.repository.ClassEnrollmentRepository;
 import com.gym.repository.ClassRepository;
 import com.gym.repository.NotificationRepository;
@@ -17,6 +18,8 @@ import com.gym.repository.PlanRepository;
 import com.gym.repository.MembershipRepository;
 import com.gym.repository.ScheduleRequestRepository;
 import com.gym.repository.StudentProfileRepository;
+import com.gym.repository.PreRegistrationLeadRepository;
+import com.gym.repository.PreRegistrationProfileRepository;
 import com.gym.repository.TrainerRepository;
 import com.gym.repository.UserRepository;
 import com.gym.security.JwtUtil;
@@ -44,6 +47,7 @@ import java.util.Base64;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -104,6 +108,12 @@ class SecurityRegressionTest {
 
     @Autowired
     private ClassEnrollmentRepository classEnrollmentRepository;
+
+    @Autowired
+    private PreRegistrationLeadRepository preRegistrationLeadRepository;
+
+    @Autowired
+    private PreRegistrationProfileRepository preRegistrationProfileRepository;
 
     private static final String TEST_EMAIL = "test@test.com";
     private static final String ADMIN_EMAIL = "admin@test.com";
@@ -777,6 +787,80 @@ class SecurityRegressionTest {
                         .header("Authorization", "Bearer " + validManagerToken))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString(email)));
+    }
+
+    @Test
+    @DisplayName("Admin registration list includes CSV and SITE registrations with full safe details")
+    @Sql(statements = "CREATE TABLE IF NOT EXISTS pre_registration_profile_days (profile_id UUID NOT NULL, \"day\" VARCHAR(20) NOT NULL, PRIMARY KEY (profile_id, \"day\"))")
+    void adminRegistrationListIncludesCsvAndSiteRegistrations() throws Exception {
+        String email = "registration-list-" + UUID.randomUUID() + "@test.com";
+        LocalDate dob = LocalDate.now().minusYears(26).minusDays(1);
+        int age = Period.between(dob, LocalDate.now()).getYears();
+        LocalDateTime submittedAt = LocalDateTime.now().minusMinutes(5);
+        UUID leadId = preRegistrationLeadRepository.save(PreRegistrationLead.builder()
+                .submittedAt(submittedAt)
+                .fullName("CSV Registration")
+                .age(31)
+                .phone("910123456")
+                .parish("Centro")
+                .trainingGoal("Treino CSV")
+                .preferredModalities("Boxe")
+                .preferredTrainingTimes("Noite")
+                .preferredTrainingDays("Segunda")
+                .preferredContactMethod("Mensagem")
+                .source("GOOGLE_FORMS_IMPORT")
+                .status("PRE_REGISTERED")
+                .build()).getId();
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerJson(email, dob, age)))
+                .andExpect(status().isCreated());
+
+        UUID profileId = preRegistrationProfileRepository.findByUserId(
+                userRepository.findByEmail(email).orElseThrow().getId()).orElseThrow().getId();
+
+        mockMvc.perform(get("/api/admin/registrations?size=100")
+                        .header("Authorization", "Bearer " + validAdminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[?(@.email == '%s')].source".formatted(email), hasItem("SITE")))
+                .andExpect(jsonPath("$.content[?(@.email == '%s')].trainingGoal".formatted(email), hasItem("Melhorar condicionamento")))
+                .andExpect(jsonPath("$.content[?(@.leadId == '%s')].source".formatted(leadId), hasItem("CSV")))
+                .andExpect(jsonPath("$.content[?(@.leadId == '%s')].trainingGoal".formatted(leadId), hasItem("Treino CSV")))
+                .andExpect(jsonPath("$.content[*].passwordHash").doesNotExist())
+                .andExpect(jsonPath("$.content[*].mfaSecret").doesNotExist())
+                .andExpect(jsonPath("$.content[*].backupCodes").doesNotExist());
+
+        mockMvc.perform(get("/api/admin/students/{userId}/registration-profile",
+                        userRepository.findByEmail(email).orElseThrow().getId())
+                        .header("Authorization", "Bearer " + validAdminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.source").value("SITE"))
+                .andExpect(jsonPath("$.email").value(email))
+                .andExpect(jsonPath("$.trainingGoal").value("Melhorar condicionamento"))
+                .andExpect(jsonPath("$.preferredTrainingDays").value("MONDAY"))
+                .andExpect(jsonPath("$.passwordHash").doesNotExist())
+                .andExpect(jsonPath("$.mfaSecret").doesNotExist());
+
+        mockMvc.perform(patch("/api/admin/pre-registrations/{id}/accept", profileId)
+                        .header("Authorization", "Bearer " + validAdminToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Registration details remain admin only and missing website profile returns empty")
+    void registrationDetailsRemainAdminOnly() throws Exception {
+        mockMvc.perform(get("/api/admin/registrations")
+                        .header("Authorization", "Bearer " + validManagerToken))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/api/admin/students/{userId}/registration-profile", testUserId)
+                        .header("Authorization", "Bearer " + validManagerToken))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/api/admin/students/{userId}/registration-profile", testUserId)
+                        .header("Authorization", "Bearer " + validAdminToken))
+                .andExpect(status().isNoContent());
     }
 
     @Test

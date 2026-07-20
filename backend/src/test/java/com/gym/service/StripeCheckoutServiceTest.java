@@ -36,6 +36,23 @@ class StripeCheckoutServiceTest {
     private StripeCheckoutService service;
 
     @Test
+    void createCheckoutSessionRejectsInactivePlan() {
+        UUID userId = UUID.randomUUID();
+        UUID planId = UUID.randomUUID();
+        User user = User.builder().id(userId).build();
+        Plan plan = Plan.builder().id(planId).isActive(false).build();
+
+        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(user));
+        when(planRepository.findById(planId)).thenReturn(java.util.Optional.of(plan));
+
+        assertThatThrownBy(() -> service.createCheckoutSession(userId, planId))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("Plan is not active");
+
+        verifyNoInteractions(membershipRepository);
+    }
+
+    @Test
     void createCheckoutSessionRejectsPlanWithoutConfiguredStripePrice() {
         UUID userId = UUID.randomUUID();
         UUID planId = UUID.randomUUID();

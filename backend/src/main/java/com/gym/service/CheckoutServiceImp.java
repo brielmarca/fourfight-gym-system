@@ -51,6 +51,9 @@ public class CheckoutServiceImp implements CheckoutService {
         // 2. Get the plan
         Plan plan = planRepository.findById(request.planId())
                 .orElseThrow(() -> new IllegalArgumentException("Plan not found: " + request.planId()));
+        if (!Boolean.TRUE.equals(plan.getIsActive())) {
+            throw new BusinessRuleException("Plan is not available");
+        }
 
         // 3. Create or update student record
         Student student = studentRepository.findByEmail(user.getEmail()).orElse(null);

@@ -114,9 +114,10 @@ public class AdminController {
     @GetMapping("/registrations")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<AdminRegistrationResponse>> getRegistrations(
-        @PageableDefault(size = 50) Pageable pageable
+        @PageableDefault(size = 50) Pageable pageable,
+        @RequestParam(defaultValue = "ALL") String source
     ) {
-        return ResponseEntity.ok(adminService.getRegistrations(pageable));
+        return ResponseEntity.ok(adminService.getRegistrations(pageable, source));
     }
 
     @GetMapping("/pre-registrations/{id}")

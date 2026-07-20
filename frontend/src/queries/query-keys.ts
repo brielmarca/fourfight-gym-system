@@ -54,8 +54,8 @@ const queryKeys = {
   },
   preRegistrations: {
     all: ["preRegistrations"] as const,
-    list: (page: number, size: number) =>
-      [...queryKeys.preRegistrations.all, "list", page, size] as const,
+    list: (page: number, size: number, source: "ALL" | "SITE" | "CSV") =>
+      [...queryKeys.preRegistrations.all, "list", page, size, source] as const,
     detail: (id: string) => [...queryKeys.preRegistrations.all, "detail", id] as const,
   },
   graduations: {

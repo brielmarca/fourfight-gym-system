@@ -764,9 +764,9 @@ class SecurityRegressionTest {
     }
 
     @Test
-    @DisplayName("Registered CLIENT without membership appears in admin student listing")
+    @DisplayName("SITE registration appears in registrations and only becomes a student with membership")
     @Sql(statements = "CREATE TABLE IF NOT EXISTS pre_registration_profile_days (profile_id UUID NOT NULL, \"day\" VARCHAR(20) NOT NULL, PRIMARY KEY (profile_id, \"day\"))")
-    void registeredClientWithoutMembershipAppearsInAdminStudentListing() throws Exception {
+    void siteRegistrationRequiresMembershipForAdminStudentListing() throws Exception {
         String email = "registered-" + UUID.randomUUID() + "@test.com";
         LocalDate dob = LocalDate.now().minusYears(24).minusDays(2);
         int age = Period.between(dob, LocalDate.now()).getYears();
@@ -780,11 +780,31 @@ class SecurityRegressionTest {
         mockMvc.perform(get("/api/admin/students?size=100")
                         .header("Authorization", "Bearer " + validAdminToken))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString(email)))
-                .andExpect(content().string(containsString("\"status\":\"REGISTERED\"")));
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString(email))));
+
+        mockMvc.perform(get("/api/admin/registrations?source=SITE&size=100")
+                        .header("Authorization", "Bearer " + validAdminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[?(@.email == '%s')].source".formatted(email), hasItem("SITE")));
 
         mockMvc.perform(get("/api/admin/students?size=100")
                         .header("Authorization", "Bearer " + validManagerToken))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString(email))));
+
+        User registeredUser = userRepository.findByEmail(email).orElseThrow();
+        Plan plan = planRepository.findById(firstPlanId()).orElseThrow();
+        membershipRepository.save(Membership.builder()
+                .user(registeredUser)
+                .plan(plan)
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now().plusDays(30))
+                .status(Membership.MembershipStatus.ACTIVE)
+                .autoRenew(false)
+                .build());
+
+        mockMvc.perform(get("/api/admin/students?size=100")
+                        .header("Authorization", "Bearer " + validAdminToken))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString(email)));
     }
@@ -830,6 +850,18 @@ class SecurityRegressionTest {
                 .andExpect(jsonPath("$.content[*].passwordHash").doesNotExist())
                 .andExpect(jsonPath("$.content[*].mfaSecret").doesNotExist())
                 .andExpect(jsonPath("$.content[*].backupCodes").doesNotExist());
+
+        mockMvc.perform(get("/api/admin/registrations?source=SITE&size=100")
+                        .header("Authorization", "Bearer " + validAdminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[*].source", org.hamcrest.Matchers.everyItem(org.hamcrest.Matchers.is("SITE"))))
+                .andExpect(jsonPath("$.content[?(@.email == '%s')]".formatted(email)).isNotEmpty());
+
+        mockMvc.perform(get("/api/admin/registrations?source=CSV&size=100")
+                        .header("Authorization", "Bearer " + validAdminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[*].source", org.hamcrest.Matchers.everyItem(org.hamcrest.Matchers.is("CSV"))))
+                .andExpect(jsonPath("$.content[?(@.leadId == '%s')]".formatted(leadId)).isNotEmpty());
 
         mockMvc.perform(get("/api/admin/students/{userId}/registration-profile",
                         userRepository.findByEmail(email).orElseThrow().getId())

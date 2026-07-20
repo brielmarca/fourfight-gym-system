@@ -10,9 +10,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PreRegistrationProfileRepository extends JpaRepository<PreRegistrationProfile, UUID> {
 
-    @EntityGraph(attributePaths = {"user", "preferredTrainingDays"})
-    Page<PreRegistrationProfile> findAllByOrderByCreatedAtDesc(Pageable pageable);
+    @EntityGraph(attributePaths = {"user"})
+    Page<PreRegistrationProfile> findAllByOrderByCreatedAtDescIdDesc(Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "preferredTrainingDays"})
     Optional<PreRegistrationProfile> findById(UUID id);
+
+    @EntityGraph(attributePaths = {"user", "preferredTrainingDays"})
+    Optional<PreRegistrationProfile> findByUserId(UUID userId);
 }

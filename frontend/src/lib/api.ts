@@ -31,6 +31,7 @@ import type {
   UpdateScheduleEntryRequest,
   AdminPreRegistrationListItem,
   AdminPreRegistrationDetail,
+  AdminRegistration,
   AdminGraduation,
   AdminStudent,
   DeactivateStudentRequest,
@@ -609,6 +610,8 @@ export const api = {
   },
 
   admin: {
+    listRegistrations: (page = 0, size = 50) =>
+      request<PageResponse<AdminRegistration>>(`/admin/registrations?page=${page}&size=${size}`),
     listPreRegistrations: (page = 0, size = 50) =>
       request<PageResponse<AdminPreRegistrationListItem>>(
         `/admin/pre-registrations?page=${page}&size=${size}`,
@@ -640,6 +643,8 @@ export const api = {
     listGraduations: () => request<AdminGraduation[]>("/admin/graduations"),
     listStudents: (page = 0, size = 50) =>
       request<PageResponse<AdminStudent>>(`/admin/students?page=${page}&size=${size}`),
+    getStudentRegistrationProfile: (userId: string) =>
+      request<AdminRegistration | null>(`/admin/students/${userId}/registration-profile`),
     deactivateStudent: (userId: string, data: DeactivateStudentRequest) =>
       request<void>(`/admin/students/${userId}/deactivate`, {
         method: "POST",

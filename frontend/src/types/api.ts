@@ -382,6 +382,35 @@ export interface AdminPreRegistrationDetail extends AdminPreRegistrationListItem
   createdAt: string;
 }
 
+export interface AdminRegistration {
+  id: string;
+  userId: string | null;
+  leadId: string | null;
+  source: "CSV" | "SITE";
+  fullName: string;
+  email: string | null;
+  phone: string;
+  age: number | null;
+  parish: string | null;
+  hasMartialArtsExperience: boolean | null;
+  martialArtsExperienceDetails: string | null;
+  trainingGoal: string | null;
+  preferredModalities: string | null;
+  preferredModalityOther: string | null;
+  preferredTrainingTimes: string | null;
+  preferredTrainingTimeOther: string | null;
+  preferredTrainingDays: string | null;
+  philosophyImportant: boolean | null;
+  preferredContactMethod: string | null;
+  preferredContactMethodOther: string | null;
+  submittedAt: string;
+  status: string;
+  notes: string | null;
+  accountCreatedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type GraduationModality = "JIU_JITSU" | "BOXE_KICKBOXING" | "CAPOEIRA" | "MMA";
 
 export interface AdminGraduation {

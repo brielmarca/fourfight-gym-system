@@ -74,7 +74,11 @@ export {
 } from "./pre-registrations";
 export { useAdminGraduations, useUpdateAdminGraduation } from "./graduations";
 export { useAdminGraduationOptions, useUpdateAdminStudentGraduation } from "./graduation-options";
-export { useAdminStudents, useDeactivateAdminStudent } from "./admin-students";
+export {
+  useAdminStudents,
+  useAdminStudentRegistrationProfile,
+  useDeactivateAdminStudent,
+} from "./admin-students";
 export {
   useProfessors,
   usePromoteProfessor,

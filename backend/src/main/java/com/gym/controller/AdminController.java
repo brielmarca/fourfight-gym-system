@@ -30,6 +30,7 @@ import com.gym.dto.response.AdminDeactivateStudentResponse;
 import com.gym.dto.response.AdminGraduationOptionResponse;
 import com.gym.dto.response.AdminPreRegistrationLeadDetailResponse;
 import com.gym.dto.response.AdminPreRegistrationLeadListItemResponse;
+import com.gym.dto.response.AdminRegistrationResponse;
 import com.gym.dto.response.AdminProfessorAssignmentResponse;
 import com.gym.dto.response.AdminProfessorResponse;
 import com.gym.dto.response.AdminStudentResponse;
@@ -70,6 +71,14 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getStudents(pageable));
     }
 
+    @GetMapping("/students/{userId}/registration-profile")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AdminRegistrationResponse> getStudentRegistrationProfile(@PathVariable UUID userId) {
+        return adminService.getStudentRegistrationProfile(userId)
+            .map(ResponseEntity::ok)
+            .orElseGet(() -> ResponseEntity.noContent().build());
+    }
+
     @PostMapping("/students/{userId}/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AdminDeactivateStudentResponse> deactivateStudent(
@@ -100,6 +109,14 @@ public class AdminController {
         @PageableDefault(size = 50) Pageable pageable
     ) {
         return ResponseEntity.ok(adminService.getPreRegistrations(pageable));
+    }
+
+    @GetMapping("/registrations")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<AdminRegistrationResponse>> getRegistrations(
+        @PageableDefault(size = 50) Pageable pageable
+    ) {
+        return ResponseEntity.ok(adminService.getRegistrations(pageable));
     }
 
     @GetMapping("/pre-registrations/{id}")

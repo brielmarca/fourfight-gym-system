@@ -7,14 +7,17 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -25,6 +28,7 @@ import com.gym.dto.request.AdminDeactivateStudentRequest;
 import com.gym.dto.response.AdminDeactivateStudentResponse;
 import com.gym.dto.response.AdminPreRegistrationLeadDetailResponse;
 import com.gym.dto.response.AdminPreRegistrationLeadListItemResponse;
+import com.gym.dto.response.AdminRegistrationResponse;
 import com.gym.dto.response.AdminStudentResponse;
 import com.gym.dto.response.AuditLogResponse;
 import com.gym.dto.response.DashboardResponse;
@@ -177,8 +181,36 @@ public class AdminService {
     }
 
     public Page<AdminPreRegistrationLeadListItemResponse> getPreRegistrations(Pageable pageable) {
-        return preRegistrationLeadRepository.findAllByStatusNotOrderBySubmittedAtDesc(LEAD_STATUS_ARCHIVED, pageable)
+        return preRegistrationLeadRepository.findAllByStatusNotOrderBySubmittedAtDescIdDesc(LEAD_STATUS_ARCHIVED, pageable)
             .map(AdminPreRegistrationLeadListItemResponse::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AdminRegistrationResponse> getRegistrations(Pageable pageable) {
+        int fetchSize = Math.toIntExact(Math.addExact(pageable.getOffset(), pageable.getPageSize()));
+        Pageable sourcePage = PageRequest.of(0, fetchSize);
+        Page<PreRegistrationLead> leads = preRegistrationLeadRepository
+            .findAllByStatusNotOrderBySubmittedAtDescIdDesc(LEAD_STATUS_ARCHIVED, sourcePage);
+        var profiles = preRegistrationProfileRepository.findAllByOrderByCreatedAtDescIdDesc(sourcePage);
+
+        List<AdminRegistrationResponse> content = new ArrayList<>(leads.getNumberOfElements() + profiles.getNumberOfElements());
+        leads.map(AdminRegistrationResponse::from).forEach(content::add);
+        profiles.map(AdminRegistrationResponse::from).forEach(content::add);
+        content.sort(Comparator
+            .comparing(AdminRegistrationResponse::submittedAt, Comparator.reverseOrder())
+            .thenComparing(AdminRegistrationResponse::source)
+            .thenComparing(AdminRegistrationResponse::id, Comparator.reverseOrder()));
+
+        int fromIndex = Math.min(Math.toIntExact(pageable.getOffset()), content.size());
+        int toIndex = Math.min(fromIndex + pageable.getPageSize(), content.size());
+        long total = leads.getTotalElements() + profiles.getTotalElements();
+        return new PageImpl<>(content.subList(fromIndex, toIndex), pageable, total);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<AdminRegistrationResponse> getStudentRegistrationProfile(UUID userId) {
+        return preRegistrationProfileRepository.findByUserId(userId)
+            .map(AdminRegistrationResponse::from);
     }
 
     public AdminPreRegistrationLeadDetailResponse getPreRegistrationById(UUID id) {

@@ -119,7 +119,7 @@ class AdminServiceRegistrationTest {
         when(preRegistrationProfileRepository.findAllByOrderByCreatedAtDescIdDesc(any()))
             .thenReturn(new PageImpl<>(java.util.List.of(profile)));
 
-        var result = adminService.getRegistrations(PageRequest.of(0, 20));
+        var result = adminService.getRegistrations(PageRequest.of(0, 20), "ALL");
 
         assertThat(result.getTotalElements()).isEqualTo(2);
         assertThat(result.getContent()).extracting(AdminRegistrationResponse::source)
@@ -168,6 +168,46 @@ class AdminServiceRegistrationTest {
     }
 
     @Test
+    void getRegistrations_filtersBySourceBeforePagination() {
+        LocalDateTime now = LocalDateTime.of(2026, 7, 20, 12, 0);
+        PreRegistrationLead lead = leadWithId("00000000-0000-0000-0000-000000000010", now);
+        User user = User.builder()
+            .id(UUID.randomUUID())
+            .name("Site Client")
+            .email("site-filter@test.com")
+            .build();
+        PreRegistrationProfile profile = PreRegistrationProfile.builder()
+            .id(UUID.randomUUID())
+            .user(user)
+            .age(24)
+            .phone("920000001")
+            .parishOrArea("Norte")
+            .hasMartialArtsExperience(false)
+            .trainingGoal("Saude")
+            .preferredModality(PreRegistrationProfile.PreferredModality.JIU_JITSU)
+            .preferredTrainingTime(PreRegistrationProfile.PreferredTrainingTime.NIGHT_AFTER_18)
+            .preferredTrainingDays(Set.of(PreRegistrationProfile.PreferredTrainingDay.MONDAY))
+            .valuesMartialArtsPhilosophy(true)
+            .preferredContactMethod(PreRegistrationProfile.PreferredContactMethod.MESSAGE)
+            .createdAt(now)
+            .updatedAt(now)
+            .build();
+        PageRequest pageable = PageRequest.of(0, 1);
+        when(preRegistrationProfileRepository.findAllByOrderByCreatedAtDescIdDesc(pageable))
+            .thenReturn(new PageImpl<>(List.of(profile), pageable, 1));
+        when(preRegistrationLeadRepository.findAllByStatusNotOrderBySubmittedAtDescIdDesc("ARCHIVED", pageable))
+            .thenReturn(new PageImpl<>(List.of(lead), pageable, 1));
+
+        var site = adminService.getRegistrations(pageable, "SITE");
+        var csv = adminService.getRegistrations(pageable, "CSV");
+
+        assertThat(site.getContent()).extracting(AdminRegistrationResponse::source).containsExactly("SITE");
+        assertThat(site.getTotalElements()).isEqualTo(1);
+        assertThat(csv.getContent()).extracting(AdminRegistrationResponse::source).containsExactly("CSV");
+        assertThat(csv.getTotalElements()).isEqualTo(1);
+    }
+
+    @Test
     void getRegistrations_keepsStableIdOrderingAcrossPageBoundaries() {
         LocalDateTime submittedAt = LocalDateTime.of(2026, 7, 20, 12, 0);
         List<PreRegistrationLead> leads = List.of(
@@ -183,8 +223,8 @@ class AdminServiceRegistrationTest {
         lenient().when(preRegistrationProfileRepository.findAllByOrderByCreatedAtDescIdDesc(any()))
             .thenAnswer(invocation -> new PageImpl<>(List.of(), invocation.getArgument(0), 0));
 
-        var firstPage = adminService.getRegistrations(PageRequest.of(0, 1));
-        var secondPage = adminService.getRegistrations(PageRequest.of(1, 1));
+        var firstPage = adminService.getRegistrations(PageRequest.of(0, 1), "ALL");
+        var secondPage = adminService.getRegistrations(PageRequest.of(1, 1), "ALL");
 
         assertThat(firstPage.getContent()).extracting(AdminRegistrationResponse::id)
             .containsExactly(UUID.fromString("00000000-0000-0000-0000-000000000003"));

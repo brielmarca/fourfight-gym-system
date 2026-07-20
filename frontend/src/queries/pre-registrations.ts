@@ -3,10 +3,15 @@ import { api } from "@/lib/api";
 import type { AdminRegistration, AdminPreRegistrationDetail, PageResponse } from "@/types";
 import queryKeys from "./query-keys";
 
-export function usePreRegistrations(page = 0, size = 50, enabled = true) {
+export function usePreRegistrations(
+  page = 0,
+  size = 50,
+  source: "ALL" | "SITE" | "CSV" = "ALL",
+  enabled = true,
+) {
   return useQuery<PageResponse<AdminRegistration>>({
-    queryKey: queryKeys.preRegistrations.list(page, size),
-    queryFn: () => api.admin.listRegistrations(page, size),
+    queryKey: queryKeys.preRegistrations.list(page, size, source),
+    queryFn: () => api.admin.listRegistrations(page, size, source),
     enabled,
   });
 }

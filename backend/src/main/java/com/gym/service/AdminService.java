@@ -107,7 +107,7 @@ public class AdminService {
             ? pageable
             : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        return userRepository.findByActiveRole(User.Role.CLIENT, effectivePageable)
+        return userRepository.findStudentsByActiveRole(User.Role.CLIENT, effectivePageable)
             .map(user -> {
                 Membership latestMembership = membershipRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId())
                     .stream()
@@ -186,7 +186,21 @@ public class AdminService {
     }
 
     @Transactional(readOnly = true)
-    public Page<AdminRegistrationResponse> getRegistrations(Pageable pageable) {
+    public Page<AdminRegistrationResponse> getRegistrations(Pageable pageable, String source) {
+        String normalizedSource = source == null ? "ALL" : source.trim().toUpperCase(Locale.ROOT);
+        if ("SITE".equals(normalizedSource)) {
+            return preRegistrationProfileRepository.findAllByOrderByCreatedAtDescIdDesc(pageable)
+                .map(AdminRegistrationResponse::from);
+        }
+        if ("CSV".equals(normalizedSource)) {
+            return preRegistrationLeadRepository
+                .findAllByStatusNotOrderBySubmittedAtDescIdDesc(LEAD_STATUS_ARCHIVED, pageable)
+                .map(AdminRegistrationResponse::from);
+        }
+        if (!"ALL".equals(normalizedSource)) {
+            throw new ValidationException(Map.of("source", "Source must be ALL, SITE or CSV"));
+        }
+
         int fetchSize = Math.toIntExact(Math.addExact(pageable.getOffset(), pageable.getPageSize()));
         Pageable sourcePage = PageRequest.of(0, fetchSize);
         Page<PreRegistrationLead> leads = preRegistrationLeadRepository

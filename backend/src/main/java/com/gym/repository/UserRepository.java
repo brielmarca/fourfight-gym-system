@@ -25,6 +25,17 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("SELECT u FROM User u WHERE u.isActive = true AND u.role = :role")
     Page<User> findByActiveRole(@Param("role") User.Role role, Pageable pageable);
 
+    @Query("""
+        SELECT u FROM User u
+        WHERE u.isActive = true
+          AND u.role = :role
+          AND (
+            NOT EXISTS (SELECT p.id FROM PreRegistrationProfile p WHERE p.user = u)
+            OR EXISTS (SELECT m.id FROM Membership m WHERE m.user = u)
+          )
+        """)
+    Page<User> findStudentsByActiveRole(@Param("role") User.Role role, Pageable pageable);
+
     @Query("SELECT u FROM User u WHERE u.isActive = true AND u.role IN :roles")
     Page<User> findActiveByRoles(@Param("roles") Collection<User.Role> roles, Pageable pageable);
 

@@ -610,8 +610,10 @@ export const api = {
   },
 
   admin: {
-    listRegistrations: (page = 0, size = 50) =>
-      request<PageResponse<AdminRegistration>>(`/admin/registrations?page=${page}&size=${size}`),
+    listRegistrations: (page = 0, size = 50, source: "ALL" | "SITE" | "CSV" = "ALL") =>
+      request<PageResponse<AdminRegistration>>(
+        `/admin/registrations?page=${page}&size=${size}&source=${source}`,
+      ),
     listPreRegistrations: (page = 0, size = 50) =>
       request<PageResponse<AdminPreRegistrationListItem>>(
         `/admin/pre-registrations?page=${page}&size=${size}`,

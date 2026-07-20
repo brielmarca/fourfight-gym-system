@@ -154,7 +154,7 @@ function RegistrationDetails({ registration }: { registration: AdminRegistration
         <strong>Idade:</strong> {registration.age ?? "-"}
       </div>
       <div>
-        <strong>Freguesia/área:</strong> {registration.parish || "-"}
+        <strong>Freguesia/zona:</strong> {registration.parish || "-"}
       </div>
       <div>
         <strong>Data do registo:</strong> {formatRegistrationDate(registration.submittedAt)}
@@ -169,7 +169,7 @@ function RegistrationDetails({ registration }: { registration: AdminRegistration
         <strong>Objetivo de treino:</strong> {registration.trainingGoal || "-"}
       </div>
       <div>
-        <strong>Modalidades:</strong>{" "}
+        <strong>Modalidade preferida:</strong>{" "}
         {formatRegistrationValue(
           registration.preferredModalities,
           registration.preferredModalityOther,
@@ -187,7 +187,7 @@ function RegistrationDetails({ registration }: { registration: AdminRegistration
         {formatRegistrationValue(registration.preferredTrainingDays)}
       </div>
       <div>
-        <strong>Contacto preferido:</strong>{" "}
+        <strong>Método de contacto:</strong>{" "}
         {formatRegistrationValue(
           registration.preferredContactMethod,
           registration.preferredContactMethodOther,
@@ -204,6 +204,77 @@ function RegistrationDetails({ registration }: { registration: AdminRegistration
   );
 }
 
+type RegistrationDetailsDialogProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  registration?: AdminRegistration | null;
+  displayName?: string | null;
+  email?: string | null;
+  isLoading?: boolean;
+  hasError?: boolean;
+};
+
+function RegistrationDetailsDialog({
+  open,
+  onOpenChange,
+  registration,
+  displayName,
+  email,
+  isLoading = false,
+  hasError = false,
+}: RegistrationDetailsDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[85vh] overflow-y-auto border-border-subtle bg-surface text-foreground sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="font-display tracking-wider">Informações do registo</DialogTitle>
+          <DialogDescription>
+            Dados submetidos durante o registo ou pré-inscrição.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="rounded-md border border-border-subtle bg-background/50 p-3 text-sm">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="font-medium">{displayName || registration?.fullName || "Cliente"}</p>
+              <p className="text-xs text-text-secondary">
+                {email || registration?.email || "Sem email"}
+              </p>
+            </div>
+            {registration && (
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline">
+                  Origem: {registration.source === "SITE" ? "Site" : "CSV"}
+                </Badge>
+                <Badge variant="outline">Status: {registration.status}</Badge>
+              </div>
+            )}
+          </div>
+        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center gap-2 py-8 text-sm text-text-secondary">
+            <Loader2 size={18} className="animate-spin" />A carregar informações...
+          </div>
+        ) : hasError ? (
+          <p className="py-8 text-center text-sm text-destructive">
+            Não foi possível carregar as informações do registo.
+          </p>
+        ) : registration ? (
+          <RegistrationDetails registration={registration} />
+        ) : (
+          <p className="py-8 text-center text-sm text-text-secondary">
+            Sem informações de registo disponíveis.
+          </p>
+        )}
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Fechar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function AdminPage() {
   const navigate = useNavigate();
   const { user, hasRole, logout } = useAuth();
@@ -211,6 +282,7 @@ function AdminPage() {
   const [studentsPage, setStudentsPage] = useState(0);
   const registrationsPageSize = 50;
   const [registrationsPage, setRegistrationsPage] = useState(0);
+  const [registrationsSource, setRegistrationsSource] = useState<"ALL" | "SITE" | "CSV">("ALL");
   const { data: graduations = [], isLoading: graduationsLoading } = useAdminGraduations(
     hasRole(["ADMIN", "MANAGER"]),
   );
@@ -314,6 +386,7 @@ function AdminPage() {
   const { data: preRegistrationsData, isLoading: preRegistrationsLoading } = usePreRegistrations(
     registrationsPage,
     registrationsPageSize,
+    registrationsSource,
     canManageReception,
   );
   const {
@@ -1320,49 +1393,17 @@ function AdminPage() {
                     </TableBody>
                   </Table>
                 </div>
-                <Dialog
+                <RegistrationDetailsDialog
                   open={!!studentForMoreInfo}
                   onOpenChange={(open) => {
                     if (!open) setStudentForMoreInfo(null);
                   }}
-                >
-                  <DialogContent className="max-h-[85vh] overflow-y-auto border-border-subtle bg-surface text-foreground sm:max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle className="font-display tracking-wider">
-                        Informações do registo
-                      </DialogTitle>
-                      <DialogDescription>
-                        Dados preenchidos pelo aluno durante o registo no site.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="rounded-md border border-border-subtle bg-background/50 p-3 text-sm">
-                      <p className="font-medium">{studentForMoreInfo?.userName || "Aluno"}</p>
-                      <p className="text-xs text-text-secondary">
-                        {studentForMoreInfo?.userEmail || "Sem email"}
-                      </p>
-                    </div>
-                    {studentRegistrationProfileLoading ? (
-                      <div className="flex items-center justify-center gap-2 py-8 text-sm text-text-secondary">
-                        <Loader2 size={18} className="animate-spin" />A carregar informações...
-                      </div>
-                    ) : studentRegistrationProfileError ? (
-                      <p className="py-8 text-center text-sm text-destructive">
-                        Não foi possível carregar as informações do registo.
-                      </p>
-                    ) : studentRegistrationProfile ? (
-                      <RegistrationDetails registration={studentRegistrationProfile} />
-                    ) : (
-                      <p className="py-8 text-center text-sm text-text-secondary">
-                        Sem informações de registo disponíveis.
-                      </p>
-                    )}
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setStudentForMoreInfo(null)}>
-                        Fechar
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                  registration={studentRegistrationProfile}
+                  displayName={studentForMoreInfo?.userName}
+                  email={studentForMoreInfo?.userEmail}
+                  isLoading={studentRegistrationProfileLoading}
+                  hasError={!!studentRegistrationProfileError}
+                />
                 <Dialog
                   open={!!studentToEditGraduation}
                   onOpenChange={(open) => {
@@ -2126,6 +2167,23 @@ function AdminPage() {
                   </Button>
                 </div>
                 {importFeedback && <p className="text-xs text-text-secondary">{importFeedback}</p>}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="mr-1 text-xs font-medium text-text-secondary">Origem:</span>
+                  {(["ALL", "SITE", "CSV"] as const).map((source) => (
+                    <Button
+                      key={source}
+                      size="sm"
+                      variant={registrationsSource === source ? "default" : "outline"}
+                      onClick={() => {
+                        setRegistrationsSource(source);
+                        setRegistrationsPage(0);
+                        setSelectedRegistration(null);
+                      }}
+                    >
+                      {source === "ALL" ? "Todos" : source === "SITE" ? "Site" : "CSV"}
+                    </Button>
+                  ))}
+                </div>
                 <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-text-secondary">
                   <span>
                     Página {(preRegistrationsData?.number ?? 0) + 1} de{" "}
@@ -2297,31 +2355,13 @@ function AdminPage() {
                   </Table>
                 </div>
 
-                {selectedRegistration && (
-                  <Card className="bg-surface-2 border-border-subtle">
-                    <CardHeader className="flex flex-row items-center justify-between gap-3">
-                      <CardTitle className="text-sm tracking-[0.1em] uppercase">
-                        Detalhes completos do cliente
-                      </CardTitle>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setSelectedRegistration(null)}
-                      >
-                        Fechar
-                      </Button>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant="outline">
-                          Origem: {selectedRegistration.source === "SITE" ? "Site" : "CSV"}
-                        </Badge>
-                        <Badge variant="outline">Status: {selectedRegistration.status}</Badge>
-                      </div>
-                      <RegistrationDetails registration={selectedRegistration} />
-                    </CardContent>
-                  </Card>
-                )}
+                <RegistrationDetailsDialog
+                  open={!!selectedRegistration}
+                  onOpenChange={(open) => {
+                    if (!open) setSelectedRegistration(null);
+                  }}
+                  registration={selectedRegistration}
+                />
               </CardContent>
             </Card>
           </TabsContent>

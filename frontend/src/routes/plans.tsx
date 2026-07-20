@@ -16,7 +16,6 @@ import { AlertTriangle } from "lucide-react";
 const STRIPE_CHECKOUT_ENABLED = import.meta.env.VITE_STRIPE_CHECKOUT_ENABLED === "true";
 const PRESALE_MESSAGE =
   "As inscricoes estao em pre-venda. Para finalizar a inscricao, fale connosco pelo WhatsApp ou na rececao.";
-const FOUNDER_PREFIX = "Sócio Fundador";
 const priceFormatter = new Intl.NumberFormat("pt-PT", {
   minimumFractionDigits: 0,
   maximumFractionDigits: 2,
@@ -35,19 +34,13 @@ function PlansPage() {
 
   const displayPlans = useMemo(() => (plans && plans.length > 0 ? plans : []), [plans]);
   const planGroups = useMemo(
-    () =>
-      [
-        {
-          title: "Planos Sócio Fundador",
-          description: "Condições específicas para Sócios Fundadores.",
-          plans: displayPlans.filter((plan) => plan.name.startsWith(FOUNDER_PREFIX)),
-        },
-        {
-          title: "Planos Normais",
-          description: "Mensalidades normais para adultos e crianças.",
-          plans: displayPlans.filter((plan) => !plan.name.startsWith(FOUNDER_PREFIX)),
-        },
-      ].filter((group) => group.plans.length > 0),
+    () => [
+      {
+        title: "Planos Normais",
+        description: "Mensalidades normais para adultos e crianças.",
+        plans: displayPlans,
+      },
+    ],
     [displayPlans],
   );
 

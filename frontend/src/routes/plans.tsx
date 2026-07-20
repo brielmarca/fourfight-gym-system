@@ -36,7 +36,7 @@ function PlansPage() {
   const planGroups = useMemo(
     () => [
       {
-        title: "Planos Normais",
+        title: "Planos",
         description: "Mensalidades normais para adultos e crianças.",
         plans: displayPlans,
       },

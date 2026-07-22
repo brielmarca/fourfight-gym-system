@@ -12,7 +12,7 @@
 
 ## Demonstration
 
-![4Four Fight Academy home page](<img width="1879" height="1075" alt="image" src="https://github.com/user-attachments/assets/b8922d39-8ece-4099-b6cb-e2480be8af7d" />)
+![4Four Fight Academy home page](./assets/4fourfight.png)
 
 
 ## Project Overview

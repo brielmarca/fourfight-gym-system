@@ -12,8 +12,7 @@
 
 ## Demonstration
 
-<!-- Replace the path below with the screenshot of the project's home page. -->
-![4Four Fight Academy home page](./assets/home-page.png)
+![4Four Fight Academy home page](./assets/home-page.svg)
 
 ## Project Overview
 
